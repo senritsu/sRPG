@@ -1,0 +1,16 @@
+name: sRPG
+main: com.behindthemirrors.minecraft.sRPG.SRPG
+version: 0.5alpha1
+
+commands:
+  srpg:
+    description: Get status and help for the sRPG plugin
+    usage: |
+           /<command> status
+           /<command> help [topic]
+           /<command> [skillname]
+           /<command> locale [locale]
+  check: #not yet implemented
+    description: Get context-sensitive skill information
+    usage: /<command>
+  

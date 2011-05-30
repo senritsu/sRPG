@@ -1,0 +1,17 @@
+mySQL:
+  enabled: true
+  server: localhost
+  port: 3306
+  dbName: name
+  dbUser: user
+  dbPass: pass
+  table_prefix: srpg_
+settings:
+  features:
+    remove-skillpoints: false
+  combat:
+    difficulty: default # if not changed in the advanced config, this can be: 'default','original','custom'
+    dangerous-depths: true # increases damage by monsters lower certain depths
+  locales: # add all localized localization_XX.ymls you want to make available here
+    default: EN
+    available: [EN]

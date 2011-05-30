@@ -1,0 +1,274 @@
+combat:
+  crit-chance: 0.05
+  crit-multiplier: 2.0
+  miss-chance: 0.0
+  miss-multiplier: 0.0
+  armor-multipliers: # not used yet
+    leather: 1.0
+    iron: 1.2
+    gold: 1.2
+    diamond: 1.5
+
+  # named difficulty in basic config uses the values that have the same list index as the name
+  difficulties: [default,original,custom] 
+  
+  health:
+    animals:
+      pig: [12,10,0]
+      sheep: [12,10,0]
+      chicken: [4,4,0]
+      cow: [16,10,0]
+      squid: [8,10,0]
+    monsters:
+      zombie: [40,20,0]
+      spider: [24,20,0]
+      skeleton: [12,20,0]
+      creeper: [16,20,0]
+      pigzombie: [30,20,0]
+      slime:
+        huge: [64,32,0]
+        big: [16,16,0]
+        normal: [4,4,0]
+        small: [1,1,0]
+      wolf: 
+        wild: [12,8,0]
+        tamed: [20,20,0]
+      
+  damage:
+    # values in damage, not in hearts (1 heart = 2 damage)
+    depth:
+      thresholds: [40,15]
+      damage-increase: [1,2]
+    tools:
+      swords:
+        wood: [3,5,0]
+        stone: [4,7,0]
+        iron: [6,9,0]
+        gold: [3,5,0]
+        diamond: [8,11,0]
+      pickaxes:
+        wood: [2,3,0]
+        stone: [3,4,0]
+        iron: [4,5,0]
+        gold: [2,3,0]
+        diamond: [5,6,0]
+      axes:
+        wood: [2,4,0]
+        stone: [3,5,0]
+        iron: [5,6,0]
+        gold: [2,4,0]
+        diamond: [7,7,0]
+      shovels:
+        wood: [2,2,0]
+        stone: [3,3,0]
+        iron: [4,4,0]
+        gold: [2,2,0]
+        diamond: [5,5,0]
+      hoes: 
+        wood: [1,2,0]
+        stone: [1,2,0]
+        iron: [1,2,0]
+        gold: [1,2,0]
+        diamond: [1,2,0]
+      bow: [3,4,0]
+      fists: [1,2,0]
+    monsters:
+      zombie: [5,5,0]
+      spider: [3,2,0]
+      skeleton: [6,4,0]
+      creeper: [21,16,0]
+      pigzombie: [7,6,0]
+      slime:
+        huge: [8,1,0]
+        big: [4,1,0]
+        normal: [2,1,0]
+        small: [1,0,0]
+      wolf:
+        wild: [4,2,0]
+        tamed: [3,4,0]
+
+xp:
+  to-levelup: 1000
+  blocks:
+    common: # common blocks are defined by exclusion, so everything that is not uncommon or rare
+      xp: 1
+      chance: 0.05
+    uncommon:
+      ids: [16,73,74,82,89,49]
+      xp: 1
+      chance: 0.3
+    rare:
+      ids: [14,15,56,21]
+      xp: 5
+      chance: 1.0
+  animals:
+    pig: [1,1,0]
+    sheep: [1,1,0]
+    chicken: [1,1,0]
+    cow: [1,1,0]
+    squid: [1,1,0]
+  monsters:
+    zombie: [10,1,0]
+    spider: [10,1,0]
+    skeleton: [10,1,0]
+    creeper: [20,1,0]
+    slime:
+      huge: [20,1,0]
+      big: [10,1,0]
+      normal: [5,1,0]
+      small: [1,1,0]
+    pigzombie: [20,1,0]
+    wolf: 
+      wild: [10,1,0]
+      tamed: [10,1,0]
+      
+skills:
+  costs: 
+    generic: [1,1,1,2,2,2,3,3,3,5,7]
+    focus-base: 10
+    focus-increase: 2
+  milestones:
+    novice: 0
+    apprentice: 4
+    expert: 7
+    master: 11
+  effects:
+    swords:
+      durability-recovery-chance: 0.02
+      milestone-bonus: 0.01
+    pickaxes:
+      durability-recovery-chance: 0.02
+      milestone-bonus: 0.01
+    axes:
+      durability-recovery-chance: 0.02
+      milestone-bonus: 0.01
+    shovels:
+      durability-recovery-chance: 0.02
+      milestone-bonus: 0.01
+    hoes:
+      durability-recovery-chance: 0.02
+      milestone-bonus: 0.01
+    bow:
+      crit-chance: 0.02
+      milestone-bonus: 0.01
+    ukemi:
+      autoroll-chance: 0.02
+      milestone-bonus: 0.01
+      roll-window: 100 # [ms]
+    evasion:
+      chance: 0.02
+      milestone-bonus: 0.01
+    focus:
+      boost: 0.05
+  passive-abilities: 
+    swords:
+      apprentice:
+        parry-chance: 0.1
+      expert: 
+        parry-chance: 0.05
+        crit-chance: 0.1
+      master: 
+        crit-chance: 0.1
+        crit-multiplier: 1
+    pickaxes:
+      apprentice: 
+        double-drop-chance: 0.05
+      expert:
+        double-drop-chance: 0.1
+      master:
+        double-drop-chance: 0.05
+        triple-drop-chance: 0.05
+    axes:
+      apprentice: 
+        double-drop-chance: 0.05
+      expert:
+        double-drop-chance: 0.1
+      master:
+        double-drop-chance: 0.05
+        triple-drop-chance: 0.05
+    shovels:
+      apprentice:
+        common-drop-chance: 0.04
+      expert:
+        uncommon-drop-chance: 0.02
+      master: 
+        rare-drop-chance: 0.005
+    bow: 
+      apprentice: 
+        damage-modifier: 1
+      expert: 
+        crit-multiplier: 1
+      master: 
+        damage-modifier: 1
+        crit-multiplier: 1
+    ukemi: # values here not used yet
+      apprentice: 
+        fall-height-increase: 1
+      expert: 
+        fall-height-increase: 1
+      master: 
+        fall-height-increase: 1
+    evasion: # values here not used yet
+      apprentice: 
+        explosion-escape-chance: 0.2
+      expert: 
+        arrow-catch-chance: 0.2
+      master: 
+        counterattack-chance: 0.2
+  
+abilities:
+  max-charges: 11
+  blocks-to-charge: 8
+  costs:
+    swords:
+      stone: 1
+      iron: 1
+      diamond: 1
+    pickaxes:
+      stone: 1
+      iron: 1
+      diamond: 1
+    axes:
+      stone: 1
+      iron: 1
+      diamond: 1
+    shovels:
+      stone: 1
+      iron: 1
+      diamond: 1
+        
+item-requirements:
+  untrained-miss-chance: 0.2
+  untrained-damage-modifier: -1
+  untrained-durability-loss: 4
+  swords:
+    wood: 0
+    stone: 0
+    iron: 3
+    gold: 7
+    diamond: 4
+  pickaxes:
+    wood: 0
+    stone: 0
+    iron: 3
+    gold: 7
+    diamond: 4
+  axes:
+    wood: 0
+    stone: 0
+    iron: 3
+    gold: 7
+    diamond: 4
+  shovels:
+    wood: 0
+    stone: 0
+    iron: 3
+    gold: 7
+    diamond: 4
+  hoes: 
+    wood: 0
+    stone: 0
+    iron: 3
+    gold: 7
+    diamond: 4
+  bow: 0
