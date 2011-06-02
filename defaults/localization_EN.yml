@@ -85,7 +85,7 @@ passive-abilities:
     master: Training III
   evasion:
     index: [apprentice,expert,master]
-    apprentice: Escape Explosions
+    apprentice: Escape Artist
     expert: Catch Arrows
     master: Counterattack
 
@@ -316,7 +316,7 @@ messages:
       basic:
         - "  +[light_purple]<%skills.effects.evasion.chance>[white] chance per point to evade any attack"
       passive:
-        - "   [dark_gray] Not implemented yet
+        - "   [dark_gray] Not implemented yet"
         - "   [dark_green]<passive-abilities.evasion.apprentice> [gray][<milestones.apprentice>] "
         - "       [light_purple]<%skills.passive-abilities.evasion.apprentice.explosion-escape-chance>[white] chance to escape from an explosion"
         - "   [dark_green]<passive-abilities.evasion.expert> [gray][<milestones.expert>] "

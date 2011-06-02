@@ -218,7 +218,7 @@ skills:
   
 abilities:
   max-charges: 11
-  blocks-to-charge: 8
+  blocks-to-charge: 64
   costs:
     swords:
       stone: 1
