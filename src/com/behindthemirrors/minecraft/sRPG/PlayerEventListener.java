@@ -29,7 +29,7 @@ public class PlayerEventListener extends PlayerListener {
 		}
 		// block ability ready if interaction was with some interactable block
 		String tool = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
-		if (tool != null && SRPG.permissionHandler.has(player, "skills."+tool+".active")) {
+		if (tool != null && SRPG.permissionHandler.has(player, "srpg.skills."+tool+".active")) {
 			if (action == Action.RIGHT_CLICK_AIR || (action == Action.RIGHT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
 				MessageParser.chargeDisplay(player);
 				SRPG.playerDataManager.get(player).readyAbility(player.getItemInHand().getType());
