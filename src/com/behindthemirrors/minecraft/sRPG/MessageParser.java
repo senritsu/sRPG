@@ -64,7 +64,7 @@ public class MessageParser {
 		    		matcher.appendReplacement(sb, Integer.toString(data.free + data.spent));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!xp>")) {
-		    		matcher.appendReplacement(sb, data.xp.toString());
+		    		matcher.appendReplacement(sb, Integer.toString(data.xp%PlayerData.xpToLevel));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!xp2level>")) {
 		    		matcher.appendReplacement(sb, PlayerData.xpToLevel.toString());
