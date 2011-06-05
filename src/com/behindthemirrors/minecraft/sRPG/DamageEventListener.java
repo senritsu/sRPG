@@ -48,10 +48,8 @@ public class DamageEventListener extends EntityListener{
 				PassiveAbility.trigger((Player)target, event);
 			}
 		} else if (event.getCause() == DamageCause.ENTITY_ATTACK) {
-			// substring(5) to strip off the "Craft" in front of entity classes
-			// distinction to account for different slime sizes and wolf states
 			if (event instanceof EntityDamageByEntityEvent) {
-				source = (Player)((EntityDamageByEntityEvent)event).getDamager();
+				source = (Entity)((EntityDamageByEntityEvent)event).getDamager();
 			//} else if (event instanceof EntityDamageByProjectileEvent) {
 			//	entity = ((EntityDamageByProjectileEvent)event).getDamager();
 			}
