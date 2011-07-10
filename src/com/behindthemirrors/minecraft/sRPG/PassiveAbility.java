@@ -14,6 +14,9 @@ import org.bukkit.inventory.ItemStack;
 public class PassiveAbility {
 	
 	public static void trigger(Player player, EntityDamageEvent event) {
+		// quickfix for NPCs
+		if (SRPG.playerDataManager.get(player)==null) return;
+		
 		if (event.getCause() == DamageCause.FALL) {
 			// check permissions
 			if (!SRPG.permissionHandler.has(player,"srpg.skills.ukemi")) {
@@ -49,6 +52,9 @@ public class PassiveAbility {
 	}
 	
 	public static void trigger(Player player, BlockBreakEvent event) {
+		// quickfix for NPCs
+		if (SRPG.playerDataManager.get(player)==null) return;
+		
 		String skillname = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		if (skillname == null) {
 			return;
@@ -108,9 +114,9 @@ public class PassiveAbility {
 			int amount = amountRange[0] + SRPG.generator.nextInt(amountRange[1]);
 			
 			if (roll < tripleDropChance) {
-				amount *= 3;
-			} else if (roll > tripleDropChance && roll < (tripleDropChance + doubleDropChance)) {
 				amount *= 2;
+			} else if (roll > tripleDropChance && roll < (tripleDropChance + doubleDropChance)) {
+				amount *= 1;
 			}
 			
 			ItemStack item = new ItemStack(dropMaterial,amount);
@@ -156,6 +162,9 @@ public class PassiveAbility {
 	}
 	
 	public static void trigger(Player player, CombatInstance combat, boolean offensive) {
+		// quickfix for NPCs
+		if (SRPG.playerDataManager.get(player)==null) return;
+		
 		String skillname = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		// bow is not in the normal tool list, so check for it
 		if (player.getItemInHand().getType() == Material.BOW) {

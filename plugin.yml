@@ -10,7 +10,3 @@ commands:
            /<command> help [topic]
            /<command> [skillname]
            /<command> locale [locale]
-  check: #not yet implemented
-    description: Get context-sensitive skill information
-    usage: /<command>
-  

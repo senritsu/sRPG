@@ -51,6 +51,7 @@ public class CommandListener implements CommandExecutor {
 					MessageParser.chargeDisplay(player);
 					return true;
 				// get info about a skill or increase it
+				// TODO find NPE
 				} else if (Settings.SKILLS_ALIASES.get(SRPG.playerDataManager.get(player).locale).contains(args[0].toLowerCase())) {
 					String skillname = Settings.SKILLS.get(Settings.SKILLS_ALIASES.get(SRPG.playerDataManager.get(player).locale).indexOf(args[0].toLowerCase()));
 					// increasing/decreasing
@@ -70,7 +71,7 @@ public class CommandListener implements CommandExecutor {
 							return true;
 						} else if (args[1].equals("-")) {
 							for (int i=0;i<amount;i++) {
-								SRPG.playerDataManager.get(player).addSkillpoint(skillname);
+								SRPG.playerDataManager.get(player).removeSkillpoint(skillname);
 								SRPG.playerDataManager.save(player,"skillpoints");
 							}
 							return true;

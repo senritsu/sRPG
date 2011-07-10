@@ -55,7 +55,7 @@ public class SRPG extends JavaPlugin {
 		pm = getServer().getPluginManager();
 		Settings.dataFolder = getDataFolder();
 		
-		for (String command : new String[] {"srpg","check"}) {
+		for (String command : new String[] {"srpg"}) {
 			getCommand(command).setExecutor(commandListener);
 		}
 		

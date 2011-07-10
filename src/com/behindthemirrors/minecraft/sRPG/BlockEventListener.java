@@ -28,6 +28,7 @@ public class BlockEventListener extends BlockListener {
 				}
 			}
 			if (SRPG.generator.nextDouble() <= xpChances.get(rarity)) {
+				//TODO find the NPE here
 				SRPG.playerDataManager.get(player).addXP(xpValues.get(rarity));
 				//TODO: maybe move saving to the data class
 				SRPG.playerDataManager.save(player,"xp");

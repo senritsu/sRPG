@@ -16,8 +16,12 @@ public class MessageParser {
 			PlayerData data = SRPG.playerDataManager.get(player);
 			Integer charges = data.charges.get(skillname);
 			Integer cost = PlayerData.abilityCosts.get(toolName);
+			// check if the tool has an active ability
+			if (cost==null) {
+				return;
+			}
 			String text = "[";
-			if (charges >= cost) {
+			if (charges >= cost) { // TODO find NPE
 				text += ChatColor.DARK_GREEN + Utility.repeat("o",cost);
 				text += ChatColor.WHITE + Utility.repeat("o",charges-cost);
 				charges = PlayerData.chargeMax - charges;

@@ -117,7 +117,7 @@ public class PlayerData {
 			free += skillCosts.get(current-1);
 			spent -= skillCosts.get(current-1);
 			skillpoints.put(skillname, current-1);
-			MessageParser.sendMessage(player, "skill-decreased");
+			MessageParser.sendMessage(player, "skill-decreased",skillname);
 			// check if focus conditions are no longer true and remove all focus if true
 			if (!checkMastery()) {
 				focusAllowed = false;
