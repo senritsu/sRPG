@@ -110,7 +110,13 @@ public class CommandListener implements CommandExecutor {
 					// display debug messages from combat listener 
 					if (args[1].equalsIgnoreCase("combat")) {
 						SRPG.damageListener.debug = !SRPG.damageListener.debug;
-						SRPG.output("combat debugging set to "+SRPG.spawnListener.debug);
+						SRPG.output("combat debugging set to "+SRPG.damageListener.debug);
+						return true;
+					}
+					// display debug messages from combat listener 
+					if (args[1].equalsIgnoreCase("player")) {
+						PlayerData.debug = !PlayerData.debug;
+						SRPG.output("player debugging set to "+PlayerData.debug);
 						return true;
 					}
 				// add xp to a player (handle with care, no removal atm)

@@ -1,6 +1,9 @@
 package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,9 +13,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 
 public class BlockEventListener extends BlockListener {
 	
-	public static ArrayList<ArrayList<Integer>> blockRarities;
-	public static ArrayList<Double> xpChances;
-	public static ArrayList<Integer> xpValues;
+	public static HashMap<String,ArrayList<Integer>> groupBlockMapping;
+	public static HashMap<String,Double> xpChances;
+	public static HashMap<String,Integer> xpValues;
 	
 	// check block rarity and award xp according to config
 	public void onBlockBreak(BlockBreakEvent event) {
@@ -21,13 +24,15 @@ public class BlockEventListener extends BlockListener {
 		// check for permissions
 		if (SRPG.permissionHandler.has(player, "srpg.xp")) {
 			// award xp
-			int rarity = 0; 
-			for (int i=1;i<3;i++) {
-				if (blockRarities.get(i).contains(material.getId())) {
-					rarity = i;
+			String rarity = Settings.advanced.getString("xp.blocks.default-group"); 
+			Iterator<Map.Entry<String,ArrayList<Integer>>> groups = groupBlockMapping.entrySet().iterator();
+			while (groups.hasNext()) {
+				Map.Entry<String,ArrayList<Integer>> pair = groups.next();
+				if (pair.getValue().contains(material.getId())) {
+					rarity = pair.getKey();
 				}
 			}
-			if (SRPG.generator.nextDouble() <= xpChances.get(rarity)) {
+			if (SRPG.playerDataManager.get(player) != null && SRPG.generator.nextDouble() <= xpChances.get(rarity)) {
 				//TODO find the NPE here
 				SRPG.playerDataManager.get(player).addXP(xpValues.get(rarity));
 				//TODO: maybe move saving to the data class

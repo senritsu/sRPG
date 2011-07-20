@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Settings {
 	
-	static Integer difficulty;
+	static String difficulty;
 	
 	static File dataFolder;
 	static Configuration config;
@@ -40,10 +40,10 @@ public class Settings {
 	static HashMap<Material,Material> BLOCK_DROPS = new HashMap<Material, Material>();
 	static HashMap<Material,int[]> BLOCK_DROP_AMOUNTS = new HashMap<Material, int[]>();
 	static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
-															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.JUKEBOX,
+															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.BURNING_FURNACE,Material.JUKEBOX,
 															Material.NOTE_BLOCK,Material.STORAGE_MINECART,Material.WOOD_DOOR,
 															Material.WOODEN_DOOR,Material.CHEST,Material.WORKBENCH,Material.TNT,
-															Material.MINECART,Material.BOAT,Material.DIODE}));
+															Material.MINECART,Material.BOAT,Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.TRAP_DOOR}));
 	
 	static HashMap<String,String> colorMap = new HashMap<String, String>();
 	static HashMap<String, HashMap<String, String>> nameReplacements;
@@ -202,7 +202,7 @@ public class Settings {
 			
 			// read combat settings
 			// difficulty
-			difficulty = advanced.getStringList("combat.difficulties", new ArrayList<String>()).indexOf(config.getString("settings.combat.difficulty"));
+			difficulty = config.getString("settings.combat.difficulty");
 			// damage increase with depth
 			DamageEventListener.increaseDamageWithDepth = config.getBoolean("settings.combat.dangerous-depths", false);
 			
@@ -215,8 +215,8 @@ public class Settings {
 			SpawnEventListener.healthTableCreatures = new HashMap<String, Integer>();
 			DamageEventListener.xpTableCreatures = new HashMap<String, Integer>();
 			for (String animal : Settings.ANIMALS) {
-				SpawnEventListener.healthTableCreatures.put(animal, advanced.getIntList("combat.health.animals."+animal, null).get(difficulty));
-				DamageEventListener.xpTableCreatures.put(animal, advanced.getIntList("xp.animals."+animal, null).get(difficulty));
+				SpawnEventListener.healthTableCreatures.put(animal, advanced.getInt("stats."+difficulty+".animals."+animal+".health", 1));
+				DamageEventListener.xpTableCreatures.put(animal, advanced.getInt("stats."+difficulty+".animals."+animal+".xp", 0));
 			}
 			// monster health, damage and xp
 			DamageEventListener.damageTableMonsters = new HashMap<String, Integer>();
@@ -235,35 +235,32 @@ public class Settings {
 				}
 			}
 			for (String monster : monsters) {
-				SpawnEventListener.healthTableCreatures.put(monster, advanced.getIntList("combat.health.monsters."+monster, null).get(difficulty));
-				DamageEventListener.damageTableMonsters.put(monster, advanced.getIntList("combat.damage.monsters."+monster, null).get(difficulty));
-				DamageEventListener.xpTableCreatures.put(monster, advanced.getIntList("xp.monsters."+monster, null).get(difficulty));
+				SpawnEventListener.healthTableCreatures.put(monster, advanced.getInt("stats."+difficulty+".monsters."+monster+".health", 1));
+				DamageEventListener.damageTableMonsters.put(monster, advanced.getInt("stats."+difficulty+".monsters."+monster+".damage", 1));
+				DamageEventListener.xpTableCreatures.put(monster, advanced.getInt("stats."+difficulty+".monsters."+monster+".xp", 0));
 			}
 			
 			// tool damage
 			DamageEventListener.damageTableTools = new HashMap<String, Integer>();
 			for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
-				DamageEventListener.damageTableTools.put(tool, advanced.getIntList("combat.damage.tools."+tool, null).get(difficulty));
+				DamageEventListener.damageTableTools.put(tool, advanced.getInt("stats."+difficulty+".tools."+tool+".damage", 1));
 			}
-			DamageEventListener.damageBow = advanced.getIntList("combat.damage.tools.bow", null).get(difficulty);
-			DamageEventListener.damageFists = advanced.getIntList("combat.damage.tools.fists", null).get(difficulty);
+			DamageEventListener.damageBow = advanced.getInt("stats."+difficulty+".damage.tools."+"bow", 1);
+			DamageEventListener.damageFists = advanced.getInt("stats."+difficulty+".damage.tools."+"fists", 1);
 			// critical hit settings
 			DamageEventListener.critChance = advanced.getDouble("combat.crit-chance", 1.0);
 			DamageEventListener.critMultiplier = advanced.getDouble("combat.crit-multiplier", 1.0);
 			
 			// block xp settings
-			BlockEventListener.blockRarities = new ArrayList<ArrayList<Integer>>();
-			BlockEventListener.xpValues = new ArrayList<Integer>();
-			BlockEventListener.xpChances = new ArrayList<Double>();
-			String[] rarities = {"common","uncommon","rare"};
-			for (int i=0;i<3;i++) {
-				if (i==0) {
-					BlockEventListener.blockRarities.add(new ArrayList<Integer>());
-				} else {
-					BlockEventListener.blockRarities.add((ArrayList<Integer>)advanced.getIntList("xp.blocks."+rarities[i]+".ids", null));
+			BlockEventListener.groupBlockMapping = new HashMap<String, ArrayList<Integer>>();
+			BlockEventListener.xpValues = new HashMap<String, Integer>();
+			BlockEventListener.xpChances = new HashMap<String, Double>();
+			for (String group : Settings.advanced.getStringList("xp.blocks.xp-groups", null)) {
+				if (group != Settings.advanced.getString("xp.blocks.default-group")) {
+					BlockEventListener.groupBlockMapping.put(group, (ArrayList<Integer>)advanced.getIntList("xp.blocks."+group+".ids", null));
 				}
-				BlockEventListener.xpValues.add(advanced.getInt("xp.blocks."+rarities[i]+".xp",0));
-				BlockEventListener.xpChances.add(advanced.getDouble("xp.blocks."+rarities[i]+".chance",1.0));
+				BlockEventListener.xpValues.put(group, advanced.getInt("xp.blocks."+group+".xp",0));
+				BlockEventListener.xpChances.put(group, advanced.getDouble("xp.blocks."+group+".chance",1.0));
 			}
 			
 			SRPG.output("Successfully loaded config");

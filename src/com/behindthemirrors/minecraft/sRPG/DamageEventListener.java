@@ -136,6 +136,9 @@ public class DamageEventListener extends EntityListener{
 			SRPG.output("entity with id "+id+" died");
 		}
 		if (damageTracking.containsKey(id)) {
+			if (debug) {
+				SRPG.output("giving player"+damageTracking.get(id)+" xp");
+			}
 			String monster = Utility.getEntityName(entity);
 			SRPG.playerDataManager.get(damageTracking.get(id)).addXP(xpTableCreatures.get(monster));
 			//TODO: maybe move saving to the data class

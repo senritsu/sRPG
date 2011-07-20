@@ -9,6 +9,9 @@ import org.bukkit.entity.Player;
 
 public class PlayerData {
 	
+	// debug player stuff
+	public static boolean debug = false;
+	
 	// TODO: maybe change to read directly from config
 	static Integer xpToLevel;
 	static Integer focusBase;
@@ -63,7 +66,10 @@ public class PlayerData {
 			return;
 		}
 		xp += amount;
-		// debug message, will be removed later
+		// debug message
+		if (debug) {
+			SRPG.output("adding "+amount.toString()+" xp to player "+name);
+		}
 		if (xp >= (xpToLevel * (free + spent + 1))) {
 			free += xp / xpToLevel - free - spent;
 			MessageParser.sendMessage(player, "levelup");
