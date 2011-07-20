@@ -90,6 +90,7 @@ public class SRPG extends JavaPlugin {
 		} else {
 			pdfFile = this.getDescription();
 			output(pdfFile.getName() + " v" + pdfFile.getVersion() + " has been enabled." );
+			database.updateDatabase(pdfFile.getVersion());
 		}
 	}
 	public void onDisable() {

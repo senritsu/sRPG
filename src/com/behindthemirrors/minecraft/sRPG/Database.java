@@ -40,6 +40,7 @@ public class Database {
 	//Create the DB structure
     public void createStructure(){
     	String prefix = "CREATE TABLE IF NOT EXISTS `" + dbTablePrefix;
+    	Write(prefix + "global` (`pk` int(10) UNSIGNED NOT NULL PRIMARY KEY, `version` varchar(40) NOT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1;");
         Write(prefix +  "users` (`user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY," +
                 "`user` varchar(40) NOT NULL UNIQUE KEY," +
                 "`xp` int(32) NOT NULL DEFAULT 0," +
@@ -58,7 +59,33 @@ public class Database {
         }
         sql += ") ENGINE=MyISAM DEFAULT CHARSET=latin1;";
         Write(sql);
+        
+        
+        
     }
+    
+    public void updateDatabase(String version) {
+    	// here be version-dependent database update routines
+    	Integer id = SRPG.database.GetInt("SELECT pk FROM " + SRPG.database.dbTablePrefix + "global WHERE pk = '1';");
+		if (id == 0) {
+			Write("INSERT INTO " + SRPG.database.dbTablePrefix + "global (pk,version) VALUES ('1',\"" + version + "\");");
+		}
+        String db_version = new String(Read("SELECT version FROM " + SRPG.database.dbTablePrefix + "global WHERE pk = '1';").get(1).get(0));
+        if (version != db_version) {
+        	SRPG.output("Version changed from "+db_version+" to "+version+", updating database structure if necessary");
+        }
+        // change database according to version differences
+        if (db_version == "0.5alpha1") {
+        	
+        }
+        // recreate structure in case any tables were deleted during update process
+        if (version != db_version) {
+        	createStructure();
+        }
+        // update version in database to current version
+        Write("UPDATE " + dbTablePrefix + "global SET version = \"" + version + "\" WHERE pk = '1'");
+    }
+    
     // check if its closed
     private void getConnection() {
     	try {
