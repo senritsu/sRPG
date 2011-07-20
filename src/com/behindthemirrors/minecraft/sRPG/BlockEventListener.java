@@ -19,6 +19,9 @@ public class BlockEventListener extends BlockListener {
 	
 	// check block rarity and award xp according to config
 	public void onBlockBreak(BlockBreakEvent event) {
+		if (event.isCancelled()) {
+			return;
+		}
 		Player player = event.getPlayer();
 		Material material = event.getBlock().getType();
 		// check for permissions

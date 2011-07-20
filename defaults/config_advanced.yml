@@ -57,19 +57,19 @@ stats:
         huge:
           health: 64
           damage: 8
-          xp: 20
+          xp: 24
         big:
           health: 16
           damage: 4
-          xp: 10
+          xp: 8
         normal:
           health: 4
           damage: 2
-          xp: 10
+          xp: 4
         small:
           health: 1
           damage: 1
-          xp: 10
+          xp: 2
       wolf: 
         wild:
           health: 12

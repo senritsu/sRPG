@@ -192,7 +192,7 @@ public class PassiveAbility {
 		
 		// chance for evasion
 		double roll = SRPG.generator.nextDouble();
-		double evadeChance = skillpoints * Settings.advanced.getDouble("skills.effects.evasion.chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.evasion.milestone-bonus",0);
+		double evadeChance = SRPG.playerDataManager.get(player).getSkill("evasion") * Settings.advanced.getDouble("skills.effects.evasion.chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.evasion.milestone-bonus",0);
 		// focus
 		if (SRPG.playerDataManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
 			evadeChance *= 1.0 + SRPG.playerDataManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
@@ -202,8 +202,8 @@ public class PassiveAbility {
 		if (SRPG.permissionHandler.has(player, "srpg.skills.evasion")) {
 			if (!offensive) {
 				if (roll < evadeChance) {
-					combat.cancel("evasion-attacker");
-					MessageParser.sendMessage(player, "evasion-defender");
+					combat.cancel("evade-attacker");
+					MessageParser.sendMessage(player, "evade-defender");
 				}
 			}
 		}

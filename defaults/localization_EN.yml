@@ -157,8 +157,10 @@ messages:
   miss-no-damage: "[red]Miss!"
   miss-damage: "[red]Glancing Blow!"
   miss-critical-damage: "[red]Lucky Hit!"
-  parry: "[gray]Successful Parry!"
-  parried: "[gray]Your attack was parried!"
+  parry-attacker: "[gray]Your attack was parried!"
+  parry-defender: "[gray]Successful Parry!"
+  evade-attacker: "[gray]Your attack was evaded!"
+  evade-defender: "[gray]Successful evasion!"
   roll-manual: "[green]You rolled to avoid damage"
   roll-auto: "[green]You rolled by reflex to avoid damage"
   

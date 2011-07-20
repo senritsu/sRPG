@@ -1,7 +1,7 @@
 package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.HashMap;
-import org.bukkit.entity.Creature;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityListener;
 
@@ -17,10 +17,10 @@ public class SpawnEventListener extends EntityListener {
 		if (debug) {
 			SRPG.output("creature spawned: "+creature);
 		}
-		if (creature.startsWith("slime")) {
+		//if (creature.startsWith("slime")) {
 			// slimes don't work properly yet
-		} else {
-			((Creature)event.getEntity()).setHealth(healthTableCreatures.get(creature));
-		}
+		//} else {
+			((LivingEntity)event.getEntity()).setHealth(healthTableCreatures.get(creature));
+		//}
 		}
 	}

@@ -5,7 +5,7 @@ package com.behindthemirrors.minecraft.sRPG;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.bukkit.entity.Creature;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
@@ -76,9 +76,9 @@ public class DamageEventListener extends EntityListener{
 				player = (Player)(((EntityDamageByEntityEvent)event).getDamager());
 				
 				// debug message, displays remaining health of target before damage from this attack is applied
-				if (event.getEntity() instanceof Creature) {
+				if (event.getEntity() instanceof LivingEntity) {
 					if (debug) {
-						SRPG.output("Target of attack has "+((Creature)event.getEntity()).getHealth() + " health.");
+						SRPG.output("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.");
 					}
 				}
 				// select damage value from config depending on what item is held

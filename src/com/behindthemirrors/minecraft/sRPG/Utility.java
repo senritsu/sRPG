@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Slime;
+import org.bukkit.entity.Wolf;
 
 public class Utility {
 	public static String join(ArrayList<String> list, String delimiter) {
@@ -62,7 +63,11 @@ public class Utility {
 		String name = entity.getClass().getSimpleName().toLowerCase().substring(5);
 		// TODO: implement tamed check for wolf
 		if (name.equals("wolf")) {
-			name += ".tamed";
+			if (((Wolf)entity).getOwner() != null) {
+				name += ".tamed";
+			} else {
+				name += ".wild";
+			}
 		} else if (name.equals("slime")) {
 			name += "." + Settings.SLIME_SIZES.get(((Slime)entity).getSize());
 		}
