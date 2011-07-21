@@ -33,8 +33,9 @@ public class Database {
         // make the connection
     }
     
-    public void connect() {
+    public boolean connect() {
     	getConnection();
+    	return (conn != null);
     }
     
 	//Create the DB structure

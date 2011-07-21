@@ -30,9 +30,11 @@ public class PlayerData {
 	Integer spent;
 	boolean focusAllowed;
 	HashMap<String,Integer> skillpoints;
-	HashMap<String,ArrayList<String>> milestones;
+	//HashMap<String,ArrayList<String>> milestones;
 	HashMap<String,Integer> charges;
 	HashMap<String,Integer> chargeProgress;
+	
+	HashMap<String, Integer> effectCounters = new HashMap<String, Integer>();
 	
 	private String abilityReadied = "";
 	private long abilityReadiedTimeStamp;
