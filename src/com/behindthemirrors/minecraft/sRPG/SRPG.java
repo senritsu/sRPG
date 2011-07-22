@@ -66,12 +66,14 @@ public class SRPG extends JavaPlugin {
 		setupPermissions();
 		
 		pm.registerEvent(Event.Type.ENTITY_DAMAGE, damageListener, Priority.Monitor, this);
+		pm.registerEvent(Event.Type.ENTITY_REGAIN_HEALTH, damageListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.ENTITY_DEATH, damageListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.CREATURE_SPAWN, spawnListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
+		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Monitor, this);
 		
 		// try to load settings, disable plugin on fail

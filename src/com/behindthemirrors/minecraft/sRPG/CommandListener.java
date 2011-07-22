@@ -1,5 +1,8 @@
 package com.behindthemirrors.minecraft.sRPG;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -120,6 +123,17 @@ public class CommandListener implements CommandExecutor {
 						return true;
 					}
 				// add xp to a player (handle with care, no removal atm)
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("list")) {
+					// display hp values
+					if (args[1].equalsIgnoreCase("tooldamage")) {
+						Iterator<Map.Entry<String,Integer>> pairs = DamageEventListener.damageTableTools.entrySet().iterator();
+						while (pairs.hasNext()) {
+							Map.Entry<String,Integer>pair = pairs.next();
+							SRPG.output(pair.getKey()+": "+pair.getValue());
+						}
+						return true;
+					}
+					
 				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp")) {
 					PlayerData data = SRPG.playerDataManager.getByName(args[1]);
 					if ( data != null) {

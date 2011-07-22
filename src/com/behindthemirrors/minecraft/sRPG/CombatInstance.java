@@ -48,6 +48,10 @@ public class CombatInstance {
 			}
 			return;
 		}
+		// override for deactivated tools
+		if (basedamage == null) {
+			basedamage = event.getDamage();
+		}
 		double damage = basedamage + modifier;
 		boolean crit = false;
 		boolean miss = false;

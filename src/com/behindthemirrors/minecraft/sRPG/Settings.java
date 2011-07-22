@@ -22,10 +22,10 @@ public class Settings {
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
-	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","wolf"}));
+	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
 	static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
 	static HashMap<String,ArrayList<String>> SKILLS_ALIASES;
-	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes"}));
+	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","pickaxes","axes","shovels","hoes"}));
 	static ArrayList<String> GRADES =  new ArrayList<String>(Arrays.asList(new String[] {"wood","stone","iron","gold","diamond"}));
 	
 	static HashMap<Integer,String> SLIME_SIZES = new HashMap<Integer,String>();
@@ -243,10 +243,16 @@ public class Settings {
 			// tool damage
 			DamageEventListener.damageTableTools = new HashMap<String, Integer>();
 			for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
-				DamageEventListener.damageTableTools.put(tool, advanced.getInt("stats."+difficulty+".tools."+tool+".damage", 1));
+				if (!advanced.getBoolean("stats."+difficulty+".tools."+tool+".override", false)) {
+					DamageEventListener.damageTableTools.put(tool, advanced.getInt("stats."+difficulty+".tools."+tool+".damage", 1));
+				}
 			}
-			DamageEventListener.damageBow = advanced.getInt("stats."+difficulty+".damage.tools."+"bow", 1);
-			DamageEventListener.damageFists = advanced.getInt("stats."+difficulty+".damage.tools."+"fists", 1);
+			if (!advanced.getBoolean("stats."+difficulty+".tools.bow.override", false)) {
+				DamageEventListener.damageTableTools.put("bow",advanced.getInt("stats."+difficulty+".tools.bow.damage", 1));
+			}
+			if (!advanced.getBoolean("stats."+difficulty+".tools.fists.override", false)) {
+				DamageEventListener.damageTableTools.put("fists",advanced.getInt("stats."+difficulty+".tools.fists.damage", 1));
+			}
 			// critical hit settings
 			DamageEventListener.critChance = advanced.getDouble("combat.crit-chance", 1.0);
 			DamageEventListener.critMultiplier = advanced.getDouble("combat.crit-multiplier", 1.0);

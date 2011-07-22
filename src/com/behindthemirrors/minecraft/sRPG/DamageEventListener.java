@@ -5,6 +5,7 @@ package com.behindthemirrors.minecraft.sRPG;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -14,6 +15,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.Material;
 
 
@@ -24,8 +26,6 @@ public class DamageEventListener extends EntityListener{
 	public static HashMap<String,Integer> damageTableMonsters;
 	public static HashMap<String,Integer> xpTableCreatures;
 	public static HashMap<String,Integer> damageTableTools;
-	public static int damageFists;
-	public static int damageBow;
 	public static double critChance;
 	public static double critMultiplier;
 	public static double missChance;
@@ -42,12 +42,16 @@ public class DamageEventListener extends EntityListener{
 		Player player = null;
 		Entity target = event.getEntity();
 		
+		if (debug && target instanceof Player && event.getCause() != DamageCause.FIRE_TICK&& event.getCause() != DamageCause.FIRE) {
+			SRPG.output("player damaged by "+event.getCause().name()+" ("+event.getDamage()+" damage)");
+		}
 		
 		if (event.getCause() == DamageCause.FALL) {
 			if (target instanceof Player) {
 				PassiveAbility.trigger((Player)target, event);
 			}
-		} else if (event.getCause() == DamageCause.ENTITY_ATTACK) {
+		} else if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+			SRPG.output(event.getEventName());
 			if (event instanceof EntityDamageByEntityEvent) {
 				source = (Entity)((EntityDamageByEntityEvent)event).getDamager();
 			//} else if (event instanceof EntityDamageByProjectileEvent) {
@@ -63,6 +67,12 @@ public class DamageEventListener extends EntityListener{
 			if (Settings.MONSTERS.contains(sourcename)) {
 				// for now no distinction between arrow hits and normal hits
 				combat.basedamage = damageTableMonsters.get(sourcename);
+				if (sourcename.equalsIgnoreCase("creeper")) {
+					combat.basedamage = (int)Math.round(new Double(event.getDamage()*damageTableMonsters.get(sourcename))/14);
+				}
+				if (sourcename.equalsIgnoreCase("ghast")) {
+					combat.basedamage = (int)Math.round(new Double(event.getDamage()*damageTableMonsters.get(sourcename))/5);
+				}
 				// depth modifier
 				if (increaseDamageWithDepth) {
 					for (int[] depth : depthTiers) {
@@ -91,10 +101,10 @@ public class DamageEventListener extends EntityListener{
 						SRPG.playerDataManager.get(player).addChargeTick(Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(material));
 						//TODO: maybe move saving to the data class
 						SRPG.playerDataManager.save(player,"chargedata");
-					} else if (event instanceof EntityDamageByProjectileEvent) {
-						combat.basedamage = damageBow;
+					} else if (event instanceof EntityDamageByProjectileEvent && ((EntityDamageByProjectileEvent)event).getProjectile() instanceof Arrow) {
+						combat.basedamage = damageTableTools.get("bow");
 					} else {
-						combat.basedamage = damageFists; 
+						combat.basedamage = damageTableTools.get("fists"); 
 					}
 				}
 			}
@@ -111,6 +121,9 @@ public class DamageEventListener extends EntityListener{
 			// resolve combat
 			if (event instanceof EntityDamageByEntityEvent) {
 				combat.resolve(player);
+				if (debug) {
+					SRPG.output("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString());
+				}
 			}
 			
 			// track entity if damage source was player, for xp gain on kill
@@ -125,6 +138,46 @@ public class DamageEventListener extends EntityListener{
 					damageTracking.remove(id);
 				}
 			}
+		}
+		
+		// override standard health change for players to enable variable maximum hp
+		boolean deactivated = true; // not production ready yet
+		if (!deactivated && !event.isCancelled() && target instanceof Player && SRPG.playerDataManager.players.containsKey((Player)target)) {
+			SRPG.output("overriding damage routine");
+			player = (Player)target;
+			PlayerData data = SRPG.playerDataManager.get(player);
+			SRPG.output(data.hp.toString());
+			data.hp -= event.getDamage();
+			if (data.hp < 0) {
+				data.hp = 0;
+			}
+			Integer normalized = 20*data.hp / data.hp_max;
+			if (normalized == 0 && data.hp != 0) {
+				normalized = 1;
+			}
+			if (debug) {
+				SRPG.output("player health changed to "+data.hp+"/"+data.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
+			}
+			event.setDamage(player.getHealth() - normalized);
+		}
+	}
+	
+	public void onEntityRegainHealth(EntityRegainHealthEvent event) {
+		// override standard health change for players to enable variable maximum hp
+		boolean deactivated = true; // not production ready yet
+		if (!deactivated && !event.isCancelled() && event.getEntity() instanceof Player && SRPG.playerDataManager.players.containsKey((Player)event.getEntity())) {
+			Player player = (Player)event.getEntity(); 
+			PlayerData data = SRPG.playerDataManager.get(player);
+			data.hp += event.getAmount();
+			data.hp = data.hp > data.hp_max ? data.hp_max : data.hp;
+			Integer normalized = 20*data.hp / data.hp_max;
+			if (normalized == 0 && data.hp != 0) {
+				normalized = 1;
+			}
+			if (debug) {
+				SRPG.output("player health changed to "+data.hp+"/"+data.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
+			}
+			event.setAmount(normalized - player.getHealth());
 		}
 	}
 	

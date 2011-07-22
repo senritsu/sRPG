@@ -45,6 +45,8 @@ public class Database {
         Write(prefix +  "users` (`user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY," +
                 "`user` varchar(40) NOT NULL UNIQUE KEY," +
                 "`xp` int(32) NOT NULL DEFAULT 0," +
+                "`hp` int(32) NOT NULL DEFAULT 0," +
+                "`class` varchar(40) NOT NULL," +
                 "`locale` varchar(40) NOT NULL" +
                 ") ENGINE=MyISAM DEFAULT CHARSET=latin1;");
         String sql = prefix + "skillpoints` (`user_id` int(10) UNSIGNED NOT NULL PRIMARY KEY";
@@ -67,20 +69,21 @@ public class Database {
     
     public void updateDatabase(String version) {
     	// here be version-dependent database update routines
-    	Integer id = SRPG.database.GetInt("SELECT pk FROM " + SRPG.database.dbTablePrefix + "global WHERE pk = '1';");
+    	Integer id = SRPG.database.GetInt("SELECT pk FROM " + dbTablePrefix + "global WHERE pk = '1';");
 		if (id == 0) {
-			Write("INSERT INTO " + SRPG.database.dbTablePrefix + "global (pk,version) VALUES ('1',\"" + version + "\");");
+			Write("INSERT INTO " + dbTablePrefix + "global (pk,version) VALUES ('1',\"" + version + "\");");
 		}
-        String db_version = new String(Read("SELECT version FROM " + SRPG.database.dbTablePrefix + "global WHERE pk = '1';").get(1).get(0));
-        if (version != db_version) {
+        String db_version = new String(Read("SELECT version FROM " + dbTablePrefix + "global WHERE pk = '1';").get(1).get(0));
+        if (!version.equalsIgnoreCase(db_version)) {
         	SRPG.output("Version changed from "+db_version+" to "+version+", updating database structure if necessary");
         }
         // change database according to version differences
-        if (db_version == "0.5alpha1") {
-        	
+        if (db_version.equalsIgnoreCase("0.5alpha1") || db_version.equalsIgnoreCase("0.5alpha2")) {
+        	SRPG.output("updating user table");
+        	Write("ALTER TABLE " + dbTablePrefix + "users ADD COLUMN class VARCHAR(40) NOT NULL DEFAULT \"adventurer\" AFTER user , ADD COLUMN hp INT(10) NOT NULL DEFAULT '0'  AFTER locale ;");
         }
         // recreate structure in case any tables were deleted during update process
-        if (version != db_version) {
+        if (!version.equalsIgnoreCase(db_version)) {
         	createStructure();
         }
         // update version in database to current version

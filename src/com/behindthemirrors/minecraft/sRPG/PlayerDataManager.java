@@ -18,6 +18,7 @@ public class PlayerDataManager {
 		players.put(player,data);
 		data.player = player;
 		data.name = player.getName();
+		data.current_class = "adventurer";
 		data.locale = Settings.defaultLocale;
 		// mySQL
 		if (SRPG.database.mySQLenabled) {
@@ -54,8 +55,9 @@ public class PlayerDataManager {
 	// load player data from database
 	public void load(Player player) {
 		PlayerData data = players.get(player);
-		String prefix = "SELECT " + Utility.join(Settings.SKILLS,",") + " FROM " + SRPG.database.dbTablePrefix;
 		String suffix = " WHERE user_id = '" + data.id + "'";
+		// read current class
+		data.locale = new String(SRPG.database.Read("SELECT class FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
 		// read locale
 		data.locale = new String(SRPG.database.Read("SELECT locale FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
 		// change to default locale if the set locale is not available anymore
@@ -65,10 +67,17 @@ public class PlayerDataManager {
 		}
 		// read xp
 		data.xp = new Integer(SRPG.database.Read("SELECT xp FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
+		
+		// read hp
+		data.hp = new Integer(SRPG.database.Read("SELECT hp FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
+		data.hp_max = 40;
+		//Integer normalized = data.hp*20 / data.hp_max;
+		//player.setHealth(normalized == 0 && data.hp != 0 ? 1 : normalized);
 
 		// read skill points
 		data.free = data.xp/PlayerData.xpToLevel;
 		data.spent = 0;
+		String prefix = "SELECT " + Utility.join(Settings.SKILLS,",") + " FROM " + SRPG.database.dbTablePrefix;
 		ArrayList<String> rs = SRPG.database.Read(prefix + "skillpoints" + suffix).get(1);
 		data.skillpoints = new HashMap<String, Integer>();
 		for (int i = 0; i < Settings.SKILLS.size(); i++) {
@@ -104,7 +113,7 @@ public class PlayerDataManager {
 		PlayerData data = players.get(player);
 		String prefix = "INSERT INTO " + SRPG.database.dbTablePrefix;
 		SRPG.output("trying to enter "+name+" into the database");
-		SRPG.database.Write(prefix + "users (user,locale) VALUES (\"" + name + "\",\"" + data.locale + "\")");
+		SRPG.database.Write(prefix + "users (user,hp,class,locale) VALUES (\"" + name + "\",'" + player.getHealth() + "',\"" + data.current_class + "\",\"" + data.locale + "\")");
 		SRPG.output("users table written, proceeding to fetch id");
 		data.id = SRPG.database.GetInt("SELECT user_id FROM " + SRPG.database.dbTablePrefix + "users WHERE user = \"" + name + "\"");
 		SRPG.output("id retrieved, proceeding to enter skillpoints and chargedata");
@@ -124,6 +133,14 @@ public class PlayerDataManager {
 		String prefix = "UPDATE " + SRPG.database.dbTablePrefix;
 		String suffix = " WHERE user_id = '" + data.id + "'";
 		
+		// write hp
+		if (partial.isEmpty() || partial.equalsIgnoreCase("hp")) {
+			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET hp = '" + data.hp + "'" + suffix);
+		}
+		// write class
+		if (partial.isEmpty() || partial.equalsIgnoreCase("class")) {
+			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET class = \"" + data.current_class + "\"" + suffix);
+		}
 		// write locale
 		if (partial.isEmpty() || partial.equalsIgnoreCase("locale")) {
 			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET locale = \"" + data.locale + "\"" + suffix);

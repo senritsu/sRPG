@@ -53,6 +53,14 @@ stats:
         health: 30
         damage: 7
         xp: 20
+      ghast:
+        health: 10
+        damage: 10
+        xp: 15
+      giant:
+        health: 100
+        damage: 25
+        xp: 100
       slime:
         huge:
           health: 64
@@ -136,7 +144,8 @@ stats:
         diamond:
           damage: 1
       bow:
-        damage: 1
+        damage: 3
+        delay: 20 # 20 = 1 second
       fists:
         damage: 1
           
@@ -180,6 +189,14 @@ stats:
         health: 20
         damage: 6
         xp: 1
+      ghast:
+        health: 10
+        damage: 7
+        xp: 15
+      giant:
+        health: 50
+        damage: 17
+        xp: 50
       slime:
         huge:
           health: 32
@@ -264,6 +281,7 @@ stats:
           damage: 2
       bow:
         damage: 4
+        delay: 20 # 20 = 1 second
       fists:
         damage: 2
         
@@ -304,6 +322,14 @@ stats:
         damage: 1
         xp: 1
       pigzombie:
+        health: 1
+        damage: 1
+        xp: 1
+      ghast:
+        health: 1
+        damage: 1
+        xp: 1
+      giant:
         health: 1
         damage: 1
         xp: 1
@@ -390,6 +416,7 @@ stats:
           damage: 1
       bow:
         damage: 1
+        delay: 20 # 20 = 1 second
       fists:
         damage: 1
       

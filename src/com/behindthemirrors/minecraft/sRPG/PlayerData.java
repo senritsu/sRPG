@@ -25,7 +25,10 @@ public class PlayerData {
 	Integer id = 0;
 	Player player;
 	String name;
+	Integer hp;
+	Integer hp_max;
 	Integer xp;
+	String current_class;
 	Integer free;
 	Integer spent;
 	boolean focusAllowed;
@@ -42,6 +45,7 @@ public class PlayerData {
 	public long sneakTimeStamp;
 	
 	String locale;
+
 	
 	public Integer getSkill(String skillname) {
 		return skillpoints.get(skillname);

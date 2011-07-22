@@ -7,6 +7,7 @@ import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
 
@@ -45,4 +46,10 @@ public class PlayerEventListener extends PlayerListener {
 			SRPG.playerDataManager.get(player).sneakTimeStamp = System.currentTimeMillis();
 		}
 	}
+	
+	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		PlayerData data = SRPG.playerDataManager.get(event.getPlayer());
+		data.hp = data.hp_max;
+	}
+	
 }
