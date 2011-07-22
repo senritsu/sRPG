@@ -51,7 +51,6 @@ public class DamageEventListener extends EntityListener{
 				PassiveAbility.trigger((Player)target, event);
 			}
 		} else if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
-			SRPG.output(event.getEventName());
 			if (event instanceof EntityDamageByEntityEvent) {
 				source = (Entity)((EntityDamageByEntityEvent)event).getDamager();
 			//} else if (event instanceof EntityDamageByProjectileEvent) {
