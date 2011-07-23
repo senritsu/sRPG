@@ -13,6 +13,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class PassiveAbility {
 	
+	static boolean debug = false;
+	
 	public static void trigger(Player player, EntityDamageEvent event) {
 		// quickfix for NPCs
 		if (SRPG.playerDataManager.get(player)==null) return;
@@ -112,22 +114,27 @@ public class PassiveAbility {
 			}
 			
 			int amount = amountRange[0] + SRPG.generator.nextInt(amountRange[1]);
-			
+			if (debug) {
+				SRPG.output("roll: "+(new Double(roll).toString()));
+				SRPG.output("chances: "+(new Double(doubleDropChance).toString())+" for double, "+(new Double(tripleDropChance).toString())+" for triple");
+			}
 			if (roll < tripleDropChance) {
 				amount *= 2;
-			} else if (roll > tripleDropChance && roll < (tripleDropChance + doubleDropChance)) {
-				amount *= 1;
+			} else if (roll >= tripleDropChance + doubleDropChance) {
+				amount *= 0;
 			}
 			
-			ItemStack item = new ItemStack(dropMaterial,amount);
-			// wood
-			if (dropMaterial.getId() == 17) {
-				item.setDurability(data);
-			// lapis
-			} else if (dropMaterial.getId() == 351) {
-				item.setDurability((byte)4);
+			if (amount > 0) {
+				ItemStack item = new ItemStack(dropMaterial, amount);
+				// wood
+				if (dropMaterial.getId() == 17) {
+					item.setDurability(data);
+				// lapis
+				} else if (dropMaterial.getId() == 351) {
+					item.setDurability((byte)4);
+				}
+				player.getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
 			}
-			player.getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
 			
 		// TODO: limit bonus drops to shovel block types (dirt, gravel)
 		// TODO: move item selection to config

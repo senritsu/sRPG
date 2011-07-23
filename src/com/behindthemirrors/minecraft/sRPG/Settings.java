@@ -65,6 +65,7 @@ public class Settings {
 		}
 		// TODO: rework the multidrop implementation because it sucks
 		// initialize block drop amounts and drop materials
+		BLOCK_DROPS.put(Material.GRASS, Material.DIRT);
 		BLOCK_DROPS.put(Material.STONE, Material.COBBLESTONE);
 		BLOCK_DROPS.put(Material.COAL_ORE, Material.COAL);
 		BLOCK_DROPS.put(Material.LAPIS_ORE, Material.getMaterial(351));
