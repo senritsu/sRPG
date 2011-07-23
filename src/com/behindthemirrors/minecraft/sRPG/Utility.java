@@ -5,10 +5,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Random;
 
+import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Wolf;
+import org.bukkit.inventory.ItemStack;
 
 public class Utility {
 	public static String join(ArrayList<String> list, String delimiter) {
@@ -72,6 +75,10 @@ public class Utility {
 			name += "." + Settings.SLIME_SIZES.get(((Slime)entity).getSize());
 		}
 		return name;
+	}
+	
+	public static ItemStack getDrop(Block block){
+	    return new ItemStack (net.minecraft.server.Block.byId[block.getTypeId()].a(0, new Random()) , net.minecraft.server.Block.byId[block.getTypeId()].a (new Random()), block.getData());
 	}
 	
 	public static String repeat(String string, int n) {

@@ -34,7 +34,8 @@ public class SRPG extends JavaPlugin {
 	static PluginManager pm;
 	static PermissionHandler permissionHandler;
 	public static PlayerDataManager playerDataManager = new PlayerDataManager();
-	static TimedEffectManager timedEffectManager = new TimedEffectManager(); 
+	static TimedEffectManager timedEffectManager = new TimedEffectManager();
+	static CascadeQueueScheduler cascadeQueueScheduler = new CascadeQueueScheduler(); 
 	static Database database = new Database();
 	
 	static Random generator = new Random();
@@ -100,6 +101,7 @@ public class SRPG extends JavaPlugin {
 			output(pdfFile.getName() + " v" + pdfFile.getVersion() + " has been enabled." );
 			database.updateDatabase(pdfFile.getVersion());
 			this.getServer().getScheduler().scheduleSyncRepeatingTask(this, timedEffectManager, 20, 20);
+			this.getServer().getScheduler().scheduleSyncRepeatingTask(this, cascadeQueueScheduler, 1, 1);
 		}
 	}
 	public void onDisable() {

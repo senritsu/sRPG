@@ -1,4 +1,3 @@
-// thanks to 
 
 package com.behindthemirrors.minecraft.sRPG;
 
