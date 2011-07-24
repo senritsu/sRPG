@@ -14,11 +14,11 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 public class PlayerEventListener extends PlayerListener {
 	
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		SRPG.playerDataManager.add(event.getPlayer());
+		SRPG.profileManager.add(event.getPlayer());
 	}
 	
 	public void onPlayerQuit(PlayerQuitEvent event) {
-		SRPG.playerDataManager.remove(event.getPlayer());
+		SRPG.profileManager.remove(event.getPlayer());
 	}
 	
 	public void onPlayerInteract(PlayerInteractEvent event) {
@@ -33,9 +33,9 @@ public class PlayerEventListener extends PlayerListener {
 		if (tool != null && SRPG.permissionHandler.has(player, "srpg.skills."+tool+".active")) {
 			if (action == Action.RIGHT_CLICK_AIR || (action == Action.RIGHT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
 				MessageParser.chargeDisplay(player);
-				SRPG.playerDataManager.get(player).readyAbility(player.getItemInHand().getType());
+				SRPG.profileManager.get(player).readyAbility(player.getItemInHand().getType());
 			} else if (action == Action.LEFT_CLICK_AIR || (action == Action.LEFT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
-				SRPG.playerDataManager.get(player).activateAbility(player.getItemInHand().getType());
+				SRPG.profileManager.get(player).activateAbility(player.getItemInHand().getType());
 			}
 		}
 	}
@@ -43,12 +43,12 @@ public class PlayerEventListener extends PlayerListener {
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
 		Player player = event.getPlayer();
 		if (!player.isSneaking()) {
-			SRPG.playerDataManager.get(player).sneakTimeStamp = System.currentTimeMillis();
+			SRPG.profileManager.get(player).sneakTimeStamp = System.currentTimeMillis();
 		}
 	}
 	
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
-		PlayerData data = SRPG.playerDataManager.get(event.getPlayer());
+		ProfilePlayer data = SRPG.profileManager.get(event.getPlayer());
 		data.hp = data.hp_max;
 	}
 	

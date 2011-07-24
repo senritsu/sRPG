@@ -13,9 +13,9 @@ public class MessageParser {
 		String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(player.getItemInHand().getType());
 		if (toolName != null) {
 			String skillname = toolName.substring(0, toolName.indexOf("."));
-			PlayerData data = SRPG.playerDataManager.get(player);
+			ProfilePlayer data = SRPG.profileManager.get(player);
 			Integer charges = data.charges.get(skillname);
-			Integer cost = PlayerData.abilityCosts.get(toolName);
+			Integer cost = ProfilePlayer.abilityCosts.get(toolName);
 			// check if the tool has an active ability
 			if (cost==null) {
 				return;
@@ -24,11 +24,11 @@ public class MessageParser {
 			if (charges >= cost) { // TODO find NPE
 				text += ChatColor.DARK_GREEN + Utility.repeat("o",cost);
 				text += ChatColor.WHITE + Utility.repeat("o",charges-cost);
-				charges = PlayerData.chargeMax - charges;
+				charges = ProfilePlayer.chargeMax - charges;
 			} else {
 				text += ChatColor.WHITE + Utility.repeat("o",charges);
 				text += ChatColor.DARK_RED + Utility.repeat("o",cost-charges);
-				charges = PlayerData.chargeMax - charges - 1;
+				charges = ProfilePlayer.chargeMax - charges - 1;
 			}
 			text += ChatColor.DARK_GRAY+Utility.repeat("o",charges)+ChatColor.WHITE+"]";
 			// display of blocks to next charge disabled for now
@@ -44,13 +44,13 @@ public class MessageParser {
 	}
 	
 	static void sendMessage(Player player, String message, String context) {
-		PlayerData data = SRPG.playerDataManager.get(player);
-		ArrayList<String> messageList = (ArrayList<String>)Settings.localization.get(SRPG.playerDataManager.get(player).locale).getStringList("messages."+message,new ArrayList<String>());
+		ProfilePlayer data = SRPG.profileManager.get(player);
+		ArrayList<String> messageList = (ArrayList<String>)Settings.localization.get(SRPG.profileManager.get(player).locale).getStringList("messages."+message,new ArrayList<String>());
 		if (messageList.isEmpty()) {
-			messageList.add(Settings.localization.get(SRPG.playerDataManager.get(player).locale).getString("messages."+message,"Error in localization file, contact your admin about message '"+message+"'"));
+			messageList.add(Settings.localization.get(SRPG.profileManager.get(player).locale).getString("messages."+message,"Error in localization file, contact your admin about message '"+message+"'"));
 		}
 		
-		if (Settings.localization.get(SRPG.playerDataManager.get(player).locale).getStringList("messages.randomize", (new ArrayList<String>())).contains(message)) {
+		if (Settings.localization.get(SRPG.profileManager.get(player).locale).getStringList("messages.randomize", (new ArrayList<String>())).contains(message)) {
 			String choice = messageList.get(SRPG.generator.nextInt(messageList.size()));
 			messageList.clear();
 			messageList.add(choice);
@@ -68,10 +68,10 @@ public class MessageParser {
 		    		matcher.appendReplacement(sb, Integer.toString(data.free + data.spent));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!xp>")) {
-		    		matcher.appendReplacement(sb, Integer.toString(data.xp%PlayerData.xpToLevel));
+		    		matcher.appendReplacement(sb, Integer.toString(data.xp%ProfilePlayer.xpToLevel));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!xp2level>")) {
-		    		matcher.appendReplacement(sb, PlayerData.xpToLevel.toString());
+		    		matcher.appendReplacement(sb, ProfilePlayer.xpToLevel.toString());
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!free>")) {
 		    		matcher.appendReplacement(sb, data.free.toString());

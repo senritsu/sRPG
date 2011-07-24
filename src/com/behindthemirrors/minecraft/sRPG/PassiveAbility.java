@@ -3,6 +3,7 @@ package com.behindthemirrors.minecraft.sRPG;
 import java.util.ArrayList;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -17,7 +18,7 @@ public class PassiveAbility {
 	
 	public static void trigger(Player player, EntityDamageEvent event) {
 		// quickfix for NPCs
-		if (SRPG.playerDataManager.get(player)==null) return;
+		if (SRPG.profileManager.get(player)==null) return;
 		
 		if (event.getCause() == DamageCause.FALL) {
 			// check permissions
@@ -25,8 +26,8 @@ public class PassiveAbility {
 				return;
 			}
 			
-			Integer skillpoints = SRPG.playerDataManager.get(player).getSkill("ukemi");
-			ArrayList<String> milestones = SRPG.playerDataManager.get(player).getMilestones("ukemi");
+			Integer skillpoints = SRPG.profileManager.get(player).getSkill("ukemi");
+			ArrayList<String> milestones = SRPG.profileManager.get(player).getMilestones("ukemi");
 			
 			Integer height = (int) Math.ceil(player.getFallDistance());
 			Integer damage = height - 2 - milestones.size();
@@ -35,7 +36,7 @@ public class PassiveAbility {
 			double roll = SRPG.generator.nextDouble();
 			double autorollChance = skillpoints * Settings.advanced.getDouble("skills.effects.ukemi.autoroll-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.ukemi.milestone-bonus",0);
 			// manual roll check
-			boolean manualRoll = player.isSneaking() && (System.currentTimeMillis() - SRPG.playerDataManager.get(player).sneakTimeStamp) < Settings.advanced.getInt("skills.effects.ukemi.roll-window", 0);
+			boolean manualRoll = player.isSneaking() && (System.currentTimeMillis() - SRPG.profileManager.get(player).sneakTimeStamp) < Settings.advanced.getInt("skills.effects.ukemi.roll-window", 0);
 			if (manualRoll || roll < autorollChance) {
 				damage -= skillpoints;
 				if (manualRoll) {
@@ -55,15 +56,15 @@ public class PassiveAbility {
 	
 	public static void trigger(Player player, BlockBreakEvent event) {
 		// quickfix for NPCs
-		if (SRPG.playerDataManager.get(player)==null) return;
+		if (SRPG.profileManager.get(player)==null) return;
 		
 		String skillname = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		if (skillname == null) {
 			return;
 		}
 		
-		Integer skillpoints = SRPG.playerDataManager.get(player).getSkill(skillname);
-		ArrayList<String> milestones = SRPG.playerDataManager.get(player).getMilestones(skillname); 
+		Integer skillpoints = SRPG.profileManager.get(player).getSkill(skillname);
+		ArrayList<String> milestones = SRPG.profileManager.get(player).getMilestones(skillname); 
 		
 		// check active tool and permissions
 		if (skillname != "sword" && SRPG.permissionHandler.has(player, "srpg.skills."+skillname+".passive")) {
@@ -71,8 +72,8 @@ public class PassiveAbility {
 			double roll = SRPG.generator.nextDouble();
 			double durabilityRecoveryChance = skillpoints * Settings.advanced.getDouble("skills.effects."+skillname+".durability-recovery-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects."+skillname+".milestone-bonus",0);
 			// focus
-			if (SRPG.playerDataManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
-				durabilityRecoveryChance *= 1.0 + SRPG.playerDataManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
+			if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+				durabilityRecoveryChance *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 			}
 			if (roll < durabilityRecoveryChance){
 				player.getItemInHand().setDurability((short)(player.getItemInHand().getDurability() + 1));
@@ -82,14 +83,14 @@ public class PassiveAbility {
 		// TODO: later make them more configurable and less hardcoded
 		// TODO: completely rewrite multidrops to some more elegant solution
 		double roll = SRPG.generator.nextDouble();
-		Material material = event.getBlock().getType();
+		Block block = event.getBlock();
 		
 		double doubleDropChance = 0.0;
 		double tripleDropChance = 0.0;
 		
 		// check active tool and permissions
 		if ((skillname.equals("pickaxes") && SRPG.permissionHandler.has(player, "srpg.skills.pickaxes.milestones")) || (skillname.equals("axes") && SRPG.permissionHandler.has(player, "srpg.skills.axes.milestones"))) {
-			if (!Settings.MULTIDROP_VALID_BLOCKS.get(player.getItemInHand().getType()).contains(material)) {
+			if (BlockEventListener.userPlacedBlocks.contains(block) || !Settings.MULTIDROP_VALID_BLOCKS.get(player.getItemInHand().getType()).contains(block.getType())) {
 				return;
 			}
 			if (milestones.contains("apprentice")) {
@@ -103,37 +104,22 @@ public class PassiveAbility {
 				tripleDropChance += Settings.advanced.getDouble("skills.passive-abilities."+skillname+".master.triple-drop-chance", 0);
 			}
 			
-			byte data = event.getBlock().getData();
-			Material dropMaterial = Settings.BLOCK_DROPS.get(material);
-			if (dropMaterial == null) {
-				dropMaterial = material;
-			}
-			int[] amountRange = Settings.BLOCK_DROP_AMOUNTS.get(dropMaterial);
-			if (amountRange == null) {
-				amountRange = new int[] {1,1};
-			}
-			
-			int amount = amountRange[0] + SRPG.generator.nextInt(amountRange[1]);
 			if (debug) {
 				SRPG.output("roll: "+(new Double(roll).toString()));
 				SRPG.output("chances: "+(new Double(doubleDropChance).toString())+" for double, "+(new Double(tripleDropChance).toString())+" for triple");
 			}
+			
+			ItemStack item = Utility.getNaturalDrops(block);
+			
+			roll = 0.0;
 			if (roll < tripleDropChance) {
-				amount *= 2;
+				item.setAmount(item.getAmount() * 2);
 			} else if (roll >= tripleDropChance + doubleDropChance) {
-				amount *= 0;
+				item.setAmount(item.getAmount() * 0);
 			}
 			
-			if (amount > 0) {
-				ItemStack item = new ItemStack(dropMaterial, amount);
-				// wood
-				if (dropMaterial.getId() == 17) {
-					item.setDurability(data);
-				// lapis
-				} else if (dropMaterial.getId() == 351) {
-					item.setDurability((byte)4);
-				}
-				player.getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
+			if (item.getAmount() > 0) {
+				block.getWorld().dropItemNaturally(block.getLocation(), item);
 			}
 			
 		// TODO: limit bonus drops to shovel block types (dirt, gravel)
@@ -159,7 +145,7 @@ public class PassiveAbility {
 				if (item.getTypeId() == 351) {
 					item.setDurability((byte)3);
 				}
-				player.getWorld().dropItemNaturally(event.getBlock().getLocation(), item);
+				block.getWorld().dropItemNaturally(block.getLocation(), item);
 			}
 		
 		// check active tool and permissions
@@ -170,7 +156,7 @@ public class PassiveAbility {
 	
 	public static void trigger(Player player, CombatInstance combat, boolean offensive) {
 		// quickfix for NPCs
-		if (SRPG.playerDataManager.get(player)==null) return;
+		if (SRPG.profileManager.get(player)==null) return;
 		
 		String skillname = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		// bow is not in the normal tool list, so check for it
@@ -180,8 +166,8 @@ public class PassiveAbility {
 			return;
 		}
 		
-		Integer skillpoints = SRPG.playerDataManager.get(player).getSkill(skillname);
-		ArrayList<String> milestones = SRPG.playerDataManager.get(player).getMilestones(skillname); 
+		Integer skillpoints = SRPG.profileManager.get(player).getSkill(skillname);
+		ArrayList<String> milestones = SRPG.profileManager.get(player).getMilestones(skillname); 
 		
 		// chance for no durability loss by skill
 		// check active tool and permissions
@@ -189,8 +175,8 @@ public class PassiveAbility {
 			double roll = SRPG.generator.nextDouble();
 			double durabilityRecoveryChance = skillpoints * Settings.advanced.getDouble("skills.effects."+skillname+".durability-recovery-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects."+skillname+".milestone-bonus",0);
 			// focus
-			if (SRPG.playerDataManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
-				durabilityRecoveryChance *= 1.0 + SRPG.playerDataManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
+			if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+				durabilityRecoveryChance *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 			}
 			if (roll < durabilityRecoveryChance){
 				player.getItemInHand().setDurability((short)(player.getItemInHand().getDurability() + 1));
@@ -199,10 +185,10 @@ public class PassiveAbility {
 		
 		// chance for evasion
 		double roll = SRPG.generator.nextDouble();
-		double evadeChance = SRPG.playerDataManager.get(player).getSkill("evasion") * Settings.advanced.getDouble("skills.effects.evasion.chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.evasion.milestone-bonus",0);
+		double evadeChance = SRPG.profileManager.get(player).getSkill("evasion") * Settings.advanced.getDouble("skills.effects.evasion.chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.evasion.milestone-bonus",0);
 		// focus
-		if (SRPG.playerDataManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
-			evadeChance *= 1.0 + SRPG.playerDataManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
+		if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+			evadeChance *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 		}
 			
 		// check permissions
@@ -248,8 +234,8 @@ public class PassiveAbility {
 				if (SRPG.permissionHandler.has(player, "srpg.skills.bow.passive")) {
 					double critBonus = skillpoints * Settings.advanced.getDouble("skills.effects.bow.crit-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.bow.milestone-bonus",0);
 					// focus
-					if (SRPG.playerDataManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
-						critBonus *= 1.0 + SRPG.playerDataManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
+					if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+						critBonus *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 					}
 					combat.critChance += critBonus;
 				}

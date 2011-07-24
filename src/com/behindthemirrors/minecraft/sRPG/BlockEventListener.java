@@ -6,13 +6,17 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 
 
 public class BlockEventListener extends BlockListener {
 	
+	public static ArrayList<Material> trackingMaterials;
+	static ArrayList<Block> userPlacedBlocks = new ArrayList<Block>();
 	public static HashMap<String,ArrayList<Integer>> groupBlockMapping;
 	public static HashMap<String,Double> xpChances;
 	public static HashMap<String,Integer> xpValues;
@@ -35,23 +39,30 @@ public class BlockEventListener extends BlockListener {
 					rarity = pair.getKey();
 				}
 			}
-			if (SRPG.playerDataManager.get(player) != null && SRPG.generator.nextDouble() <= xpChances.get(rarity)) {
+			if (SRPG.profileManager.get(player) != null && SRPG.generator.nextDouble() <= xpChances.get(rarity)) {
 				//TODO find the NPE here
-				SRPG.playerDataManager.get(player).addXP(xpValues.get(rarity));
+				SRPG.profileManager.get(player).addXP(xpValues.get(rarity));
 				//TODO: maybe move saving to the data class
-				SRPG.playerDataManager.save(player,"xp");
+				SRPG.profileManager.save(player,"xp");
 			}
 		}
 		// award charge
 		String tool = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		// check active tool and permissions
 		if (tool != null && SRPG.permissionHandler.has(player, "srpg.skills."+tool+".active")) {
-			SRPG.playerDataManager.get(player).addChargeTick(tool);
+			SRPG.profileManager.get(player).addChargeTick(tool);
 			//TODO: maybe move saving to the data class
-			SRPG.playerDataManager.save(player,"chargedata");
+			SRPG.profileManager.save(player,"chargedata");
 		}
 		
 		PassiveAbility.trigger(player, event);
+	}
+	
+	public void onBlockPlace(BlockPlaceEvent event) {
+		Block block = event.getBlock();
+		if (trackingMaterials.contains(block.getType())) {
+			userPlacedBlocks.add(block);
+		}
 	}
 	
 }

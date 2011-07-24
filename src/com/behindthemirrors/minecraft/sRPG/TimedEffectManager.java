@@ -6,23 +6,39 @@ import java.util.Map;
 
 public class TimedEffectManager implements Runnable {
 	
-	ArrayList<PlayerData> relevantPlayers = new ArrayList<PlayerData>();
+	static boolean debug = false;
+	ArrayList<ProfileNPC> relevantPlayers = new ArrayList<ProfileNPC>();
 	
 	public void run() {
 		// check all currently active effects
 		//SRPG.output("tick");
-		for (PlayerData player : relevantPlayers) {
-			Iterator<Map.Entry<String,Integer>> entries = player.effectCounters.entrySet().iterator();
+		Iterator<ProfileNPC> iterator = relevantPlayers.iterator();
+		while (iterator.hasNext()) {
+			ProfileNPC data = iterator.next();
+			Iterator<Map.Entry<String,Integer>> entries = data.effectCounters.entrySet().iterator();
 			while (entries.hasNext()) {
 				Map.Entry<String,Integer> entry = entries.next();
 				Integer remainingTicks = entry.getValue();
 				if (remainingTicks > 0) {
-					player.effectCounters.put(entry.getKey(), remainingTicks - 1);
+					data.effectCounters.put(entry.getKey(), remainingTicks - 1);
+					TimedEffectResolver.trigger(data,entry.getKey());
 				} else {
+					if (debug) {
+						SRPG.output("effect "+entry.getKey()+" expired");
+					}
 					entries.remove();
 				}
 			}
+			if (data.effectCounters.isEmpty()) {
+				iterator.remove();
+			}
 		}
 	}
-
+	
+	public void add(ProfileNPC npcData) {
+		if (!relevantPlayers.contains(npcData)) {
+			relevantPlayers.add(npcData);
+		}
+	}
+	
 }

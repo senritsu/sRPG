@@ -6,6 +6,8 @@ import java.util.Map;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 public class CommandListener implements CommandExecutor {
@@ -20,15 +22,15 @@ public class CommandListener implements CommandExecutor {
 				// change locale
 				} else if (args[0].equalsIgnoreCase("locale")) {
 					if (args.length > 1 && Settings.localization.containsKey(args[1])) {
-						SRPG.playerDataManager.get(player).locale = args[1];
-						SRPG.playerDataManager.save(player, "locale");
+						SRPG.profileManager.get(player).locale = args[1];
+						SRPG.profileManager.save(player, "locale");
 						MessageParser.sendMessage(player, "locale-changed");
 						return true;
 					}
 				// display xp,skillpoints,milestones (if enabled)
 				} else if (args[0].equalsIgnoreCase("status")) {
 					MessageParser.sendMessage(player, "status-header");
-					PlayerData data = SRPG.playerDataManager.get(player);
+					ProfilePlayer data = SRPG.profileManager.get(player);
 					// display xp
 					if (SRPG.permissionHandler.has(player,"srpg.xp")) {
 						MessageParser.sendMessage(player, "xp");
@@ -55,8 +57,8 @@ public class CommandListener implements CommandExecutor {
 					return true;
 				// get info about a skill or increase it
 				// TODO find NPE
-				} else if (Settings.SKILLS_ALIASES.get(SRPG.playerDataManager.get(player).locale).contains(args[0].toLowerCase())) {
-					String skillname = Settings.SKILLS.get(Settings.SKILLS_ALIASES.get(SRPG.playerDataManager.get(player).locale).indexOf(args[0].toLowerCase()));
+				} else if (Settings.SKILLS_ALIASES.get(SRPG.profileManager.get(player).locale).contains(args[0].toLowerCase())) {
+					String skillname = Settings.SKILLS.get(Settings.SKILLS_ALIASES.get(SRPG.profileManager.get(player).locale).indexOf(args[0].toLowerCase()));
 					// increasing/decreasing
 					if (args.length > 1) {
 						Integer amount = 1;
@@ -68,14 +70,14 @@ public class CommandListener implements CommandExecutor {
 						}
 						if (args[1].equals("+")) {
 							for (int i=0;i<amount;i++) {
-								SRPG.playerDataManager.get(player).addSkillpoint(skillname);
-								SRPG.playerDataManager.save(player,"skillpoints");
+								SRPG.profileManager.get(player).addSkillpoint(skillname);
+								SRPG.profileManager.save(player,"skillpoints");
 							}
 							return true;
 						} else if (args[1].equals("-")) {
 							for (int i=0;i<amount;i++) {
-								SRPG.playerDataManager.get(player).removeSkillpoint(skillname);
-								SRPG.playerDataManager.save(player,"skillpoints");
+								SRPG.profileManager.get(player).removeSkillpoint(skillname);
+								SRPG.profileManager.save(player,"skillpoints");
 							}
 							return true;
 						}
@@ -106,20 +108,41 @@ public class CommandListener implements CommandExecutor {
 				if (args.length >= 2 && args[0].equalsIgnoreCase("debug")) {
 					// display debug messages from spawn listener
 					if (args[1].equalsIgnoreCase("spawn")) {
-						SRPG.spawnListener.debug = !SRPG.spawnListener.debug;
-						SRPG.output("spawn debugging set to "+SRPG.spawnListener.debug);
+						SpawnEventListener.debug = !SpawnEventListener.debug;
+						SRPG.output("spawn debugging set to "+SpawnEventListener.debug);
 						return true;
 					}
 					// display debug messages from combat listener 
 					if (args[1].equalsIgnoreCase("combat")) {
-						SRPG.damageListener.debug = !SRPG.damageListener.debug;
-						SRPG.output("combat debugging set to "+SRPG.damageListener.debug);
+						DamageEventListener.debug = !DamageEventListener.debug;
+						SRPG.output("combat debugging set to "+DamageEventListener.debug);
+						return true;
+					}
+					if (args[1].equalsIgnoreCase("effects")) {
+						TimedEffectManager.debug = !TimedEffectManager.debug;
+						TimedEffectResolver.debug = !TimedEffectResolver.debug;
+						SRPG.output("effect debugging set to "+TimedEffectResolver.debug);
 						return true;
 					}
 					// display debug messages from combat listener 
 					if (args[1].equalsIgnoreCase("player")) {
-						PlayerData.debug = !PlayerData.debug;
-						SRPG.output("player debugging set to "+PlayerData.debug);
+						ProfilePlayer.debug = !ProfilePlayer.debug;
+						SRPG.output("player debugging set to "+ProfilePlayer.debug);
+						return true;
+					}
+					// remove item stacks if something was incorrectly dropped
+					if (args[1].equalsIgnoreCase("removeitems")) {
+						for (Entity entity : SRPG.plugin.getServer().getWorlds().get(0).getEntities()) {
+							if (entity instanceof Item) {
+								entity.remove();
+							}
+						}
+						SRPG.output("removed all items");
+						return true;
+					}
+					if (args[1].equalsIgnoreCase("spawninvincible")) {
+						SpawnEventListener.spawnInvincible = !SpawnEventListener.spawnInvincible;
+						SRPG.output("spawn invincibility set to "+(new Boolean(SpawnEventListener.spawnInvincible).toString()));
 						return true;
 					}
 				// add xp to a player (handle with care, no removal atm)
@@ -134,8 +157,34 @@ public class CommandListener implements CommandExecutor {
 						return true;
 					}
 					
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("charge")) {
+					ProfilePlayer profile = SRPG.profileManager.getByName(args[1]);
+					if ( profile != null) {
+						Iterator<Map.Entry<String,Integer>> iterator = profile.charges.entrySet().iterator();
+						while (iterator.hasNext()) {
+							Map.Entry<String,Integer> entry = iterator.next();
+							entry.setValue(11);
+						}
+						SRPG.profileManager.save(profile, "chargedata");
+						SRPG.output("gave player "+args[1]+" maximum charges");
+						return true;
+					}
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("enrage")) {
+						ProfilePlayer profile = SRPG.profileManager.getByName(args[1]);
+						if ( profile != null) {
+							profile.addEffect("rage", 10);
+							SRPG.output("enraged player "+args[1]);
+							return true;
+						}
+				} else if (args.length >= 3 && args[0].equalsIgnoreCase("poison")) {
+					ProfilePlayer profile = SRPG.profileManager.getByName(args[1]);
+					if ( profile != null) {
+						profile.addEffect("poison"+args[2], 5);
+						SRPG.output("poisoned player "+args[1]);
+						return true;
+					}
 				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp")) {
-					PlayerData data = SRPG.playerDataManager.getByName(args[1]);
+					ProfilePlayer data = SRPG.profileManager.getByName(args[1]);
 					if ( data != null) {
 						Integer amount;
 						try {
@@ -146,6 +195,8 @@ public class CommandListener implements CommandExecutor {
 						}
 						
 						data.addXP(amount);
+						SRPG.profileManager.save(data, "xp");
+						SRPG.output("gave "+amount.toString()+" xp to player "+args[1]);
 						// xp given by this command are not saved atm if the server is shut down and the player doesnt quit properly
 						return true;
 						

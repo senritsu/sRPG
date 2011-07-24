@@ -20,7 +20,7 @@ import org.bukkit.Material;
 
 public class DamageEventListener extends EntityListener{
 	
-	public boolean debug = false;
+	static boolean debug = false;
 	
 	public static HashMap<String,Integer> damageTableMonsters;
 	public static HashMap<String,Integer> xpTableCreatures;
@@ -37,9 +37,9 @@ public class DamageEventListener extends EntityListener{
 	@Override
 	public void onEntityDamage(EntityDamageEvent event) {
 		String sourcename = "";
-		Entity source = null;
+		LivingEntity source = null;
 		Player player = null;
-		Entity target = event.getEntity();
+		LivingEntity target = (LivingEntity)event.getEntity();
 		
 		if (debug && target instanceof Player && event.getCause() != DamageCause.FIRE_TICK&& event.getCause() != DamageCause.FIRE) {
 			SRPG.output("player damaged by "+event.getCause().name()+" ("+event.getDamage()+" damage)");
@@ -51,7 +51,7 @@ public class DamageEventListener extends EntityListener{
 			}
 		} else if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 			if (event instanceof EntityDamageByEntityEvent) {
-				source = (Entity)((EntityDamageByEntityEvent)event).getDamager();
+				source = (LivingEntity)((EntityDamageByEntityEvent)event).getDamager();
 			//} else if (event instanceof EntityDamageByProjectileEvent) {
 			//	entity = ((EntityDamageByProjectileEvent)event).getDamager();
 			}
@@ -96,9 +96,9 @@ public class DamageEventListener extends EntityListener{
 					if (toolName != null) {
 						combat.basedamage = damageTableTools.get(toolName);
 						// award charge tick
-						SRPG.playerDataManager.get(player).addChargeTick(Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(material));
+						SRPG.profileManager.get(player).addChargeTick(Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(material));
 						//TODO: maybe move saving to the data class
-						SRPG.playerDataManager.save(player,"chargedata");
+						SRPG.profileManager.save(player,"chargedata");
 					} else if (event instanceof EntityDamageByProjectileEvent && ((EntityDamageByProjectileEvent)event).getProjectile() instanceof Arrow) {
 						combat.basedamage = damageTableTools.get("bow");
 					} else {
@@ -106,8 +106,6 @@ public class DamageEventListener extends EntityListener{
 					}
 				}
 			}
-			
-			target = event.getEntity();
 			
 			// check passive abilities
 			if (player != null) {
@@ -118,7 +116,10 @@ public class DamageEventListener extends EntityListener{
 			}
 			// resolve combat
 			if (event instanceof EntityDamageByEntityEvent) {
-				combat.resolve(player);
+				combat.attacker = source;
+				combat.defender = target;
+				TimedEffectResolver.trigger(combat);
+				combat.resolve();
 				if (debug) {
 					SRPG.output("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString());
 				}
@@ -126,7 +127,7 @@ public class DamageEventListener extends EntityListener{
 			
 			// track entity if damage source was player, for xp gain on kill
 			int id = target.getEntityId();
-			if (!(target instanceof Player)) {
+			if (!(target instanceof Player) && !event.isCancelled() && event.getDamage() > 0) {
 				if (player != null) {
 					if (debug) {
 						SRPG.output("id of damaged entity: "+event.getEntity().getEntityId());
@@ -140,21 +141,21 @@ public class DamageEventListener extends EntityListener{
 		
 		// override standard health change for players to enable variable maximum hp
 		boolean deactivated = true; // not production ready yet
-		if (!deactivated && !event.isCancelled() && target instanceof Player && SRPG.playerDataManager.players.containsKey((Player)target)) {
+		if (!deactivated && !event.isCancelled() && target instanceof Player && SRPG.profileManager.profiles.containsKey((Player)target)) {
 			SRPG.output("overriding damage routine");
 			player = (Player)target;
-			PlayerData data = SRPG.playerDataManager.get(player);
-			SRPG.output(data.hp.toString());
-			data.hp -= event.getDamage();
-			if (data.hp < 0) {
-				data.hp = 0;
+			ProfilePlayer profile = SRPG.profileManager.get(player);
+			SRPG.output(profile.hp.toString());
+			profile.hp -= event.getDamage();
+			if (profile.hp < 0) {
+				profile.hp = 0;
 			}
-			Integer normalized = 20*data.hp / data.hp_max;
-			if (normalized == 0 && data.hp != 0) {
+			Integer normalized = 20*profile.hp / profile.hp_max;
+			if (normalized == 0 && profile.hp != 0) {
 				normalized = 1;
 			}
 			if (debug) {
-				SRPG.output("player health changed to "+data.hp+"/"+data.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
+				SRPG.output("player health changed to "+profile.hp+"/"+profile.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
 			}
 			event.setDamage(player.getHealth() - normalized);
 		}
@@ -163,17 +164,17 @@ public class DamageEventListener extends EntityListener{
 	public void onEntityRegainHealth(EntityRegainHealthEvent event) {
 		// override standard health change for players to enable variable maximum hp
 		boolean deactivated = true; // not production ready yet
-		if (!deactivated && !event.isCancelled() && event.getEntity() instanceof Player && SRPG.playerDataManager.players.containsKey((Player)event.getEntity())) {
+		if (!deactivated && !event.isCancelled() && event.getEntity() instanceof Player && SRPG.profileManager.profiles.containsKey((Player)event.getEntity())) {
 			Player player = (Player)event.getEntity(); 
-			PlayerData data = SRPG.playerDataManager.get(player);
-			data.hp += event.getAmount();
-			data.hp = data.hp > data.hp_max ? data.hp_max : data.hp;
-			Integer normalized = 20*data.hp / data.hp_max;
-			if (normalized == 0 && data.hp != 0) {
+			ProfilePlayer profile = SRPG.profileManager.get(player);
+			profile.hp += event.getAmount();
+			profile.hp = profile.hp > profile.hp_max ? profile.hp_max : profile.hp;
+			Integer normalized = 20*profile.hp / profile.hp_max;
+			if (normalized == 0 && profile.hp != 0) {
 				normalized = 1;
 			}
 			if (debug) {
-				SRPG.output("player health changed to "+data.hp+"/"+data.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
+				SRPG.output("player health changed to "+profile.hp+"/"+profile.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
 			}
 			event.setAmount(normalized - player.getHealth());
 		}
@@ -191,10 +192,13 @@ public class DamageEventListener extends EntityListener{
 				SRPG.output("giving player"+damageTracking.get(id)+" xp");
 			}
 			String monster = Utility.getEntityName(entity);
-			SRPG.playerDataManager.get(damageTracking.get(id)).addXP(xpTableCreatures.get(monster));
+			SRPG.profileManager.get(damageTracking.get(id)).addXP(xpTableCreatures.get(monster));
 			//TODO: maybe move saving to the data class
-			SRPG.playerDataManager.save(damageTracking.get(id),"xp");
+			SRPG.profileManager.save(damageTracking.get(id),"xp");
 			damageTracking.remove(id);
+		}
+		if (entity instanceof LivingEntity && !(entity instanceof Player)) {
+			SRPG.profileManager.remove((LivingEntity)entity);
 		}
 	}
 }

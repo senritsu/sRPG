@@ -111,11 +111,11 @@ public class Database {
         
         try {
             if(conn.isValid(5)){
-                SRPG.playerDataManager.clear();
+                SRPG.profileManager.clear();
                 
                 for(Player player : SRPG.plugin.getServer().getOnlinePlayers())
                 {
-                    SRPG.playerDataManager.add(player);
+                    SRPG.profileManager.add(player);
                 }
             }
         } catch (SQLException e) {

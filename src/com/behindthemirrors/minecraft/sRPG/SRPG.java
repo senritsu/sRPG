@@ -33,7 +33,7 @@ public class SRPG extends JavaPlugin {
 	static Plugin plugin;
 	static PluginManager pm;
 	static PermissionHandler permissionHandler;
-	public static PlayerDataManager playerDataManager = new PlayerDataManager();
+	public static ProfileManager profileManager = new ProfileManager();
 	static TimedEffectManager timedEffectManager = new TimedEffectManager();
 	static CascadeQueueScheduler cascadeQueueScheduler = new CascadeQueueScheduler(); 
 	static Database database = new Database();

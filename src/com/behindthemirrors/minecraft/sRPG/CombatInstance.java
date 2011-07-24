@@ -1,5 +1,6 @@
 package com.behindthemirrors.minecraft.sRPG;
 
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 
@@ -7,6 +8,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 public class CombatInstance {
 	
 	private EntityDamageEvent event;
+	public LivingEntity attacker;
+	public LivingEntity defender;
 	
 	public Integer basedamage;
 	public Integer modifier;
@@ -38,14 +41,11 @@ public class CombatInstance {
 	}
 	
 	public void resolve() {
-		resolve(null);
-	}
-	
-	public void resolve(Player player) {
 		if (canceled){
-			if (player != null && cancelMessage != null) {
-				MessageParser.sendMessage(player, cancelMessage);
+			if (attacker instanceof Player && cancelMessage != null) {
+				MessageParser.sendMessage((Player)attacker, cancelMessage);
 			}
+			event.setCancelled(true);
 			return;
 		}
 		// override for deactivated tools
@@ -67,7 +67,8 @@ public class CombatInstance {
 			miss = true;
 		}
 		// send messages to player
-		if (player != null) {
+		if (attacker instanceof Player) {
+			Player player = (Player)attacker;
 			if (miss) {
 				if (damage == 0) {
 					MessageParser.sendMessage(player, "miss-no-damage");

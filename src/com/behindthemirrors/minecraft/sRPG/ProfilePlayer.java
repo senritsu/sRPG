@@ -7,7 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 
-public class PlayerData {
+public class ProfilePlayer extends ProfileNPC {
 	
 	// debug player stuff
 	public static boolean debug = false;
@@ -36,8 +36,6 @@ public class PlayerData {
 	//HashMap<String,ArrayList<String>> milestones;
 	HashMap<String,Integer> charges;
 	HashMap<String,Integer> chargeProgress;
-	
-	HashMap<String, Integer> effectCounters = new HashMap<String, Integer>();
 	
 	private String abilityReadied = "";
 	private long abilityReadiedTimeStamp;

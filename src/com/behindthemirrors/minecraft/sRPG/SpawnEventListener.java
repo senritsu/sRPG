@@ -8,7 +8,9 @@ import org.bukkit.event.entity.EntityListener;
 
 public class SpawnEventListener extends EntityListener {
 	
-	public boolean debug = false;
+	static boolean debug = false;
+	// for testing
+	static boolean spawnInvincible = false;
 	
 	public static HashMap<String,Integer> healthTableCreatures;
 	
@@ -17,10 +19,12 @@ public class SpawnEventListener extends EntityListener {
 		if (debug) {
 			SRPG.output("creature spawned: "+creature);
 		}
-		//if (creature.startsWith("slime")) {
-			// slimes don't work properly yet
-		//} else {
-			((LivingEntity)event.getEntity()).setHealth(healthTableCreatures.get(creature));
-		//}
+		LivingEntity entity = (LivingEntity)event.getEntity();
+		entity.setHealth(healthTableCreatures.get(creature));
+		SRPG.profileManager.add(entity);
+		// for testing
+		if (spawnInvincible) {
+			SRPG.profileManager.get(entity).addEffect("invincibility", 10);
 		}
 	}
+}

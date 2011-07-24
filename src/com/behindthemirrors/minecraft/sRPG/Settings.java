@@ -2,6 +2,7 @@ package com.behindthemirrors.minecraft.sRPG;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.config.Configuration;
 
@@ -37,8 +38,6 @@ public class Settings {
 	static HashMap<Material,String> TOOL_MATERIAL_TO_STRING = new HashMap<Material,String>();
 	static HashMap<Material,String> TOOL_MATERIAL_TO_TOOL_GROUP = new HashMap<Material,String>();
 	static HashMap<Material,ArrayList<Material>> MULTIDROP_VALID_BLOCKS = new HashMap<Material, ArrayList<Material>>();
-	static HashMap<Material,Material> BLOCK_DROPS = new HashMap<Material, Material>();
-	static HashMap<Material,int[]> BLOCK_DROP_AMOUNTS = new HashMap<Material, int[]>();
 	static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
 															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.BURNING_FURNACE,Material.JUKEBOX,
 															Material.NOTE_BLOCK,Material.STORAGE_MINECART,Material.WOOD_DOOR,
@@ -64,15 +63,6 @@ public class Settings {
 			SLIME_SIZES.put(i, sizes[i-1]);
 		}
 		// TODO: rework the multidrop implementation because it sucks
-		// initialize block drop amounts and drop materials
-		BLOCK_DROPS.put(Material.GRASS, Material.DIRT);
-		BLOCK_DROPS.put(Material.STONE, Material.COBBLESTONE);
-		BLOCK_DROPS.put(Material.COAL_ORE, Material.COAL);
-		BLOCK_DROPS.put(Material.LAPIS_ORE, Material.getMaterial(351));
-		BLOCK_DROP_AMOUNTS.put(Material.getMaterial(351), new int[] {4,4});
-		BLOCK_DROPS.put(Material.DIAMOND_ORE, Material.DIAMOND);
-		BLOCK_DROPS.put(Material.REDSTONE_ORE, Material.REDSTONE);
-		BLOCK_DROP_AMOUNTS.put(Material.REDSTONE, new int[] {4,1});
 		// initialize tool mining multidrop whitelist
 		MULTIDROP_VALID_BLOCKS.put(Material.WOOD_PICKAXE,new ArrayList<Material>(Arrays.asList(new Material[] {Material.STONE,Material.COBBLESTONE,Material.MOSSY_COBBLESTONE,Material.SANDSTONE, Material.COAL_ORE})));
 		MULTIDROP_VALID_BLOCKS.put(Material.STONE_PICKAXE,new ArrayList<Material>(Arrays.asList(new Material[] {Material.STONE,Material.COBBLESTONE,Material.MOSSY_COBBLESTONE,Material.SANDSTONE, Material.COAL_ORE,Material.LAPIS_ORE,Material.IRON_ORE})));
@@ -84,6 +74,8 @@ public class Settings {
 		MULTIDROP_VALID_BLOCKS.put(Material.STONE_AXE,log);
 		MULTIDROP_VALID_BLOCKS.put(Material.IRON_AXE,log);
 		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_AXE,log);
+		// initialize valid blocks for rare shovel drop
+		
 		// initialize color tag replacement map
 		colorMap.put("[aqua]", ChatColor.AQUA.toString());
 		colorMap.put("[black]", ChatColor.BLACK.toString());
@@ -160,12 +152,16 @@ public class Settings {
 			}
 		
 			// update player locales if set locales are not available anymore
-			for (Player player : SRPG.playerDataManager.players.keySet()) {
-				PlayerData data = SRPG.playerDataManager.get(player);
-				if (!Settings.localization.containsKey(data.locale)) {
-					data.locale = defaultLocale;
-					SRPG.playerDataManager.save(player,"locale");
-					SRPG.output("changed locale for player "+data.name+" to default");
+			for (LivingEntity entity : SRPG.profileManager.profiles.keySet()) {
+				if (!(entity instanceof Player)) {
+					continue;
+				}
+				Player player = (Player)entity;
+				ProfilePlayer profile = SRPG.profileManager.get(player);
+				if (!Settings.localization.containsKey(profile.locale)) {
+					profile.locale = defaultLocale;
+					SRPG.profileManager.save(player,"locale");
+					SRPG.output("changed locale for player "+profile.name+" to default");
 				}
 			}
 			
@@ -181,23 +177,23 @@ public class Settings {
 			}
 			
 			// read xp settings
-			PlayerData.xpToLevel = advanced.getInt("xp.to-levelup", 1000);
+			ProfilePlayer.xpToLevel = advanced.getInt("xp.to-levelup", 1000);
 			// read skill settings
-			PlayerData.focusBase = advanced.getInt("skills.costs.focus-base", 1);
-			PlayerData.focusIncrease = advanced.getInt("skills.costs.focus-increase", 1);
-			PlayerData.skillCosts = (ArrayList<Integer>)advanced.getIntList("skills.costs.generic", null);
-			PlayerData.milestoneRequirements = new HashMap<Integer, String>();
+			ProfilePlayer.focusBase = advanced.getInt("skills.costs.focus-base", 1);
+			ProfilePlayer.focusIncrease = advanced.getInt("skills.costs.focus-increase", 1);
+			ProfilePlayer.skillCosts = (ArrayList<Integer>)advanced.getIntList("skills.costs.generic", null);
+			ProfilePlayer.milestoneRequirements = new HashMap<Integer, String>();
 			for (String milestone : new String[] {"novice","apprentice","expert","master"}) {
-				PlayerData.milestoneRequirements.put(advanced.getInt("skills.milestones."+milestone, 0), milestone);
+				ProfilePlayer.milestoneRequirements.put(advanced.getInt("skills.milestones."+milestone, 0), milestone);
 			}
 			// read ability settings
-			PlayerData.chargeMax = advanced.getInt("abilities.max-charges", 1);
-			PlayerData.chargeTicks = advanced.getInt("abilities.blocks-to-charge", 1);
-			PlayerData.abilityCosts = new HashMap<String, Integer>();
+			ProfilePlayer.chargeMax = advanced.getInt("abilities.max-charges", 1);
+			ProfilePlayer.chargeTicks = advanced.getInt("abilities.blocks-to-charge", 1);
+			ProfilePlayer.abilityCosts = new HashMap<String, Integer>();
 			for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
 				int cost = advanced.getInt("abilities.costs."+tool,-1);
 				if (cost >= 0) {
-					PlayerData.abilityCosts.put(tool, cost);
+					ProfilePlayer.abilityCosts.put(tool, cost);
 				}
 			}
 			
