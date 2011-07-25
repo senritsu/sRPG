@@ -77,7 +77,7 @@ public class MessageParser {
 		    		matcher.appendReplacement(sb, data.free.toString());
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!skillname>")) {
-		    		matcher.appendReplacement(sb, Settings.nameReplacements.get(data.locale).get("skills."+context));
+		    		matcher.appendReplacement(sb, Settings.localization.get(data.locale).getString("skills."+context));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!skillpoints>")) {
 		    		matcher.appendReplacement(sb, data.skillpoints.get(context).toString());
@@ -86,11 +86,11 @@ public class MessageParser {
 		    		matcher.appendReplacement(sb, context);
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!ability>")) {
-		    		matcher.appendReplacement(sb, Settings.nameReplacements.get(data.locale).get("active-abilities."+context));
+		    		matcher.appendReplacement(sb, Settings.localization.get(data.locale).getString("active-abilities."+context));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!milestone>")) {
 		    		ArrayList<String> milestones = data.getMilestones(context);
-		    		matcher.appendReplacement(sb, Settings.nameReplacements.get(data.locale).get("milestones."+milestones.get(milestones.size()-1)));
+		    		matcher.appendReplacement(sb, Settings.localization.get(data.locale).getString("milestones."+milestones.get(milestones.size()-1)));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!charges>")) {
 		    		matcher.appendReplacement(sb, data.charges.get(context).toString());
@@ -112,8 +112,11 @@ public class MessageParser {
 		    		}
 		    		matcher.appendReplacement(sb, result+"%");
 		    		
-		    	} else if (Settings.nameReplacements.get(data.locale).containsKey(match.substring(1,match.length()-1))) {
-		    			matcher.appendReplacement(sb, Settings.nameReplacements.get(data.locale).get(match.substring(1,match.length()-1)));
+		    	} else {
+		    		String replacement = Settings.localization.get(data.locale).getString(match.substring(1,match.length()-1),"");
+		    		if (!replacement.isEmpty()) {
+		    			matcher.appendReplacement(sb, replacement);
+		    		}
 		    	}
 		    }
 	    	matcher.appendTail(sb);

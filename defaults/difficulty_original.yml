@@ -1,0 +1,150 @@
+settings:
+  # dangerous-depths can be enabled/disabled in the basic configuration
+  dangerous-depths:
+    thresholds: []
+    damage-increases: []
+  combat:
+    crit-chance: 0.05
+    crit-multiplier: 2.0
+    miss-chance: 0.0
+    miss-multiplier: 0.0
+    armor-strength: # not used yet
+      leather: 1.0
+      iron: 1.2
+      gold: 1.2
+      diamond: 1.5
+
+# NOTE: damage and health values not in hearts (1 heart = 2 damage/health)
+stats:
+  animals:
+    pig:
+      health: 10
+      xp: 1
+    sheep:
+      health: 10
+      xp: 1
+    chicken:
+      health: 4
+      xp: 1
+    cow:
+      health: 10
+      xp: 1
+    squid:
+      health: 10
+      xp: 1
+  monsters:
+    zombie:
+      health: 20
+      damage: 5
+      xp: 1
+    spider:
+      health: 20
+      damage: 2
+      xp: 1
+    skeleton:
+      health: 20
+      damage: 4
+      xp: 1
+    creeper:
+      health: 20
+      damage: 16
+      xp: 1
+    pigzombie:
+      health: 20
+      damage: 6
+      xp: 1
+    ghast:
+      health: 10
+      damage: 7
+      xp: 15
+    giant:
+      health: 50
+      damage: 17
+      xp: 50
+    slime:
+      huge:
+        health: 32
+        damage: 1
+        xp: 1
+      big:
+        health: 16
+        damage: 1
+        xp: 1
+      normal:
+        health: 4
+        damage: 1
+        xp: 1
+      small:
+        health: 1
+        damage: 1
+        xp: 1
+    wolf: 
+      wild:
+        health: 8
+        damage: 2
+        xp: 1
+      tamed:
+        health: 20
+        damage: 4
+        xp: 1
+  tools:
+    swords:
+      wood:
+        damage: 5
+      stone:
+        damage: 7
+      iron:
+        damage: 9
+      gold:
+        damage: 5
+      diamond:
+        damage: 11
+    pickaxes:
+      wood:
+        damage: 3
+      stone:
+        damage: 4
+      iron:
+        damage: 5
+      gold:
+        damage: 3
+      diamond:
+        damage: 6
+    axes:
+      wood:
+        damage: 4
+      stone:
+        damage: 5
+      iron:
+        damage: 6
+      gold:
+        damage: 4
+      diamond:
+        damage: 7
+    shovels:
+      wood:
+        damage: 2
+      stone:
+        damage: 3
+      iron:
+        damage: 4
+      gold:
+        damage: 2
+      diamond:
+        damage: 5
+    hoes: 
+      wood:
+        damage: 2
+      stone:
+        damage: 2
+      iron:
+        damage: 2
+      gold:
+        damage: 2
+      diamond:
+        damage: 2
+    bow:
+      damage: 4
+      delay: 20 # 20 = 1 second
+    fists:
+      damage: 2

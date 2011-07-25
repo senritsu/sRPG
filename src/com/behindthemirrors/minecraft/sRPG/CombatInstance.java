@@ -7,6 +7,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 
 public class CombatInstance {
 	
+	static double defaultCritChance;
+	static double defaultCritMultiplier;
+	static double defaultMissChance;
+	static double defaultMissMultiplier;
+	
 	private EntityDamageEvent event;
 	public LivingEntity attacker;
 	public LivingEntity defender;
@@ -25,10 +30,10 @@ public class CombatInstance {
 		this.event = event;
 		basedamage = event.getDamage();
 		modifier = 0;
-		critChance = Settings.advanced.getDouble("combat.crit-chance", 0.0);
-		critMultiplier = Settings.advanced.getDouble("combat.crit-multiplier", 0.0);
-		missChance = Settings.advanced.getDouble("combat.miss-chance", 0.0);
-		missMultiplier = Settings.advanced.getDouble("combat.miss-multiplier", 0.0);
+		critChance = defaultCritChance;
+		critMultiplier = defaultCritMultiplier;
+		missChance = defaultMissChance;
+		missMultiplier = defaultMissMultiplier;
 	}
 	
 	public void cancel() {

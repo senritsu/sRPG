@@ -1,0 +1,16 @@
+settings:
+  
+classtree:
+  archer:
+    name: Archer
+    localized: 
+      DE: Bogenschuetze
+    tier: 0
+    prerequisites: 
+  sniper:
+    name: Sniper
+    localized:
+      DE: Scharfschuetze
+    tier: 1
+    prerequisites:
+      Archer: 3

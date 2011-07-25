@@ -10,8 +10,8 @@ settings:
   features:
     remove-skillpoints: false
   combat:
-    difficulty: default # if not changed in the advanced config, this can be: 'default','original','custom'
+    difficulty: default # make sure a corresponding .yml is in pluginfolder/difficulties/
     dangerous-depths: true # increases damage by monsters lower certain depths
   locales: # add all localized localization_XX.ymls you want to make available here
-    default: EN
-    available: [EN]
+    default: EN # make sure that the selected locale is available
+    available: [EN] # make sure that for every available locale there is a corresponding .yml inside pluginfolder/locales

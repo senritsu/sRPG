@@ -5,13 +5,15 @@ import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.config.Configuration;
+import org.bukkit.util.config.ConfigurationNode;
 
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+//import java.util.List;
+import java.util.Map;
 
 public class Settings {
 	
@@ -20,6 +22,7 @@ public class Settings {
 	static File dataFolder;
 	static Configuration config;
 	static Configuration advanced;
+	static Configuration classes;
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
@@ -64,10 +67,32 @@ public class Settings {
 		}
 		// TODO: rework the multidrop implementation because it sucks
 		// initialize tool mining multidrop whitelist
-		MULTIDROP_VALID_BLOCKS.put(Material.WOOD_PICKAXE,new ArrayList<Material>(Arrays.asList(new Material[] {Material.STONE,Material.COBBLESTONE,Material.MOSSY_COBBLESTONE,Material.SANDSTONE, Material.COAL_ORE})));
-		MULTIDROP_VALID_BLOCKS.put(Material.STONE_PICKAXE,new ArrayList<Material>(Arrays.asList(new Material[] {Material.STONE,Material.COBBLESTONE,Material.MOSSY_COBBLESTONE,Material.SANDSTONE, Material.COAL_ORE,Material.LAPIS_ORE,Material.IRON_ORE})));
-		MULTIDROP_VALID_BLOCKS.put(Material.IRON_PICKAXE,new ArrayList<Material>(Arrays.asList(new Material[] {Material.STONE,Material.COBBLESTONE,Material.MOSSY_COBBLESTONE,Material.SANDSTONE, Material.COAL_ORE,Material.LAPIS_ORE,Material.IRON_ORE,Material.DIAMOND_ORE,Material.GOLD_ORE,Material.REDSTONE_ORE})));
-		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_PICKAXE,new ArrayList<Material>(Arrays.asList(new Material[] {Material.STONE,Material.COBBLESTONE,Material.MOSSY_COBBLESTONE,Material.SANDSTONE, Material.COAL_ORE,Material.LAPIS_ORE,Material.IRON_ORE,Material.DIAMOND_ORE,Material.GOLD_ORE,Material.REDSTONE_ORE, Material.OBSIDIAN})));
+		ArrayList<Material> arraylist = new ArrayList<Material>();
+		arraylist.add(Material.STONE);
+		arraylist.add(Material.COBBLESTONE);
+		arraylist.add(Material.MOSSY_COBBLESTONE);
+		arraylist.add(Material.SANDSTONE);
+		arraylist.add(Material.COAL_ORE);
+		MULTIDROP_VALID_BLOCKS.put(Material.WOOD_PICKAXE,arraylist);
+		
+		arraylist = new ArrayList<Material>();
+		arraylist.addAll(MULTIDROP_VALID_BLOCKS.get(Material.WOOD_PICKAXE));
+		arraylist.add(Material.LAPIS_ORE);
+		arraylist.add(Material.IRON_ORE);
+		MULTIDROP_VALID_BLOCKS.put(Material.STONE_PICKAXE,arraylist);
+		
+		arraylist = new ArrayList<Material>();
+		arraylist.addAll(MULTIDROP_VALID_BLOCKS.get(Material.STONE_PICKAXE));
+		arraylist.add(Material.DIAMOND_ORE);
+		arraylist.add(Material.GOLD_ORE);
+		arraylist.add(Material.REDSTONE_ORE);
+		MULTIDROP_VALID_BLOCKS.put(Material.IRON_PICKAXE,arraylist);
+		
+		arraylist = new ArrayList<Material>();
+		arraylist.addAll(MULTIDROP_VALID_BLOCKS.get(Material.IRON_PICKAXE));
+		arraylist.add(Material.OBSIDIAN);
+		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_PICKAXE,arraylist);
+		
 		ArrayList<Material> log = new ArrayList<Material>();
 		log.add(Material.LOG);
 		MULTIDROP_VALID_BLOCKS.put(Material.WOOD_AXE,log);
@@ -77,77 +102,83 @@ public class Settings {
 		// initialize valid blocks for rare shovel drop
 		
 		// initialize color tag replacement map
-		colorMap.put("[aqua]", ChatColor.AQUA.toString());
-		colorMap.put("[black]", ChatColor.BLACK.toString());
-		colorMap.put("[blue]", ChatColor.BLUE.toString());
-		colorMap.put("[dark_aqua]", ChatColor.DARK_AQUA.toString());
-		colorMap.put("[dark_blue]", ChatColor.DARK_BLUE.toString());
-		colorMap.put("[dark_gray]", ChatColor.DARK_GRAY.toString());
-		colorMap.put("[dark_green]", ChatColor.DARK_GREEN.toString());
-		colorMap.put("[dark_purple]", ChatColor.DARK_PURPLE.toString());
-		colorMap.put("[dark_red]", ChatColor.DARK_RED.toString());
-		colorMap.put("[gold]", ChatColor.GOLD.toString());
-		colorMap.put("[gray]", ChatColor.GRAY.toString());
-		colorMap.put("[green]", ChatColor.GREEN.toString());
-		colorMap.put("[light_purple]", ChatColor.LIGHT_PURPLE.toString());
-		colorMap.put("[red]", ChatColor.RED.toString());
-		colorMap.put("[white]", ChatColor.WHITE.toString());
-		colorMap.put("[yellow]", ChatColor.YELLOW.toString());
+		String[] colorStrings = new String[] {
+				"[aqua]","[black]","[blue]","[dark_aqua]",
+				"[dark_blue]","[dark_gray]","[dark_green]","[dark_purple]",
+				"[dark_red]","[gold]","[gray]","[green]",
+				"[light_purple]","[red]","[white]","[yellow]"
+				};
+		ChatColor[] chatColors = new ChatColor[] {
+				ChatColor.AQUA,ChatColor.BLACK,ChatColor.BLUE,ChatColor.DARK_AQUA,
+				ChatColor.DARK_BLUE,ChatColor.DARK_GRAY,ChatColor.DARK_GREEN,ChatColor.DARK_PURPLE,
+				ChatColor.DARK_RED,ChatColor.GOLD,ChatColor.GRAY,ChatColor.GREEN,
+				ChatColor.LIGHT_PURPLE,ChatColor.RED,ChatColor.WHITE,ChatColor.YELLOW,
+				};
+		for (int i=0;i<colorStrings.length;i++) {
+			colorMap.put(colorStrings[i], chatColors[i].toString());
+		}
+	}
+	
+	Configuration openConfig(File folder, String name, String description) {
+		File file = Utility.createDefaultFile(new File(folder, name+".yml"),description,name+".yml");
+		if (file.exists()){
+			Configuration configuration = new Configuration(file);
+			// TODO: add try/catch for .yml parsing errors
+			configuration.load();
+			return configuration;
+		} else {
+			SRPG.output("Error loading "+description+" ("+name+".yml)");
+			return null;
+		}
 	}
 	
 	public void load() {
 		// get config data
 		Boolean disable = false;
-		File file = Utility.createDefaultFile(new File(dataFolder,"config.yml"),"basic configuration");
-		if (file.exists()){
-			config = new Configuration(file);
-			config.load();
+		config = openConfig(dataFolder,"config","basic configuration");
+		advanced = openConfig(dataFolder,"config_advanced","advanced configuration");
+		classes = openConfig(dataFolder,"classes","class configuration");
+		
+		if (config == null || advanced == null || classes == null) {
+			disable = true;
 		} else {
-			SRPG.output("Error loading config file");
-			disable = true;
-		}
-		file = Utility.createDefaultFile(new File(dataFolder,"config_advanced.yml"),"advanced configuration");
-		if (file.exists()){
-			advanced = new Configuration(file);
-			advanced.load();
-		} else {
-			SRPG.output("Error loading advanced config file");
-			disable = true;
-		}
-		file = Utility.createDefaultFile(new File(dataFolder,"localization_EN.yml"),"localization data");
-		if (!file.exists()) {
-			SRPG.output("Error loading default localization file");
-			disable = true;
-		}
-		if (!disable) {
+			ConfigurationNode node;
+			
 			// read locale data
+			ArrayList<String> availableLocales = (ArrayList<String>)config.getStringList("settings.locales.available",new ArrayList<String>());
 			defaultLocale = config.getString("settings.locales.default");
+			if (!availableLocales.contains(defaultLocale)) {
+				availableLocales.add(defaultLocale);
+			}
 			localization = new HashMap<String,Configuration>();
 			nameReplacements = new HashMap<String, HashMap<String,String>>();
 			SKILLS_ALIASES = new HashMap<String, ArrayList<String>>();
-			for (String locale : config.getStringList("settings.locales.available",new ArrayList<String>())) {
-				file = new File(dataFolder,"localization_"+locale+".yml");
-				if (file.exists()){
+			
+			for (String name : new String[] {"EN"}) {
+				Utility.createDefaultFile(new File(new File(dataFolder,"locales"),name+".yml"), "'"+name+"' locale settings", "locale"+name+".yml");
+			}
+			
+			for (String locale : availableLocales) {
+				File file = new File(new File(dataFolder,"locales"),locale+".yml");
+				// plugin default locale
+				if (!file.exists()){
+					SRPG.output("Error loading locale '"+locale+"', initializing from EN");
+					// create copy of EN for specified locale if no file is present
+					file = Utility.createDefaultFile(new File(new File(dataFolder,"locales"),locale+".yml"), "'"+locale+"' locale settings", "locale_EN.yml");
+				}
+				// disable plugin if file could not be created or opened
+				if (!file.exists()) {
+					disable = true;
+				} else {
 					localization.put(locale,new Configuration(file));
-					localization.get(locale).load();
+					// TODO: add try/catch for .yml parsing errors
+					localization.get(locale).load(); 
 					
-					// generate name replacement hashmap
-					nameReplacements.put(locale,new HashMap<String, String>());
-					for (String path : walk(localization.get(locale),"")) {
-						String value = localization.get(locale).getString(path,"");
-						if (!value.isEmpty()) {
-							nameReplacements.get(locale).put(path,value);
-						}
-					}
 					// update skill aliases
 					SKILLS_ALIASES.put(locale,new ArrayList<String>());
 					for (String skillname : SKILLS) {
 						SKILLS_ALIASES.get(locale).add(localization.get(locale).getString("skills."+skillname).toLowerCase());
 					}
-				
-				} else {
-					disable = true;
-					SRPG.output("Error loading localization file for locale " + locale);
 				}
 			}
 		
@@ -166,14 +197,15 @@ public class Settings {
 			}
 			
 			// read config data
-			SRPG.database.mySQLenabled = config.getBoolean("mySQL.enabled", false);
+			node = config.getNode("mySQL");
+			SRPG.database.mySQLenabled = node.getBoolean("enabled", false);
 			if (SRPG.database.mySQLenabled) {
-				SRPG.database.dbServer = config.getString("mySQL.server");
-				SRPG.database.dbPort = config.getString("mySQL.port");
-				SRPG.database.dbName = config.getString("mySQL.dbName");
-				SRPG.database.dbUser = config.getString("mySQL.dbUser");
-				SRPG.database.dbPass = config.getString("mySQL.dbPass");
-				SRPG.database.dbTablePrefix = config.getString("mySQL.table_prefix");
+				SRPG.database.dbServer = node.getString("server");
+				SRPG.database.dbPort = node.getString("port");
+				SRPG.database.dbName = node.getString("dbName");
+				SRPG.database.dbUser = node.getString("dbUser");
+				SRPG.database.dbPass = node.getString("dbPass");
+				SRPG.database.dbTablePrefix = node.getString("table_prefix");
 			}
 			
 			// read xp settings
@@ -197,91 +229,109 @@ public class Settings {
 				}
 			}
 			
-			// read combat settings
-			// difficulty
+			// read difficulty/combat settings
+			// create plugin default difficulties
+			for (String name : new String[] {"default","original"}) {
+				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+".yml"), "'"+name+"' difficulty settings", "difficulty_"+name+".yml");
+			}
+			
 			difficulty = config.getString("settings.combat.difficulty");
-			// damage increase with depth
-			DamageEventListener.increaseDamageWithDepth = config.getBoolean("settings.combat.dangerous-depths", false);
-			
-			DamageEventListener.depthTiers = new ArrayList<int[]>();
-			for (int i = 0;i < advanced.getIntList("combat.damage.depth.thresholds", null).size();i++) {
-				DamageEventListener.depthTiers.add(new int[] {advanced.getIntList("combat.damage.depth.thresholds", null).get(i),
-															  advanced.getIntList("combat.damage.depth.damage-increase", null).get(i) });
+			File file = new File(new File(dataFolder,"difficulties"),difficulty+".yml");
+			if (!file.exists()){
+				SRPG.output("Error loading settings for difficulty '"+difficulty+"', initializing from default");
+				// create copy of default settings for specified difficulty name if no file is present
+				file = Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),difficulty+".yml"), "'"+difficulty+"' difficulty settings", "difficulty_default.yml");
 			}
-			// animal health and xp
-			SpawnEventListener.healthTableCreatures = new HashMap<String, Integer>();
-			DamageEventListener.xpTableCreatures = new HashMap<String, Integer>();
-			for (String animal : Settings.ANIMALS) {
-				SpawnEventListener.healthTableCreatures.put(animal, advanced.getInt("stats."+difficulty+".animals."+animal+".health", 1));
-				DamageEventListener.xpTableCreatures.put(animal, advanced.getInt("stats."+difficulty+".animals."+animal+".xp", 0));
-			}
-			// monster health, damage and xp
-			DamageEventListener.damageTableMonsters = new HashMap<String, Integer>();
-			ArrayList<String> monsters = new ArrayList<String>();
-			for (String monster : Settings.MONSTERS) {
-				if (monster.equals("slime")) {
-					for (int i=1;i<5;i++) {
-						monsters.add(monster + "." + Settings.SLIME_SIZES.get(i));
-					}
-				} else if (monster.equals("wolf")){
-					for (String state : new String[] {".wild",".tamed"}) {
-						monsters.add(monster + state);
-					}
-				} else {
-					monsters.add(monster);
+			// disable plugin if file could not be created or opened
+			if (!file.exists()) {
+				disable = true;
+			} else {
+				Configuration difficultyConfig = new Configuration(file);
+				// TODO: add try/catch for .yml parsing errors
+				difficultyConfig.load();
+				
+				
+				// damage increase with depth
+				DamageEventListener.increaseDamageWithDepth = config.getBoolean("settings.combat.dangerous-depths", false);
+				
+				DamageEventListener.depthTiers = new ArrayList<int[]>();
+				ArrayList<Integer> thresholds = (ArrayList<Integer>) difficultyConfig.getIntList("settings.dangerous-depths.thresholds", null);
+				ArrayList<Integer> damageIncreases = (ArrayList<Integer>) difficultyConfig.getIntList("settings.dangerous-depths.damage-increases", null);
+				for (int i = 0;i < thresholds.size();i++) {
+					DamageEventListener.depthTiers.add(new int[] {thresholds.get(i),
+																  damageIncreases.get(i)});
 				}
-			}
-			for (String monster : monsters) {
-				SpawnEventListener.healthTableCreatures.put(monster, advanced.getInt("stats."+difficulty+".monsters."+monster+".health", 1));
-				DamageEventListener.damageTableMonsters.put(monster, advanced.getInt("stats."+difficulty+".monsters."+monster+".damage", 1));
-				DamageEventListener.xpTableCreatures.put(monster, advanced.getInt("stats."+difficulty+".monsters."+monster+".xp", 0));
-			}
-			
-			// tool damage
-			DamageEventListener.damageTableTools = new HashMap<String, Integer>();
-			for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
-				if (!advanced.getBoolean("stats."+difficulty+".tools."+tool+".override", false)) {
-					DamageEventListener.damageTableTools.put(tool, advanced.getInt("stats."+difficulty+".tools."+tool+".damage", 1));
+				// animal health and xp
+				SpawnEventListener.healthTableCreatures = new HashMap<String, Integer>();
+				DamageEventListener.xpTableCreatures = new HashMap<String, Integer>();
+				for (String animal : Settings.ANIMALS) {
+					node = difficultyConfig.getNode("stats.animals."+animal);
+					SpawnEventListener.healthTableCreatures.put(animal, node.getInt("health", 1));
+					DamageEventListener.xpTableCreatures.put(animal, node.getInt("xp", 0));
 				}
+				// monster health, damage and xp
+				DamageEventListener.damageTableMonsters = new HashMap<String, Integer>();
+				ArrayList<String> monsters = new ArrayList<String>();
+				for (String monster : Settings.MONSTERS) {
+					if (monster.equals("slime")) {
+						for (int i=1;i<5;i++) {
+							monsters.add(monster + "." + Settings.SLIME_SIZES.get(i));
+						}
+					} else if (monster.equals("wolf")){
+						for (String state : new String[] {".wild",".tamed"}) {
+							monsters.add(monster + state);
+						}
+					} else {
+						monsters.add(monster);
+					}
+				}
+				for (String monster : monsters) {
+					node = difficultyConfig.getNode("stats.monsters."+monster);
+					SpawnEventListener.healthTableCreatures.put(monster, node.getInt("health", 1));
+					DamageEventListener.damageTableMonsters.put(monster, node.getInt("damage", 1));
+					DamageEventListener.xpTableCreatures.put(monster, node.getInt("xp", 0));
+				}
+				
+				// tool damage
+				DamageEventListener.damageTableTools = new HashMap<String, Integer>();
+				node = difficultyConfig.getNode("stats.tools");
+				for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
+					if (!node.getBoolean(tool+".override", false)) {
+						DamageEventListener.damageTableTools.put(tool, node.getInt(tool+".damage", 1));
+					}
+				}
+				if (!node.getBoolean("bow.override", false)) {
+					DamageEventListener.damageTableTools.put("bow",node.getInt("bow.damage", 1));
+				}
+				if (!node.getBoolean("fists.override", false)) {
+					DamageEventListener.damageTableTools.put("fists",node.getInt("fists.damage", 1));
+				}
+				// critical hit and miss settings
+				node = difficultyConfig.getNode("settings.combat");
+				CombatInstance.defaultCritChance = node.getDouble("crit-chance", 0.0);
+				CombatInstance.defaultCritMultiplier = node.getDouble("crit-multiplier", 2.0);
+				CombatInstance.defaultMissChance = node.getDouble("miss-chance", 0.0);
+				CombatInstance.defaultMissMultiplier = node.getDouble("miss-multiplier", 0.0);
 			}
-			if (!advanced.getBoolean("stats."+difficulty+".tools.bow.override", false)) {
-				DamageEventListener.damageTableTools.put("bow",advanced.getInt("stats."+difficulty+".tools.bow.damage", 1));
-			}
-			if (!advanced.getBoolean("stats."+difficulty+".tools.fists.override", false)) {
-				DamageEventListener.damageTableTools.put("fists",advanced.getInt("stats."+difficulty+".tools.fists.damage", 1));
-			}
-			// critical hit settings
-			DamageEventListener.critChance = advanced.getDouble("combat.crit-chance", 1.0);
-			DamageEventListener.critMultiplier = advanced.getDouble("combat.crit-multiplier", 1.0);
 			
 			// block xp settings
 			BlockEventListener.groupBlockMapping = new HashMap<String, ArrayList<Integer>>();
 			BlockEventListener.xpValues = new HashMap<String, Integer>();
 			BlockEventListener.xpChances = new HashMap<String, Double>();
-			for (String group : Settings.advanced.getStringList("xp.blocks.xp-groups", null)) {
-				if (group != Settings.advanced.getString("xp.blocks.default-group")) {
-					BlockEventListener.groupBlockMapping.put(group, (ArrayList<Integer>)advanced.getIntList("xp.blocks."+group+".ids", null));
-				}
-				BlockEventListener.xpValues.put(group, advanced.getInt("xp.blocks."+group+".xp",0));
-				BlockEventListener.xpChances.put(group, advanced.getDouble("xp.blocks."+group+".chance",1.0));
+			for (Map.Entry<String, ConfigurationNode> group : Settings.advanced.getNodes("xp.blocks.groups").entrySet()) {
+				String name = group.getKey();
+				node = group.getValue();
+				BlockEventListener.groupBlockMapping.put(name, (ArrayList<Integer>)node.getIntList("ids", null));
+				BlockEventListener.xpValues.put(name, node.getInt("xp",0));
+				BlockEventListener.xpChances.put(name, node.getDouble("chance",1.0));
 			}
-			
-			SRPG.output("Successfully loaded config");
-		} else {
+		} 
+		// disable plugin if anything went wrong while loading configuration
+		if (disable) {
+			SRPG.output("disabling plugin");
 			SRPG.pm.disablePlugin(SRPG.plugin);
-		}
-	}
-		
-	private ArrayList<String> walk(Configuration config, String path) {
-		ArrayList<String> list = new ArrayList<String>();
-		List<String> index = config.getStringList((path=="")?"index":path+".index",null);
-		if (index != null && !index.isEmpty()) {
-			for (String entry : index) {
-				list.addAll(walk(config, (path=="")?entry:path+"."+entry));
-			}
 		} else {
-			list.add(path);
+			SRPG.output("Successfully loaded config");
 		}
-		return list;
 	}
 }

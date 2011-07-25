@@ -1,6 +1,4 @@
-index: [basic,skills,milestones,active-abilities,passive-abilities]
 basic:
-  index: [xp,level,skill,skillpoints,free-points,ability,milestone,charge,locale-name,chat-prefix]
   xp: XP
   level: Level
   skill: Skill
@@ -12,7 +10,6 @@ basic:
   locale-name: EN (International)
   chat-prefix: [sRPG]
 skills:
-  index: [swords,pickaxes,axes,shovels,hoes,bow,ukemi,evasion,focus]
   swords: Swordfighting
   pickaxes: Mining
   axes: Woodcutting
@@ -23,103 +20,93 @@ skills:
   evasion: Reflexes
   focus: Focus
 milestones:
-  index: [novice,apprentice,expert,master]
   novice: Novice
   apprentice: Apprentice
   expert: Expert
   master: Master
 active-abilities:
-  index: [swords,pickaxes,axes,shovels]
   swords:
-    index: [stone,iron,diamond]
     stone: Execute
     iron: Violent Thrust
     diamond: Indignation
   pickaxes:
-    index: [stone,iron,diamond]
     stone: Seismic Shock
     iron: Prospecting
     diamond: Resonance
   axes:
-    index: [stone,iron,diamond]
     stone: Crashdown
     iron: Mighty Chop
     diamond: Blast Wave
   shovels:
-    index: [stone,iron,diamond]
     stone: Line Drive
     iron: Earth Divider
     diamond: Impact
 
 passive-abilities:
-  index: [swords,pickaxes,axes,shovels,bow,ukemi,evasion]
   swords:
-    index: [apprentice,expert,master]
     apprentice: Heightened Awareness
     expert: One with the Sword
     master: Secret Teachings
   pickaxes:
-    index: [apprentice,expert,master]
     apprentice: Efficiency I
     expert: Efficiency II
     master: Efficiency III
   axes:
-    index: [apprentice,expert,master]
     apprentice: Efficiency I
     expert: Efficiency II
     master: Efficiency III
   shovels:
-    index: [apprentice,expert,master]
     apprentice: Keen Eye I
     expert: Keen Eye II
     master: Keen Eye III
   bow:
-    index: [apprentice,expert,master]
     apprentice: Strong Arm
     expert: Steady Aim
     master: Target Vitals
   ukemi:
-    index: [apprentice,expert,master]
     apprentice: Training I
     expert: Training II
     master: Training III
   evasion:
-    index: [apprentice,expert,master]
     apprentice: Escape Artist
     expert: Catch Arrows
     master: Counterattack
 
+##################################################################################################
+# Customizable Message Section
+##################################################################################################
+# In the message text, the following variables are available:
+# <!level> for current player level
+# <!xp> for xp towards next level
+# <!xp2level> for xp necessary for one level
+# <!free> for free upgrade points
+# <!skillname> for the name of the skill in question
+# <!skillpoints> for skillpoints in the skill in question
+# <!maxskillpoints> for the upper limit for skillpoints
+# <!cost> for the associated cost to do something
+# <!ability> for the ability name in question
+# <!milestone> for last milestone reached with that skill
+# <!damage> for currently relevant damage number
+# <!argument> refers to the argument specified for a command
+# 
+# apart from that you can reference any name from this file
+# example: <skills.axes> is whatever you set above for "axes" under the category "skills"
+# 
+# use [some_color] to color any following text
+# valid colors: aqua,black,blue,dark_aqua,dark_blue,dark_gray,dark_green,dark_purple,
+#               dark_red,gold,gray,green,light_purple,red,white,yellow
+#
+# if you supply a list for some message, every message will be treated as one line
+# exception: if the message in question is contained in "randomize" below
+# in that case one of the provided messages will be chosen at random
+##################################################################################################
 messages:
-  # Customizable Message Section
-  #
-  # In the message text, the following variables are available:
-  # <!level> for current player level
-  # <!xp> for xp towards next level
-  # <!xp2level> for xp necessary for one level
-  # <!free> for free upgrade points
-  # <!skillname> for the name of the skill in question
-  # <!skillpoints> for skillpoints in the skill in question
-  # <!maxskillpoints> for the upper limit for skillpoints
-  # <!cost> for the associated cost to do something
-  # <!ability> for the ability name in question
-  # <!milestone> for last milestone reached with that skill
-  # <!damage> for currently relevant damage number
-  # <!argument> refers to the argument specified for a command
-  # 
-  # apart from that you can reference any name from this file
-  # example: <skills.axes> is whatever you set above for "axes" under the category "skills"
-  # 
-  # use [some_color] to color any following text
-  # valid colors: aqua,black,blue,dark_aqua,dark_blue,dark_gray,dark_green,dark_purple,
-  #               dark_red,gold,gray,green,light_purple,red,white,yellow
-  #
-  # if you supply a list for some message, every message will be treated as one line
-  # exception: if the message in question is contained in "randomize" below
-  # in that case one of the provided messages will be chosen at random
-  
   randomize: [ability]
   
-  # GENERAL
+  ###########
+  # GENERAL #
+  ###########
+  
   welcome: 
     - "[blue]sRPG Users Guide"
     - "sRPG adds a many rpg-style features to vanilla minecraft"
@@ -133,7 +120,9 @@ messages:
   xp: "[gold]<basic.level> <!level> [white](<!xp>/<!xp2level> <basic.xp> to next <basic.level>)"
   locale-changed: "<basic.chat-prefix> Locale changed to <basic.locale-name>"
   
-  # SKILLS
+  ##########
+  # SKILLS #
+  ##########
   
   check-skillpoints: "<!skillname>: <!skillpoints> (<!milestone>)"
   check-focus: "<!skillname>: <!skillpoints>"
@@ -145,7 +134,9 @@ messages:
   skill-no-removal: "Removing <basic.skillpoints> is disabled"
   free-skillpoints: "<basic.free-points> remaining: [gold]<!free>"
   
-  # ABILITIES
+  #############
+  # ABILITIES #
+  #############
   
   charge-acquired: "Acquired a <basic.charge>"
   ability: 
@@ -164,13 +155,17 @@ messages:
   roll-manual: "[green]You rolled to avoid damage"
   roll-auto: "[green]You rolled by reflex to avoid damage"
   
-  # HELP
+  ########
+  # HELP #
+  ########
   
   help-general: "By using the help command, you can get information about a variety of subjects"
   help-topics:
     not-available: ""
   
-  # SKILL DESCRIPTIONS
+  ######################
+  # SKILL DESCRIPTIONS #
+  ######################
   
   skill-info:
     common-header: "[blue]<<<<!skillname>>>>"

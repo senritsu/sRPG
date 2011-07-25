@@ -27,10 +27,10 @@ public class Utility {
 		return str.toString();
 	}
 	
-	public static File createDefaultFile(File file, String description) {
+	public static File createDefaultFile(File file, String description, String defaultFileName) {
         if (!file.exists()) {
         	new File(file.getParent()).mkdirs();
-            InputStream input = SRPG.class.getResourceAsStream("/defaults/" + file.getName());
+            InputStream input = SRPG.class.getResourceAsStream("/defaults/" + defaultFileName);
             if (input != null) {
                 FileOutputStream output = null;
                 try {
@@ -41,7 +41,7 @@ public class Utility {
                         output.write(buf, 0, length);
                     }
                     
-                    SRPG.output("Created " + description + " from default");
+                    SRPG.output("Created " + description);
                 } catch (IOException e) {
                     e.printStackTrace();
                     SRPG.output("Error creating " + description);

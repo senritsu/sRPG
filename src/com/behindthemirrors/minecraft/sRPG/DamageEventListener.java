@@ -25,10 +25,6 @@ public class DamageEventListener extends EntityListener{
 	public static HashMap<String,Integer> damageTableMonsters;
 	public static HashMap<String,Integer> xpTableCreatures;
 	public static HashMap<String,Integer> damageTableTools;
-	public static double critChance;
-	public static double critMultiplier;
-	public static double missChance;
-	public static double missMultiplier;
 	public static boolean increaseDamageWithDepth;
 	public static ArrayList<int[]> depthTiers;
 	
