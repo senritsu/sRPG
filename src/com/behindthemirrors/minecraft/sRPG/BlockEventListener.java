@@ -29,9 +29,9 @@ public class BlockEventListener extends BlockListener {
 		Player player = event.getPlayer();
 		Material material = event.getBlock().getType();
 		// check for permissions
-		if (SRPG.permissionHandler.has(player, "srpg.xp")) {
+		if (player.hasPermission("srpg.xp")) {
 			// award xp
-			String rarity = Settings.advanced.getString("xp.blocks.default-group"); 
+			String rarity = Settings.advanced.getString("xp.blocks.default"); 
 			Iterator<Map.Entry<String,ArrayList<Integer>>> groups = groupBlockMapping.entrySet().iterator();
 			while (groups.hasNext()) {
 				Map.Entry<String,ArrayList<Integer>> pair = groups.next();
@@ -49,7 +49,7 @@ public class BlockEventListener extends BlockListener {
 		// award charge
 		String tool = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		// check active tool and permissions
-		if (tool != null && SRPG.permissionHandler.has(player, "srpg.skills."+tool+".active")) {
+		if (tool != null && player.hasPermission("srpg.skills."+tool+".active")) {
 			SRPG.profileManager.get(player).addChargeTick(tool);
 			//TODO: maybe move saving to the data class
 			SRPG.profileManager.save(player,"chargedata");

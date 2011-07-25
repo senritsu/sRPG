@@ -66,7 +66,7 @@ public class ProfilePlayer extends ProfileNPC {
 	
 	public void addXP(Integer amount) {
 		// TODO: maybe move the permission check before the actual xp calculations
-		if (!SRPG.permissionHandler.has(player,"srpg.xp")) {
+		if (!player.hasPermission("srpg.xp")) {
 			return;
 		}
 		xp += amount;
@@ -81,7 +81,7 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	public void addSkillpoint(String skillname) {
 		// check for permissions
-		if (!SRPG.permissionHandler.has(player,"srpg.skills."+skillname)) {
+		if (!player.hasPermission("srpg.skills."+skillname)) {
 			return;
 		}
 		// prevent focus from being raised until one other skill is on "master"
@@ -114,7 +114,7 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public void removeSkillpoint(String skillname) {
-		if (!SRPG.permissionHandler.has(player,"srpg.skills."+skillname)) {
+		if (!player.hasPermission("srpg.skills."+skillname)) {
 			return;
 		}
 		Integer current = skillpoints.get(skillname);

@@ -22,7 +22,7 @@ public class PassiveAbility {
 		
 		if (event.getCause() == DamageCause.FALL) {
 			// check permissions
-			if (!SRPG.permissionHandler.has(player,"srpg.skills.ukemi")) {
+			if (!player.hasPermission("srpg.skills.ukemi")) {
 				return;
 			}
 			
@@ -67,12 +67,12 @@ public class PassiveAbility {
 		ArrayList<String> milestones = SRPG.profileManager.get(player).getMilestones(skillname); 
 		
 		// check active tool and permissions
-		if (skillname != "sword" && SRPG.permissionHandler.has(player, "srpg.skills."+skillname+".passive")) {
+		if (skillname != "sword" && player.hasPermission("srpg.skills."+skillname)) {
 			// chance for no durability loss by skill
 			double roll = SRPG.generator.nextDouble();
 			double durabilityRecoveryChance = skillpoints * Settings.advanced.getDouble("skills.effects."+skillname+".durability-recovery-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects."+skillname+".milestone-bonus",0);
 			// focus
-			if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+			if (SRPG.profileManager.get(player).focusAllowed && player.hasPermission("srpg.skills.focus")) {
 				durabilityRecoveryChance *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 			}
 			if (roll < durabilityRecoveryChance){
@@ -89,7 +89,7 @@ public class PassiveAbility {
 		double tripleDropChance = 0.0;
 		
 		// check active tool and permissions
-		if ((skillname.equals("pickaxes") && SRPG.permissionHandler.has(player, "srpg.skills.pickaxes.milestones")) || (skillname.equals("axes") && SRPG.permissionHandler.has(player, "srpg.skills.axes.milestones"))) {
+		if ((skillname.equals("pickaxes") && player.hasPermission("srpg.skills.pickaxes")) || (skillname.equals("axes") && player.hasPermission("srpg.skills.axes"))) {
 			if (BlockEventListener.userPlacedBlocks.contains(block) || !Settings.MULTIDROP_VALID_BLOCKS.get(player.getItemInHand().getType()).contains(block.getType())) {
 				return;
 			}
@@ -125,7 +125,7 @@ public class PassiveAbility {
 		// TODO: limit bonus drops to shovel block types (dirt, gravel)
 		// TODO: move item selection to config
 		// check active tool and permissions
-		} else if (skillname.equals("shovels") && SRPG.permissionHandler.has(player, "srpg.skills.shovels.milestones")) {
+		} else if (skillname.equals("shovels") && player.hasPermission("srpg.skills.shovels.milestones")) {
 			Material[] selection = {};
 			int amount = 1; 
 			double common = Settings.advanced.getDouble("skills.passive-abilities.shovels.apprentice.common-drop-chance", 0);
@@ -149,7 +149,7 @@ public class PassiveAbility {
 			}
 		
 		// check active tool and permissions
-		} else if (skillname.equals("hoes") && SRPG.permissionHandler.has(player, "srpg.skills.hoes")) {
+		} else if (skillname.equals("hoes") && player.hasPermission("srpg.skills.hoes")) {
 			// no abilities yet
 		} 
 	}
@@ -171,11 +171,11 @@ public class PassiveAbility {
 		
 		// chance for no durability loss by skill
 		// check active tool and permissions
-		if (skillname == "sword" && SRPG.permissionHandler.has(player, "srpg.skills.sword.passive")) {
+		if (skillname == "sword" && player.hasPermission("srpg.skills.swords")) {
 			double roll = SRPG.generator.nextDouble();
 			double durabilityRecoveryChance = skillpoints * Settings.advanced.getDouble("skills.effects."+skillname+".durability-recovery-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects."+skillname+".milestone-bonus",0);
 			// focus
-			if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+			if (SRPG.profileManager.get(player).focusAllowed && player.hasPermission("srpg.skills.focus")) {
 				durabilityRecoveryChance *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 			}
 			if (roll < durabilityRecoveryChance){
@@ -187,12 +187,12 @@ public class PassiveAbility {
 		double roll = SRPG.generator.nextDouble();
 		double evadeChance = SRPG.profileManager.get(player).getSkill("evasion") * Settings.advanced.getDouble("skills.effects.evasion.chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.evasion.milestone-bonus",0);
 		// focus
-		if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+		if (SRPG.profileManager.get(player).focusAllowed && player.hasPermission("srpg.skills.focus")) {
 			evadeChance *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 		}
 			
 		// check permissions
-		if (SRPG.permissionHandler.has(player, "srpg.skills.evasion")) {
+		if (player.hasPermission("srpg.skills.evasion")) {
 			if (!offensive) {
 				if (roll < evadeChance) {
 					combat.cancel("evade-attacker");
@@ -203,7 +203,7 @@ public class PassiveAbility {
 		
 		// ability's numerical effects configurable TODO: make them completely configurable in the restraints of some general effects
 		// check active tool and permissions
-		if (skillname.equals("swords") && SRPG.permissionHandler.has(player, "srpg.skills.swords.milestones")) {
+		if (skillname.equals("swords") && player.hasPermission("srpg.skills.swords")) {
 			if (offensive) {
 				if (milestones.contains("expert")) {
 					combat.critChance += Settings.advanced.getDouble("skills.passive-abilities.swords.expert.crit-chance", 0);
@@ -231,17 +231,17 @@ public class PassiveAbility {
 			if (offensive) {
 				// increased crit chance by skill
 				// check permissions
-				if (SRPG.permissionHandler.has(player, "srpg.skills.bow.passive")) {
+				if (player.hasPermission("srpg.skills.bow")) {
 					double critBonus = skillpoints * Settings.advanced.getDouble("skills.effects.bow.crit-chance", 0) + (milestones.size()-1) * Settings.advanced.getDouble("skills.effects.bow.milestone-bonus",0);
 					// focus
-					if (SRPG.profileManager.get(player).focusAllowed && SRPG.permissionHandler.has(player, "srpg.skills.focus")) {
+					if (SRPG.profileManager.get(player).focusAllowed && player.hasPermission("srpg.skills.focus")) {
 						critBonus *= 1.0 + SRPG.profileManager.get(player).getSkill("focus") * Settings.advanced.getDouble("skills.effects.focus.boost", 0);
 					}
 					combat.critChance += critBonus;
 				}
 				// passive abilities
 				// check permissions
-				if (SRPG.permissionHandler.has(player, "srpg.skills.bow.active")) {
+				if (player.hasPermission("srpg.skills.bow")) {
 					if (milestones.contains("apprentice")) {
 						combat.modifier += Settings.advanced.getInt("skills.passive-abilities.bow.apprentice.damage-modifier", 0);
 					}

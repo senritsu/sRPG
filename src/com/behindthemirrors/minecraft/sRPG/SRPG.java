@@ -9,10 +9,6 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 
-// permission imports
-import com.nijiko.permissions.PermissionHandler;
-import com.nijikokun.bukkit.Permissions.Permissions;
-
 import org.bukkit.plugin.Plugin;
 
 // MAIN TODO LIST
@@ -32,7 +28,6 @@ public class SRPG extends JavaPlugin {
 	
 	static Plugin plugin;
 	static PluginManager pm;
-	static PermissionHandler permissionHandler;
 	public static ProfileManager profileManager = new ProfileManager();
 	static TimedEffectManager timedEffectManager = new TimedEffectManager();
 	static CascadeQueueScheduler cascadeQueueScheduler = new CascadeQueueScheduler(); 
@@ -63,8 +58,6 @@ public class SRPG extends JavaPlugin {
 		
 		// create plugins/SRPG/
 		getDataFolder().mkdirs();
-		// set up permissions support
-		setupPermissions();
 		
 		pm.registerEvent(Event.Type.ENTITY_DAMAGE, damageListener, Priority.Monitor, this);
 		pm.registerEvent(Event.Type.ENTITY_REGAIN_HEALTH, damageListener, Priority.Monitor, this);
@@ -108,23 +101,6 @@ public class SRPG extends JavaPlugin {
 		pdfFile = this.getDescription();
 		log.info(LOG_PREFIX + pdfFile.getName() + " v" + pdfFile.getVersion() + " has been disabled." );
 	}
-	
-	public void foo() {
-		
-	}
-	
-	private void setupPermissions() {
-	      Plugin permissionsPlugin = this.getServer().getPluginManager().getPlugin("Permissions");
-
-	      if (permissionHandler == null) {
-	          if (permissionsPlugin != null) {
-	              permissionHandler = ((Permissions) permissionsPlugin).getHandler();
-	              log.info(LOG_PREFIX + "Using Permissions");
-	          } else {
-	              log.info(LOG_PREFIX + "Permission system not detected, most features will be disabled");
-	          }
-	      }
-	  }
 	
     public static void output(String text) {
     	log.info(LOG_PREFIX + text);

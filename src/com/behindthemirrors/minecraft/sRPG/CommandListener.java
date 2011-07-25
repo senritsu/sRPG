@@ -32,18 +32,18 @@ public class CommandListener implements CommandExecutor {
 					MessageParser.sendMessage(player, "status-header");
 					ProfilePlayer data = SRPG.profileManager.get(player);
 					// display xp
-					if (SRPG.permissionHandler.has(player,"srpg.xp")) {
+					if (player.hasPermission("srpg.xp")) {
 						MessageParser.sendMessage(player, "xp");
 					}
 					// display individual skills
 					for (String skillname : Settings.SKILLS) {
-						if (!SRPG.permissionHandler.has(player,"srpg.skills."+skillname) || skillname.equals("focus")) {
+						if (!player.hasPermission("srpg.skills."+skillname) || skillname.equals("focus")) {
 							continue;
 						}
 						MessageParser.sendMessage(player, "check-skillpoints",skillname);
 					}
 					// display focus
-					if (SRPG.permissionHandler.has(player,"srpg.skills.focus") && data.focusAllowed) {
+					if (player.hasPermission("srpg.skills.focus") && data.focusAllowed) {
 						MessageParser.sendMessage(player, "check-focus","focus");
 					}
 					// display unallocated skillpoints
@@ -211,7 +211,7 @@ public class CommandListener implements CommandExecutor {
 		// reload settings (TODO: still needs proper testing, some settings might be not properly re-initialized)
 		if (args.length >= 1) {
 			if (args[0].equalsIgnoreCase("reload")) {
-				if (!(sender instanceof Player) || ((sender instanceof Player) && SRPG.permissionHandler.has((Player)sender, "srpg.reload"))) {
+				if (!(sender instanceof Player) || ((sender instanceof Player) && ((Player)sender).hasPermission("srpg.reload"))) {
 					SRPG.settings.load();
 					SRPG.output("Reloaded configuration");
 					return true;
