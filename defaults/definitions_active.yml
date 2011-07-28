@@ -1,6 +1,13 @@
+# broadcast-ranges can be any positive float to specify a distance in blocks, empty or 0 to not broadcast anything, -1 for worldwide broadcast, and -2 for serverwide broadcast
+
 improvised-arrows:
-  ready-button: right
-  activation-button: right
+  name: Improvised Arrows
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 2
+  cooldown: 0
   effects: 
     transmute-held-item:
       from: [17,5,280]

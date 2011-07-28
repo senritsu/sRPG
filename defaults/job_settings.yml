@@ -15,6 +15,12 @@ settings:
     job: Job(|s)
     passive: Skill(|s)
     active: Abilit(y|ies)
+    
+  defaults: # modified by specific jobs
+    crit-chance: 0.02
+    crit-multiplier: 1.5
+    miss-chance: 0.05
+    miss-multiplier: 0.0
 
 # New users get assigned one of the jobs with empty 'prerequisites' nodes at random (by default only the 'adventurer' job has an empty 'prerequisites' node
 tree:

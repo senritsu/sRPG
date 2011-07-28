@@ -4,10 +4,6 @@ settings:
     thresholds: [40,15]
     damage-increases: [1,2]
   combat:
-    crit-chance: 0.05
-    crit-multiplier: 1.5
-    miss-chance: 0.0
-    miss-multiplier: 0.0
     armor-strength: # not used yet
       leather: 1.0
       iron: 1.2

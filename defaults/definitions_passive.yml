@@ -13,19 +13,21 @@
 # 
 # some-skill:
 #   name: Some random example skill
-#   description: [+<crit-chance.value:percent>] percentage to [crit]
+#   description: "[+<crit-chance.value:percent>] percentage to [crit]"
 #   effects: 
 #     crit-chance:
 #       tools: [swords,axes]
 #       value: 0.2'
 #     some-other-effect:
 #       [...]
+#
+# Also remember to put the description into double quotes if there is a conversion specification, else the ':' breaks the parser
 # 
 # ###############################################################################
 
 steady-aim:
   name: Steady Aim
-  description: [+<crit-chance.value:percent>] chance to critically hit when using a bow
+  description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
   effects: 
     crit-chance: 
       tools: [bow]
@@ -33,7 +35,7 @@ steady-aim:
 
 steady-aim-2: 
   name: Steady Aim II
-  description: [+<crit-chance.value:percent>] chance to critically hit when using a bow
+  description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
   effects: 
     crit-chance: 
       tools: [bow]
@@ -42,7 +44,7 @@ steady-aim-2:
   
 bow-training:
   name: Bow Training
-  description: [+<damage-modifier:hearts>] of damage when using a bow
+  description: "[+<damage-modifier:hearts>] of damage when using a bow"
   effects: 
     damage-modifier: 
       tools: [bow]
@@ -50,7 +52,7 @@ bow-training:
 
 deadly-aim:
   name: Deadly Accuracy
-  description: [-<anti-evasion.value:percent>] chance of your target evading your arrows
+  description: "[-<anti-evasion.value:percent>] chance of your target evading your arrows"
   effects: 
     anti-evasion: 
       tools: [bow]

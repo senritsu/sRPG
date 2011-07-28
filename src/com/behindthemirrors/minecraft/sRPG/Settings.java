@@ -7,12 +7,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
 
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-//import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 
 public class Settings {
@@ -20,11 +19,18 @@ public class Settings {
 	static String difficulty;
 	
 	static File dataFolder;
+	
 	static Configuration config;
 	static Configuration advanced;
 	static Configuration jobsettings;
+	
+	static HashMap<String,StructureActive> actives;
+	static HashMap<String,StructurePassive> passives;
+	static HashMap<String,StructureJob> jobs;
+	
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
+	
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
 	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
 	static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
@@ -314,17 +320,53 @@ public class Settings {
 			}
 			
 			jobsettings = openConfig(dataFolder,"job_settings","class configuration","job_settings");
-			Configuration skillDefinitions = openConfig(new File(dataFolder,"definitions"), "passive", "skill definitions","definitions_passive");
-			Configuration abilityDefinitions = openConfig(new File(dataFolder,"definitions"), "active", "skill definitions","definitions_active");
+			Configuration passiveDefinitions = openConfig(new File(dataFolder,"definitions"), "passive", "skill definitions","definitions_passive");
+			Configuration activeDefinitions = openConfig(new File(dataFolder,"definitions"), "active", "skill definitions","definitions_active");
 			Configuration jobDefinitions = openConfig(new File(dataFolder,"definitions"), "jobs", "job definitions","definitions_jobs");
-			if (jobsettings == null || skillDefinitions == null || abilityDefinitions == null || jobDefinitions == null) {
+			if (jobsettings == null || passiveDefinitions == null || activeDefinitions == null || jobDefinitions == null) {
 				disable = true;
 			} else {
-				// skill settings
+				// load skill definitions
+				passives = new HashMap<String, StructurePassive>();
+				for (String name : passiveDefinitions.getKeys()) {
+					passives.put(name, new StructurePassive(passiveDefinitions.getNode(name)));
+				}
+				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.passive"),passives.size()));
 				
-				// ability settings
+				// load ability definitions
+				actives = new HashMap<String, StructureActive>();
+				for (String name : activeDefinitions.getKeys()) {
+					actives.put(name, new StructureActive(activeDefinitions.getNode(name)));
+				}
+				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.active"),actives.size()));
 				
-				// job settings
+				// load job definitions
+				jobs = new HashMap<String, StructureJob>();
+				for (String name : jobDefinitions.getKeys()) {
+					if (jobDefinitions.getBoolean(name+".enabled", true)) {
+						jobs.put(name, new StructureJob(jobDefinitions.getNode(name)));
+					}
+				}
+				// disable all jobs with missing prerequisites
+				ArrayList<String> deactivate = new ArrayList<String>();
+				for (String name : jobs.keySet()) {
+					for (String prereq : jobs.get(name).prerequisites.keySet()) {
+						if (!jobs.containsKey(prereq)) {
+							deactivate.add(name);
+							deactivate.addAll(Utility.getChildren(jobs, name));
+							break;
+						}
+					}
+				}
+				deactivate = new ArrayList<String>(new HashSet<String>(deactivate));
+				for (String name : deactivate) {
+					jobs.remove(name);
+				}
+				// status report
+				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.job"),jobs.size()));
+				if (deactivate.size() > 0) {
+					SRPG.output((new Integer(deactivate.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
+				}
 			}
 			
 			// block xp settings

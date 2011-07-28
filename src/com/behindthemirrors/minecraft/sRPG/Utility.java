@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -135,4 +136,22 @@ public class Utility {
         return sb.toString();
     }
 	
+	public static ArrayList<String> getChildren(HashMap<String,StructureJob> map, String parent) {
+		ArrayList<String> children = new ArrayList<String>();
+		for (String job : map.keySet()) {
+			if (map.get(job).prerequisites.containsKey(parent)) {
+				children.add(job);
+			}
+		}
+		for (String child : children) {
+			children.addAll(getChildren(map, child));
+		}
+		return children;
 	}
+	
+	public static String parseSingularPlural(String input, Integer amount) {
+		String singularEnding = input.substring(input.indexOf("(")+1, input.indexOf("|"));
+		String pluralEnding = input.substring(input.indexOf("|")+1, input.indexOf(")"));
+		return input.substring(0,input.indexOf("(")) + (amount > 1 ? pluralEnding : singularEnding);
+	}
+}
