@@ -1,0 +1,9 @@
+improvised-arrows:
+  ready-button: right
+  activation-button: right
+  effects: 
+    transmute-held-item:
+      from: [17,5,280]
+      from-amounts: [4,16,32]
+      to: [262,262,262]
+      to-amounts: [8,8,8]

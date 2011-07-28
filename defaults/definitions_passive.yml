@@ -1,0 +1,57 @@
+#################################################################################
+# MARKUP DESCRIPTION #
+######################
+# every '[' is replaced by the color tag for the configured emphasis color
+# every ']' is replaced by the color tag for the set default text color
+# references to nodes insides the 'effects' node can be used in angled brackets
+# referenced values will be strings, unless a conversion specification is given
+# use like: '<effect.node:convert-to>'
+# 'effect' refers to any effect inside the 'effects' node of the skill
+# 'node' refers to any node inside the given effect
+# 'convert-to' can be any one of: percent,hearts
+# example:
+# 
+# some-skill:
+#   name: Some random example skill
+#   description: [+<crit-chance.value:percent>] percentage to [crit]
+#   effects: 
+#     crit-chance:
+#       tools: [swords,axes]
+#       value: 0.2'
+#     some-other-effect:
+#       [...]
+# 
+# ###############################################################################
+
+steady-aim:
+  name: Steady Aim
+  description: [+<crit-chance.value:percent>] chance to critically hit when using a bow
+  effects: 
+    crit-chance: 
+      tools: [bow]
+      value: 0.05
+
+steady-aim-2: 
+  name: Steady Aim II
+  description: [+<crit-chance.value:percent>] chance to critically hit when using a bow
+  effects: 
+    crit-chance: 
+      tools: [bow]
+      value: 0.1
+  replaces: steady-aim
+  
+bow-training:
+  name: Bow Training
+  description: [+<damage-modifier:hearts>] of damage when using a bow
+  effects: 
+    damage-modifier: 
+      tools: [bow]
+      value: 1
+
+deadly-aim:
+  name: Deadly Accuracy
+  description: [-<anti-evasion.value:percent>] chance of your target evading your arrows
+  effects: 
+    anti-evasion: 
+      tools: [bow]
+      value: 0.1

@@ -115,6 +115,27 @@ public class DamageEventListener extends EntityListener{
 				combat.attacker = source;
 				combat.defender = target;
 				TimedEffectResolver.trigger(combat);
+				if (player != null && Settings.advanced.getBoolean("combat.restrictions.enabled", false)) {
+					String prefix = Settings.advanced.getString("combat.restrictions.group-prefix");
+					boolean forbidden = false;
+					for (String group : Settings.advanced.getKeys("combat.restrictions.groups")) {
+						if (player.hasPermission(prefix+group)) {
+							forbidden = true;
+							String targetname = Utility.getEntityName(target);
+							for (String otherGroup : Settings.advanced.getStringList("combat.restrictions.groups."+group,null)) {
+								if ((target instanceof Player && ((Player)target).hasPermission(prefix+otherGroup)) || 
+										(otherGroup.equalsIgnoreCase("animals") && Settings.ANIMALS.contains(targetname)) || 
+										(otherGroup.equalsIgnoreCase("monsters") && Settings.MONSTERS.contains(targetname)) ) {
+									forbidden = false;
+								}
+							}
+							break;
+						}
+					}
+					if (forbidden) {
+						combat.cancel();
+					}
+				}
 				combat.resolve();
 				if (debug) {
 					SRPG.output("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString());

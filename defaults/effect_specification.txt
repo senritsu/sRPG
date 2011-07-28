@@ -1,0 +1,23 @@
+This is a list of all effects that may be used in passives, actives, or as job bonuses
+the modes for use as a job bonus are 'maximum' (the specified value is the value at max-level, the increase per level is evenly split over all levels), 'per-level' (total bonus is level times the specified value), 'static' (the specified value is a one-off bonus independent of level)
+
+'crit-chance'
+  can be used for: passive, bonus
+  required nodes: tools (string list), value (float)
+  bonus modes: maximum, per-level, static
+'crit-multiplier'
+  can be used for: passive, bonus
+  required nodes: tools (string list), value (float)
+  bonus modes: maximum, per-level, static
+'damage-modifier'
+  can be used for: passive, bonus
+  required nodes: tools (string list), value (integer)
+  bonus modes: maximum, per-level, static
+'anti-evasion'
+  can be used for: passive, bonus
+  required nodes: tools (string list), value (float)
+  bonus modes: maximum, per-level, static
+'transmute-held-item'
+  notes: changes (part of) the held item stack to something else, list allows multiple types of items to be set
+  can be used for: active
+  required nodes: from (integer list), from-amounts (integer list), to (integer list), to-amounts (integer list)

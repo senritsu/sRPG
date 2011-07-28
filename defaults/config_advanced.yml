@@ -1,3 +1,10 @@
+combat:
+  restrictions:
+    enabled: false
+    group-prefix: groups.
+    groups:
+      group1: [group1,group3,animals,monsters]
+      group2: [group1,animals]
 xp:
   to-levelup: 1000
   blocks:
@@ -16,7 +23,6 @@ xp:
         ids: [14,15,56,21]
         xp: 5
         chance: 1.0
-      
 skills:
   costs: 
     generic: [1,1,1,2,2,2,3,3,3,5,7]

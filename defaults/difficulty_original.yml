@@ -5,7 +5,7 @@ settings:
     damage-increases: []
   combat:
     crit-chance: 0.05
-    crit-multiplier: 2.0
+    crit-multiplier: 1.5
     miss-chance: 0.0
     miss-multiplier: 0.0
     armor-strength: # not used yet

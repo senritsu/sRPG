@@ -1,0 +1,28 @@
+settings:
+  xp:
+    # xp for next level are equal to 
+    # (base * level-coefficient * ((current level) ** level-exponent) * tier-coefficient * ((the jobs tier) ** tier-exponent) + (current level) * offset * (the jobs tier))
+    
+    base: 1000
+    offset: 0
+    level-coefficient: 1.2 
+    level-exponent: 1
+    tier-coefficient: 1 
+    tier-exponent: 1
+  
+  # singular and plural endings specified in brackets '()' separated by a pipe '|'
+  terminology:
+    job: Job(|s)
+    passive: Skill(|s)
+    active: Abilit(y|ies)
+
+# New users get assigned one of the jobs with empty 'prerequisites' nodes at random (by default only the 'adventurer' job has an empty 'prerequisites' node
+tree:
+  adventurer:
+    prerequisites:
+  archer:
+    prerequisites: 
+      adventurer: 1
+  sniper:
+    prerequisites:
+      archer: 3

@@ -75,7 +75,7 @@ public class CombatInstance {
 		if (attacker instanceof Player) {
 			Player player = (Player)attacker;
 			if (miss) {
-				if (damage == 0) {
+				if (damage <= 0) {
 					MessageParser.sendMessage(player, "miss-no-damage");
 				} else {
 					MessageParser.sendMessage(player, "miss-damage");
@@ -89,6 +89,6 @@ public class CombatInstance {
 			}
 		}
 		
-		event.setDamage(Math.round((int)damage));
+		event.setDamage(damage > 0 ? (int)Math.round(damage) : 0);
 	}
 }

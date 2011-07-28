@@ -22,7 +22,7 @@ public class Settings {
 	static File dataFolder;
 	static Configuration config;
 	static Configuration advanced;
-	static Configuration classes;
+	static Configuration jobsettings;
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
@@ -119,8 +119,8 @@ public class Settings {
 		}
 	}
 	
-	Configuration openConfig(File folder, String name, String description) {
-		File file = Utility.createDefaultFile(new File(folder, name+".yml"),description,name+".yml");
+	Configuration openConfig(File folder, String name, String description, String defaultFileName) {
+		File file = Utility.createDefaultFile(new File(folder, name+".yml"),description,defaultFileName+".yml");
 		if (file.exists()){
 			Configuration configuration = new Configuration(file);
 			// TODO: add try/catch for .yml parsing errors
@@ -135,11 +135,10 @@ public class Settings {
 	public void load() {
 		// get config data
 		Boolean disable = false;
-		config = openConfig(dataFolder,"config","basic configuration");
-		advanced = openConfig(dataFolder,"config_advanced","advanced configuration");
-		classes = openConfig(dataFolder,"classes","class configuration");
+		config = openConfig(dataFolder,"config","basic configuration","config");
+		advanced = openConfig(dataFolder,"config_advanced","advanced configuration","config_advanced");
 		
-		if (config == null || advanced == null || classes == null) {
+		if (config == null || advanced == null) {
 			disable = true;
 		} else {
 			ConfigurationNode node;
@@ -154,8 +153,13 @@ public class Settings {
 			nameReplacements = new HashMap<String, HashMap<String,String>>();
 			SKILLS_ALIASES = new HashMap<String, ArrayList<String>>();
 			
+			// create plugin default locale file
 			for (String name : new String[] {"EN"}) {
 				Utility.createDefaultFile(new File(new File(dataFolder,"locales"),name+".yml"), "'"+name+"' locale settings", "locale"+name+".yml");
+			}
+			// create plugin default difficulties
+			for (String name : new String[] {"default","original"}) {
+				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+".yml"), "'"+name+"' difficulty settings", "difficulty_"+name+".yml");
 			}
 			
 			for (String locale : availableLocales) {
@@ -230,11 +234,6 @@ public class Settings {
 			}
 			
 			// read difficulty/combat settings
-			// create plugin default difficulties
-			for (String name : new String[] {"default","original"}) {
-				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+".yml"), "'"+name+"' difficulty settings", "difficulty_"+name+".yml");
-			}
-			
 			difficulty = config.getString("settings.combat.difficulty");
 			File file = new File(new File(dataFolder,"difficulties"),difficulty+".yml");
 			if (!file.exists()){
@@ -312,6 +311,20 @@ public class Settings {
 				CombatInstance.defaultCritMultiplier = node.getDouble("crit-multiplier", 2.0);
 				CombatInstance.defaultMissChance = node.getDouble("miss-chance", 0.0);
 				CombatInstance.defaultMissMultiplier = node.getDouble("miss-multiplier", 0.0);
+			}
+			
+			jobsettings = openConfig(dataFolder,"job_settings","class configuration","job_settings");
+			Configuration skillDefinitions = openConfig(new File(dataFolder,"definitions"), "passive", "skill definitions","definitions_passive");
+			Configuration abilityDefinitions = openConfig(new File(dataFolder,"definitions"), "active", "skill definitions","definitions_active");
+			Configuration jobDefinitions = openConfig(new File(dataFolder,"definitions"), "jobs", "job definitions","definitions_jobs");
+			if (jobsettings == null || skillDefinitions == null || abilityDefinitions == null || jobDefinitions == null) {
+				disable = true;
+			} else {
+				// skill settings
+				
+				// ability settings
+				
+				// job settings
 			}
 			
 			// block xp settings

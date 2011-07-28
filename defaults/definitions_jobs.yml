@@ -1,0 +1,53 @@
+# New players get randomly assigned one of the jobs that have an empty 'prerequisites' node
+
+adventurer:
+  name: Adventurer
+  localized: 
+  description:
+    short: 
+    long: 
+  prerequisites:
+    adventurer:
+  tier: 10
+  bonuses:
+  skills:
+  abilities:
+
+archer:
+  name: Archer
+  localized: 
+    DE: Bogenschuetze
+  description:
+    short: 
+    long: 
+  prerequisites:
+    adventurer: 1
+  tier: 1
+  bonuses:
+  passive:
+    level 3: 
+      - steady-aim
+    level 5: 
+      - bow-training
+    level 10: 
+      - steady-aim-2
+      - deadly-accuracy
+  active:
+    level 4:
+      - improvised-arrows
+sniper:
+  name: Sniper
+  localized: 
+  description:
+    short: 
+    long: 
+  prerequisites:
+    adventurer: 1
+  tier: 1
+  bonuses:
+    crit-chance:
+      tools: [bow]
+      value: 0.2
+      mode: maximum
+  skills:
+  abilities:
