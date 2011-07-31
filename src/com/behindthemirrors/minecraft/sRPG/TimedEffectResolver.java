@@ -14,12 +14,10 @@ public class TimedEffectResolver {
 	
 	// trigger static effects that influence combat
 	public static void trigger(CombatInstance combat) {
-		ProfileNPC attackerProfile = SRPG.profileManager.get(combat.attacker);
-		ProfileNPC defenderProfile = SRPG.profileManager.get(combat.defender);
-		if (attackerProfile.effectCounters.containsKey("rage")) {
+		if (combat.attacker.effectCounters.containsKey("rage")) {
 			combat.critChance = 1.0;
 		}
-		if (defenderProfile.effectCounters.containsKey("invincibility")) {
+		if (combat.defender.effectCounters.containsKey("invincibility")) {
 			if (debug) {
 				SRPG.output("canceled combat because target was invincible");
 			}

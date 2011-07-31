@@ -27,6 +27,7 @@ public class Settings {
 	static HashMap<String,StructureActive> actives;
 	static HashMap<String,StructurePassive> passives;
 	static HashMap<String,StructureJob> jobs;
+	static ArrayList<StructureJob> initialJobs;
 	
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
@@ -218,26 +219,9 @@ public class Settings {
 				SRPG.database.dbTablePrefix = node.getString("table_prefix");
 			}
 			
-			// read xp settings
-			ProfilePlayer.xpToLevel = advanced.getInt("xp.to-levelup", 1000);
-			// read skill settings
-			ProfilePlayer.focusBase = advanced.getInt("skills.costs.focus-base", 1);
-			ProfilePlayer.focusIncrease = advanced.getInt("skills.costs.focus-increase", 1);
-			ProfilePlayer.skillCosts = (ArrayList<Integer>)advanced.getIntList("skills.costs.generic", null);
-			ProfilePlayer.milestoneRequirements = new HashMap<Integer, String>();
-			for (String milestone : new String[] {"novice","apprentice","expert","master"}) {
-				ProfilePlayer.milestoneRequirements.put(advanced.getInt("skills.milestones."+milestone, 0), milestone);
-			}
 			// read ability settings
 			ProfilePlayer.chargeMax = advanced.getInt("abilities.max-charges", 1);
 			ProfilePlayer.chargeTicks = advanced.getInt("abilities.blocks-to-charge", 1);
-			ProfilePlayer.abilityCosts = new HashMap<String, Integer>();
-			for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
-				int cost = advanced.getInt("abilities.costs."+tool,-1);
-				if (cost >= 0) {
-					ProfilePlayer.abilityCosts.put(tool, cost);
-				}
-			}
 			
 			// read difficulty/combat settings
 			difficulty = config.getString("settings.combat.difficulty");
@@ -326,25 +310,47 @@ public class Settings {
 			if (jobsettings == null || passiveDefinitions == null || activeDefinitions == null || jobDefinitions == null) {
 				disable = true;
 			} else {
+				// load job xp formula
+				StructureJob.xp_base = jobsettings.getDouble("settings.xp.base", 1000);
+				StructureJob.xp_offset = jobsettings.getDouble("settings.xp.offset", 0);
+				StructureJob.level_coefficient = jobsettings.getDouble("settings.xp.level-coefficient", 1);
+				StructureJob.level_exponent = jobsettings.getDouble("settings.xp.level-exponent", 1);
+				StructureJob.tier_coefficient = jobsettings.getDouble("settings.xp.tier-coefficient", 1);
+				StructureJob.tier_exponent = jobsettings.getDouble("settings.xp.tier-exponent", 1);
+				// load job prefixes
+				StructureJob.ranks = new HashMap<Integer, String>();
+				if (jobsettings.getKeys("job-prefixes") != null) {
+					for (String prefix : jobsettings.getKeys("job-prefixes")) {
+						StructureJob.ranks.put(Integer.parseInt(prefix.substring(prefix.indexOf(" ")+1)), jobsettings.getString("job-prefixes."+prefix));
+					}
+				}
 				// load skill definitions
 				passives = new HashMap<String, StructurePassive>();
 				for (String name : passiveDefinitions.getKeys()) {
-					passives.put(name, new StructurePassive(passiveDefinitions.getNode(name)));
+					passives.put(name, new StructurePassive(name,passiveDefinitions.getNode(name)));
 				}
-				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.passive"),passives.size()));
+				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.passive"),passives.size()));
 				
 				// load ability definitions
 				actives = new HashMap<String, StructureActive>();
 				for (String name : activeDefinitions.getKeys()) {
-					actives.put(name, new StructureActive(activeDefinitions.getNode(name)));
+					actives.put(name, new StructureActive(name,activeDefinitions.getNode(name)));
 				}
-				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.active"),actives.size()));
+				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.active"),actives.size()));
 				
 				// load job definitions
 				jobs = new HashMap<String, StructureJob>();
 				for (String name : jobDefinitions.getKeys()) {
-					if (jobDefinitions.getBoolean(name+".enabled", true)) {
-						jobs.put(name, new StructureJob(jobDefinitions.getNode(name)));
+					if (jobsettings.getKeys("tree").contains(name) && jobDefinitions.getBoolean(name+".enabled", true)) {
+						jobs.put(name, new StructureJob(name,jobDefinitions.getNode(name)));
+						
+						// load job prerequisites from jobtree
+						jobs.get(name).prerequisites = new HashMap<String, Integer>();
+						if (jobsettings.getKeys("tree."+name+".prerequisites")!= null) {
+							for (String job : jobsettings.getKeys("tree."+name+".prerequisites")) {
+								jobs.get(name).prerequisites.put(job, jobsettings.getInt("tree."+name+".prerequisites."+job, 1));
+							}
+						} 
 					}
 				}
 				// disable all jobs with missing prerequisites
@@ -362,10 +368,24 @@ public class Settings {
 				for (String name : deactivate) {
 					jobs.remove(name);
 				}
+				// populate default job list
+				initialJobs = new ArrayList<StructureJob>();
+				for (StructureJob job : jobs.values()) {
+					if (job.prerequisites.isEmpty()){
+						initialJobs.add(job);
+					}
+				}
 				// status report
-				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.job"),jobs.size()));
+				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"),jobs.size()));
 				if (deactivate.size() > 0) {
-					SRPG.output((new Integer(deactivate.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("settings.terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
+					SRPG.output((new Integer(deactivate.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
+				}
+				if (jobs.isEmpty()) {
+					SRPG.output(Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"), 1)+" tree is empty!");
+					disable = true;
+				} else if (initialJobs.isEmpty()) {
+					SRPG.output("No "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"), 1)+" without prerequisites available in the job tree!");
+					disable = true;
 				}
 			}
 			

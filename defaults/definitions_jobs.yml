@@ -4,10 +4,9 @@ adventurer:
   name: Adventurer
   description: 
   details: 
-  prerequisites:
-    adventurer:
-  tier: 10
-  base-stats:
+  tier: 0
+  defaults:
+    maximum-level: 1
   bonuses:
   skills:
   abilities:
@@ -17,11 +16,13 @@ archer:
   name: Archer
   description: 
   details: 
-  prerequisites:
-    adventurer: 1
   tier: 1
-  base-stats:
+  defaults:
   bonuses:
+    damage-modifier:
+      tools: [sword]
+      value: -1
+      mode: static
   passive:
     level 3: 
       - steady-aim
@@ -38,10 +39,8 @@ sniper:
   name: Sniper
   description: 
   details: 
-  prerequisites:
-    archer: 6
   tier: 1
-  base-stats:
+  defaults:
     crit-chance: 0.05
     miss-chance: 0.02
   bonuses:
@@ -49,24 +48,9 @@ sniper:
       tools: [bow]
       value: 0.2
       mode: maximum
-  skills:
-  abilities:
-
-supersniper:
-  enabled: true
-  name: Sniper
-  description: 
-  details: 
-  prerequisites:
-    sniper: 3
-  tier: 1
-  base-stats:
-    crit-chance: 0.05
-    miss-chance: 0.02
-  bonuses:
-    crit-chance:
-      tools: [bow]
-      value: 0.2
-      mode: maximum
+    damage-modifier:
+      tools: [sword]
+      value: -2
+      mode: static
   skills:
   abilities:

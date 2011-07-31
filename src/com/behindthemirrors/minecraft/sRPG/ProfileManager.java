@@ -20,11 +20,10 @@ public class ProfileManager {
 		profile.entity = (LivingEntity)player; 
 		profile.player = player;
 		profile.name = player.getName();
-		profile.current_class = "adventurer";
 		profile.locale = Settings.defaultLocale;
 		// mySQL
 		if (SRPG.database.mySQLenabled) {
-			profile.id = SRPG.database.GetInt("SELECT user_id FROM " + SRPG.database.dbTablePrefix + "users WHERE user = \"" + player.getName() + "\"");
+			profile.id = SRPG.database.getSingleIntValue("users", "user_id", "user", player.getName());
 			if (profile.id == 0) {
 				enterIntoDatabase(player);
 				SRPG.output("created player data");
@@ -62,7 +61,7 @@ public class ProfileManager {
 		return (ProfilePlayer)profiles.get(player);
 	}
 	
-	public ProfilePlayer getByName(String name) {
+	public ProfilePlayer get(String name) {
 		for (ProfileNPC profile : profiles.values()) {
 			if (profile instanceof ProfilePlayer && ((ProfilePlayer)profile).name.equals(name)) {
 				return (ProfilePlayer)profile;
@@ -70,75 +69,75 @@ public class ProfileManager {
 		}
 		return null;
 	}
+	
+	public boolean has(ProfilePlayer profile) {
+		return profiles.containsKey(profile.player);
+	}
+	
+	public boolean has(String name) {
+		return has(SRPG.plugin.getServer().getPlayer(name));
+	}
+	
+	public boolean has(Player player) {
+		return profiles.containsKey(player);
+	}
 
 	// load player data from database
 	public void load(Player player) {
 		ProfilePlayer profile = (ProfilePlayer)profiles.get(player);
-		String suffix = " WHERE user_id = '" + profile.id + "'";
 		// read current class
-		profile.locale = new String(SRPG.database.Read("SELECT class FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
+		String jobname = SRPG.database.getSingleStringValue("users", "currentjob", "user_id", profile.id);
+		if (!Settings.jobs.containsKey(jobname)) {
+			jobname = Settings.initialJobs.get(SRPG.generator.nextInt(Settings.initialJobs.size())).signature;
+		}
+		profile.currentJob = Settings.jobs.get(jobname);
 		// read locale
-		profile.locale = new String(SRPG.database.Read("SELECT locale FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
+		profile.locale = SRPG.database.getSingleStringValue("users", "locale", "user_id", profile.id);
 		// change to default locale if the set locale is not available anymore
 		if (!Settings.localization.containsKey(profile.locale)) {
 			profile.locale = Settings.defaultLocale;
 			save(player,"locale");
 		}
-		// read xp
-		profile.xp = new Integer(SRPG.database.Read("SELECT xp FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
 		
 		// read hp
-		profile.hp = new Integer(SRPG.database.Read("SELECT hp FROM " + SRPG.database.dbTablePrefix + "users" + suffix).get(1).get(0));
+		profile.hp = SRPG.database.getSingleIntValue("users", "hp", "user_id", profile.id);
 		profile.hp_max = 40;
 		//Integer normalized = data.hp*20 / data.hp_max;
 		//player.setHealth(normalized == 0 && data.hp != 0 ? 1 : normalized);
 
-		// read skill points
-		profile.free = profile.xp/ProfilePlayer.xpToLevel;
-		profile.spent = 0;
-		String prefix = "SELECT " + Utility.join(Settings.SKILLS,",") + " FROM " + SRPG.database.dbTablePrefix;
-		ArrayList<String> rs = SRPG.database.Read(prefix + "skillpoints" + suffix).get(1);
-		profile.skillpoints = new HashMap<String, Integer>();
-		for (int i = 0; i < Settings.SKILLS.size(); i++) {
-			Integer points = new Integer(rs.get(i));
-			int cumulativeCost = 0;
-			for (int j = 0;j < points; j++) {
-				cumulativeCost += ProfilePlayer.skillCosts.get(j);
+		// read job xp
+		ArrayList<String> jobs = new ArrayList<String>();
+		jobs.addAll(Settings.jobs.keySet());
+		ArrayList<Integer> xp = SRPG.database.getSingleIntRow("jobxp", jobs, "user_id", profile.id);
+		SRPG.output("loaded player xp: "+xp.toString());
+		profile.jobXP = new HashMap<StructureJob, Integer>();
+		profile.jobLevels = new HashMap<StructureJob, Integer>();
+		for (int i=0; i < jobs.size();i++) {
+			profile.jobXP.put(Settings.jobs.get(jobs.get(i)), xp.get(i));
+			if (xp.get(i) > 0) {
+				profile.checkLevelUp(Settings.jobs.get(jobs.get(i)));
 			}
-			profile.free -= cumulativeCost;
-			profile.spent += cumulativeCost;
-			profile.skillpoints.put(Settings.SKILLS.get(i), points);
 		}
-		profile.focusAllowed = profile.checkMastery();
-		// read charge data
-		ArrayList<String> fields = new ArrayList<String>();
-		for (String tool : Settings.TOOLS) {
-			fields.add(tool+"_charges");
-			fields.add(tool+"_chargeprogress");
-		}
-		prefix = "SELECT " + Utility.join(fields,",") + " FROM " + SRPG.database.dbTablePrefix;
-		rs = SRPG.database.Read(prefix + "chargedata" + suffix).get(1);
-		profile.charges = new HashMap<String, Integer>();
-		profile.chargeProgress = new HashMap<String, Integer>();
-		for (int i = 0; i < Settings.TOOLS.size(); i++) {
-			profile.charges.put(Settings.TOOLS.get(i), new Integer(rs.get(2*i)));
-			profile.chargeProgress.put(Settings.TOOLS.get(i), new Integer(rs.get(2*i+1)));
-		}
+		
+		profile.charges = SRPG.database.getSingleIntValue("users", "charges", "user_id", profile.id);
+		profile.chargeProgress = SRPG.database.getSingleIntValue("users", "chargeprogress", "user_id", profile.id);
+		profile.changeJob(profile.currentJob);
 	}
 	
 	// create database entry for player
 	public void enterIntoDatabase(Player player) { 
 		String name = player.getName();
-		ProfilePlayer data = (ProfilePlayer)profiles.get(player);
-		String prefix = "INSERT INTO " + SRPG.database.dbTablePrefix;
+		ProfilePlayer profile = (ProfilePlayer)profiles.get(player);
 		SRPG.output("trying to enter "+name+" into the database");
-		SRPG.database.Write(prefix + "users (user,hp,class,locale) VALUES (\"" + name + "\",'" + player.getHealth() + "',\"" + data.current_class + "\",\"" + data.locale + "\")");
+		HashMap<String,String> map = new HashMap<String, String>();
+		map.put("user", name);
+		map.put("hp", ""+player.getHealth());
+		map.put("locale", profile.locale);
+		SRPG.database.insertStringValues("users", map);
+		
 		SRPG.output("users table written, proceeding to fetch id");
-		data.id = SRPG.database.GetInt("SELECT user_id FROM " + SRPG.database.dbTablePrefix + "users WHERE user = \"" + name + "\"");
-		SRPG.output("id retrieved, proceeding to enter skillpoints and chargedata");
-		for (String table : new String[] {"skillpoints","chargedata"}) {
-			SRPG.database.Write(prefix + table + " (user_id) VALUES ('" + data.id + "')");
-		}
+		profile.id = SRPG.database.getSingleIntValue("users", "user_id", "user", name);
+		SRPG.database.insertSingleIntValue("jobxp", "user_id", profile.id);
 	}
 	
 	// save all data
@@ -156,54 +155,18 @@ public class ProfileManager {
 	
 	// save specific part of data to database
 	public void save(ProfilePlayer profile, String partial) {
-		String prefix = "UPDATE " + SRPG.database.dbTablePrefix;
-		String suffix = " WHERE user_id = '" + profile.id + "'";
-		
 		// write hp
 		if (partial.isEmpty() || partial.equalsIgnoreCase("hp")) {
-			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET hp = '" + profile.hp + "'" + suffix);
-		}
-		// write class
-		if (partial.isEmpty() || partial.equalsIgnoreCase("class")) {
-			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET class = \"" + profile.current_class + "\"" + suffix);
+			SRPG.database.setSingleIntValue("users", "hp", profile.hp, "user_id", profile.id);
 		}
 		// write locale
 		if (partial.isEmpty() || partial.equalsIgnoreCase("locale")) {
-			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET locale = \"" + profile.locale + "\"" + suffix);
-		}
-		// write xp
-		if (partial.isEmpty() || partial.equalsIgnoreCase("xp")) {
-			SRPG.database.Write("UPDATE " + SRPG.database.dbTablePrefix + "users SET xp = '" + profile.xp + "'" + suffix);
-		}
-		// write skill points
-		String update = " SET ";
-		boolean first = true;
-		if (partial.isEmpty() || partial.equalsIgnoreCase("skillpoints")) {
-			for (int i = 0; i < Settings.SKILLS.size(); i++) {
-				if (!first) {
-					update += ",";
-				} else {
-					first = false;
-				}
-				update += Settings.SKILLS.get(i) + " = '" + profile.skillpoints.get(Settings.SKILLS.get(i)) + "'";
-			}
-		SRPG.database.Write(prefix + "skillpoints" + update + suffix);
+			SRPG.database.setSingleStringValue("users", "locale", profile.locale, "user_id", profile.id);
 		}
 		// write charge data
 		if (partial.isEmpty() || partial.equalsIgnoreCase("chargedata")) {
-			update = " SET ";
-			first = true;
-			for (int i = 0; i < Settings.TOOLS.size(); i++) {
-				String type = Settings.TOOLS.get(i);
-				if (!first) {
-					update += ",";
-				} else {
-					first = false;
-				}
-				update += type + "_charges = '" + profile.charges.get(type) + "'";
-				update += ","+type + "_chargeprogress = '" + profile.chargeProgress.get(type) + "'";
-			}
-			SRPG.database.Write(prefix + "chargedata" + update + suffix);
+			SRPG.database.setSingleIntValue("users", "charges", profile.charges, "user_id", profile.id);
+			SRPG.database.setSingleIntValue("users", "chargeprogress", profile.chargeProgress, "user_id", profile.id);
 		}
 	}
 	

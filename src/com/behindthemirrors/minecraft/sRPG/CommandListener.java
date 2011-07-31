@@ -30,7 +30,6 @@ public class CommandListener implements CommandExecutor {
 				// display xp,skillpoints,milestones (if enabled)
 				} else if (args[0].equalsIgnoreCase("status")) {
 					MessageParser.sendMessage(player, "status-header");
-					ProfilePlayer data = SRPG.profileManager.get(player);
 					// display xp
 					if (player.hasPermission("srpg.xp")) {
 						MessageParser.sendMessage(player, "xp");
@@ -41,14 +40,6 @@ public class CommandListener implements CommandExecutor {
 							continue;
 						}
 						MessageParser.sendMessage(player, "check-skillpoints",skillname);
-					}
-					// display focus
-					if (player.hasPermission("srpg.skills.focus") && data.focusAllowed) {
-						MessageParser.sendMessage(player, "check-focus","focus");
-					}
-					// display unallocated skillpoints
-					if (data.free > 0) {
-						MessageParser.sendMessage(player, "free-skillpoints");
 					}
 					return true;
 				// display available charges with the current tool
@@ -70,13 +61,13 @@ public class CommandListener implements CommandExecutor {
 						}
 						if (args[1].equals("+")) {
 							for (int i=0;i<amount;i++) {
-								SRPG.profileManager.get(player).addSkillpoint(skillname);
+								//SRPG.profileManager.get(player).addSkillpoint(skillname);
 								SRPG.profileManager.save(player,"skillpoints");
 							}
 							return true;
 						} else if (args[1].equals("-")) {
 							for (int i=0;i<amount;i++) {
-								SRPG.profileManager.get(player).removeSkillpoint(skillname);
+								//SRPG.profileManager.get(player).removeSkillpoint(skillname);
 								SRPG.profileManager.save(player,"skillpoints");
 							}
 							return true;
@@ -145,7 +136,6 @@ public class CommandListener implements CommandExecutor {
 						SRPG.output("spawn invincibility set to "+(new Boolean(SpawnEventListener.spawnInvincible).toString()));
 						return true;
 					}
-				// add xp to a player (handle with care, no removal atm)
 				} else if (args.length >= 2 && args[0].equalsIgnoreCase("list")) {
 					// display hp values
 					if (args[1].equalsIgnoreCase("tooldamage")) {
@@ -157,53 +147,37 @@ public class CommandListener implements CommandExecutor {
 						return true;
 					}
 					
-				} else if (args.length >= 2 && args[0].equalsIgnoreCase("charge")) {
-					ProfilePlayer profile = SRPG.profileManager.getByName(args[1]);
-					if ( profile != null) {
-						Iterator<Map.Entry<String,Integer>> iterator = profile.charges.entrySet().iterator();
-						while (iterator.hasNext()) {
-							Map.Entry<String,Integer> entry = iterator.next();
-							entry.setValue(11);
-						}
-						SRPG.profileManager.save(profile, "chargedata");
-						SRPG.output("gave player "+args[1]+" maximum charges");
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("charge") && SRPG.profileManager.has(args[1])) {
+					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
+					profile.charges = 11;
+					SRPG.profileManager.save(profile, "chargedata");
+					SRPG.output("gave player "+args[1]+" maximum charges");
+					return true;
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("enrage") && SRPG.profileManager.has(args[1])) {
+					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
+					profile.addEffect("rage", 10);
+					SRPG.output("enraged player "+args[1]);
+					return true;
+				} else if (args.length >= 3 && args[0].equalsIgnoreCase("poison") && SRPG.profileManager.has(args[1])) {
+					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
+					profile.addEffect("poison"+args[2], 5);
+					SRPG.output("poisoned player "+args[1]);
+					return true;
+				// add xp to a player (handle with care, no removal atm)
+				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp") && SRPG.profileManager.has(args[1])) {
+					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
+					Integer amount;
+					try {
+						amount = Integer.parseInt(args[2]);
+					} catch (NumberFormatException e) {
+						SRPG.output("Not a valid number");
 						return true;
 					}
-				} else if (args.length >= 2 && args[0].equalsIgnoreCase("enrage")) {
-						ProfilePlayer profile = SRPG.profileManager.getByName(args[1]);
-						if ( profile != null) {
-							profile.addEffect("rage", 10);
-							SRPG.output("enraged player "+args[1]);
-							return true;
-						}
-				} else if (args.length >= 3 && args[0].equalsIgnoreCase("poison")) {
-					ProfilePlayer profile = SRPG.profileManager.getByName(args[1]);
-					if ( profile != null) {
-						profile.addEffect("poison"+args[2], 5);
-						SRPG.output("poisoned player "+args[1]);
-						return true;
-					}
-				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp")) {
-					ProfilePlayer data = SRPG.profileManager.getByName(args[1]);
-					if ( data != null) {
-						Integer amount;
-						try {
-							amount = Integer.parseInt(args[2]);
-						} catch (NumberFormatException e) {
-							SRPG.output("Not a valid number");
-							return true;
-						}
-						
-						data.addXP(amount);
-						SRPG.profileManager.save(data, "xp");
-						SRPG.output("gave "+amount.toString()+" xp to player "+args[1]);
-						// xp given by this command are not saved atm if the server is shut down and the player doesnt quit properly
-						return true;
-						
-					} else {
-						SRPG.output("No player by that name");
-						return true;
-					}
+					
+					profile.addXP(amount);
+					SRPG.profileManager.save(profile, "xp");
+					SRPG.output("gave "+amount.toString()+" xp to player "+args[1]);
+					return true;
 				}
 			}
 		}

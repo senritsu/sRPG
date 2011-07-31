@@ -43,7 +43,7 @@ public class DamageEventListener extends EntityListener{
 		
 		if (event.getCause() == DamageCause.FALL) {
 			if (target instanceof Player) {
-				PassiveAbility.trigger((Player)target, event);
+				PassiveAbility.trigger(event);
 			}
 		} else if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 			if (event instanceof EntityDamageByEntityEvent) {
@@ -103,18 +103,10 @@ public class DamageEventListener extends EntityListener{
 				}
 			}
 			
-			// check passive abilities
-			if (player != null) {
-				PassiveAbility.trigger(player, combat, true);
-			}
-			if (target instanceof Player) {
-				PassiveAbility.trigger((Player)target, combat, false);
-			}
 			// resolve combat
 			if (event instanceof EntityDamageByEntityEvent) {
-				combat.attacker = source;
-				combat.defender = target;
-				TimedEffectResolver.trigger(combat);
+				combat.attacker = SRPG.profileManager.get(source);
+				combat.defender = SRPG.profileManager.get(target);
 				if (player != null && Settings.advanced.getBoolean("combat.restrictions.enabled", false)) {
 					String prefix = Settings.advanced.getString("combat.restrictions.group-prefix");
 					boolean forbidden = false;

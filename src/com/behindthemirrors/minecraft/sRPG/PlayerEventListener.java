@@ -32,10 +32,15 @@ public class PlayerEventListener extends PlayerListener {
 		String tool = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
 		if (tool != null && player.hasPermission("srpg.skills."+tool+".active")) {
 			if (action == Action.RIGHT_CLICK_AIR || (action == Action.RIGHT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
-				MessageParser.chargeDisplay(player);
-				SRPG.profileManager.get(player).readyAbility(player.getItemInHand().getType());
+				if (SRPG.profileManager.get(player).prepared) {
+					// cycle active
+				}
+				if (SRPG.profileManager.get(player).prepare()) {
+					// prepare if not yet prepared
+					MessageParser.chargeDisplay(player);
+				}
 			} else if (action == Action.LEFT_CLICK_AIR || (action == Action.LEFT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
-				SRPG.profileManager.get(player).activateAbility(player.getItemInHand().getType());
+				SRPG.profileManager.get(player).activate(player.getItemInHand().getType());
 			}
 		}
 	}

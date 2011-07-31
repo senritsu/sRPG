@@ -1,6 +1,6 @@
 name: sRPG
 main: com.behindthemirrors.minecraft.sRPG.SRPG
-version: 0.5alpha3
+version: 0.5alpha4
 
 commands:
   srpg:

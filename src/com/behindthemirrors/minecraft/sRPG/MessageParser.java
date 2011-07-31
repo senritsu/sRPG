@@ -10,33 +10,27 @@ import org.bukkit.entity.Player;
 public class MessageParser {
 	
 	public static void chargeDisplay(Player player) {
-		String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(player.getItemInHand().getType());
-		if (toolName != null) {
-			String skillname = toolName.substring(0, toolName.indexOf("."));
-			ProfilePlayer data = SRPG.profileManager.get(player);
-			Integer charges = data.charges.get(skillname);
-			Integer cost = ProfilePlayer.abilityCosts.get(toolName);
-			// check if the tool has an active ability
-			if (cost==null) {
-				return;
-			}
-			String text = "[";
-			if (charges >= cost) { // TODO find NPE
-				text += ChatColor.DARK_GREEN + Utility.repeat("o",cost);
-				text += ChatColor.WHITE + Utility.repeat("o",charges-cost);
-				charges = ProfilePlayer.chargeMax - charges;
-			} else {
-				text += ChatColor.WHITE + Utility.repeat("o",charges);
-				text += ChatColor.DARK_RED + Utility.repeat("o",cost-charges);
-				charges = ProfilePlayer.chargeMax - charges - 1;
-			}
-			text += ChatColor.DARK_GRAY+Utility.repeat("o",charges)+ChatColor.WHITE+"]";
-			// display of blocks to next charge disabled for now
-			//if (charges < PlayerData.chargeMax) {
-			//	text += " ("+(PlayerData.chargeTicks-data.chargeProgress.get(skillname))+" blocks to next charge)";
-			//}
-			player.sendMessage(text);
+		ProfilePlayer profile = SRPG.profileManager.get(player);
+		Integer charges = profile.charges;
+		Integer cost = profile.currentActive.cost;
+		// check if the tool has an active ability
+		String text = "[";
+		if (charges >= cost) { // TODO find NPE
+			text += ChatColor.DARK_GREEN + Utility.repeat("o",cost);
+			text += ChatColor.WHITE + Utility.repeat("o",charges-cost);
+			charges = ProfilePlayer.chargeMax - charges;
+		} else {
+			text += ChatColor.WHITE + Utility.repeat("o",charges);
+			text += ChatColor.DARK_RED + Utility.repeat("o",cost-charges);
+			charges = ProfilePlayer.chargeMax - charges - 1;
 		}
+		text += ChatColor.DARK_GRAY+Utility.repeat("o",charges)+ChatColor.WHITE+"]";
+		// display of blocks to next charge disabled for now
+		//if (charges < PlayerData.chargeMax) {
+		//	text += " ("+(PlayerData.chargeTicks-data.chargeProgress.get(skillname))+" blocks to next charge)";
+		//}
+		text += " (Current "+Utility.parseSingularPlural(Settings.jobsettings.getString("job-terminology.active"),1)+": "+profile.currentActive.name+")";
+		player.sendMessage(text);
 	}
 	
 	public static void sendMessage(Player player, String message) {
@@ -44,7 +38,7 @@ public class MessageParser {
 	}
 	
 	static void sendMessage(Player player, String message, String context) {
-		ProfilePlayer data = SRPG.profileManager.get(player);
+		ProfilePlayer profile = SRPG.profileManager.get(player);
 		ArrayList<String> messageList = (ArrayList<String>)Settings.localization.get(SRPG.profileManager.get(player).locale).getStringList("messages."+message,new ArrayList<String>());
 		if (messageList.isEmpty()) {
 			messageList.add(Settings.localization.get(SRPG.profileManager.get(player).locale).getString("messages."+message,"Error in localization file, contact your admin about message '"+message+"'"));
@@ -65,38 +59,30 @@ public class MessageParser {
 		    	// check for supported variables first
 		    	String match = matcher.group();
 		    	if (match.equalsIgnoreCase("<!level>")) {
-		    		matcher.appendReplacement(sb, Integer.toString(data.free + data.spent));
+		    		matcher.appendReplacement(sb, Integer.toString(profile.jobLevels.get(profile.currentJob)));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!xp>")) {
-		    		matcher.appendReplacement(sb, Integer.toString(data.xp%ProfilePlayer.xpToLevel));
+		    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
+		    		matcher.appendReplacement(sb, Integer.toString(profile.jobXP.get(profile.currentJob)-profile.currentJob.xpToNextLevel(currentLevel-1)));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!xp2level>")) {
-		    		matcher.appendReplacement(sb, ProfilePlayer.xpToLevel.toString());
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!free>")) {
-		    		matcher.appendReplacement(sb, data.free.toString());
+		    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
+		    		matcher.appendReplacement(sb, Integer.toString(currentLevel < profile.currentJob.maximumLevel ? profile.currentJob.xpToNextLevel(currentLevel) : profile.currentJob.xpToNextLevel(currentLevel-1)));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!skillname>")) {
-		    		matcher.appendReplacement(sb, Settings.localization.get(data.locale).getString("skills."+context));
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!skillpoints>")) {
-		    		matcher.appendReplacement(sb, data.skillpoints.get(context).toString());
+		    		matcher.appendReplacement(sb, Settings.localization.get(profile.locale).getString("skills."+context));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!cost>")) {
 		    		matcher.appendReplacement(sb, context);
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!ability>")) {
-		    		matcher.appendReplacement(sb, Settings.localization.get(data.locale).getString("active-abilities."+context));
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!milestone>")) {
-		    		ArrayList<String> milestones = data.getMilestones(context);
-		    		matcher.appendReplacement(sb, Settings.localization.get(data.locale).getString("milestones."+milestones.get(milestones.size()-1)));
+		    		matcher.appendReplacement(sb, Settings.localization.get(profile.locale).getString("active-abilities."+context));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!charges>")) {
-		    		matcher.appendReplacement(sb, data.charges.get(context).toString());
+		    		matcher.appendReplacement(sb, profile.charges.toString());
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!chargeprogress>")) {
-		    		matcher.appendReplacement(sb, data.chargeProgress.get(context).toString());
+		    		matcher.appendReplacement(sb, profile.chargeProgress.toString());
 		    		
 		    	} else if (match.startsWith("<#")) { 
 		    		matcher.appendReplacement(sb, Settings.advanced.getString(match.substring(2,match.length()-1)));
@@ -113,7 +99,7 @@ public class MessageParser {
 		    		matcher.appendReplacement(sb, result+"%");
 		    		
 		    	} else {
-		    		String replacement = Settings.localization.get(data.locale).getString(match.substring(1,match.length()-1),"");
+		    		String replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
 		    		if (!replacement.isEmpty()) {
 		    			matcher.appendReplacement(sb, replacement);
 		    		}

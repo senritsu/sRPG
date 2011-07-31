@@ -1,6 +1,6 @@
 package com.behindthemirrors.minecraft.sRPG;
 
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 
@@ -13,8 +13,8 @@ public class CombatInstance {
 	static double defaultMissMultiplier;
 	
 	private EntityDamageEvent event;
-	public LivingEntity attacker;
-	public LivingEntity defender;
+	public ProfileNPC attacker;
+	public ProfileNPC defender;
 	
 	public Integer basedamage;
 	public Integer modifier;
@@ -22,9 +22,11 @@ public class CombatInstance {
 	public Double critMultiplier;
 	public Double missChance;
 	public Double missMultiplier;
+	public Double evadeChance;
 	
 	private boolean canceled = false;
-	private String cancelMessage;
+	private String cancelMessageAttacker;
+	private String cancelMessageDefender;
 	
 	public CombatInstance(EntityDamageEvent event) {
 		this.event = event;
@@ -34,21 +36,36 @@ public class CombatInstance {
 		critMultiplier = defaultCritMultiplier;
 		missChance = defaultMissChance;
 		missMultiplier = defaultMissMultiplier;
+		evadeChance = 0.0;
 	}
 	
 	public void cancel() {
-		cancel(null);
+		cancel(null,null);
 	}
 	
-	public void cancel(String message) {
+	public void cancel(String messageAttacker,String messageDefender) {
 		canceled = true;
-		cancelMessage = message;
+		cancelMessageAttacker = messageAttacker;
+		cancelMessageDefender = messageDefender;
 	}
 	
 	public void resolve() {
+		PassiveAbility.trigger(this);
+		TimedEffectResolver.trigger(this);
+		Material attackerHandItem = attacker instanceof Player ? ((Player)attacker).getItemInHand().getType() : null;
+		Material defenderHandItem = attacker instanceof Player ? ((Player)attacker).getItemInHand().getType() : null;
+		
+		evadeChance += defender.getStat("evasion", defenderHandItem);
+		critChance += attacker.getStat("crit-chance", attackerHandItem);
+		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem);
+		// TODO: parry
+		
 		if (canceled){
-			if (attacker instanceof Player && cancelMessage != null) {
-				MessageParser.sendMessage((Player)attacker, cancelMessage);
+			if (attacker instanceof Player && cancelMessageAttacker != null) {
+				MessageParser.sendMessage((Player)attacker, cancelMessageAttacker);
+			}
+			if (defender instanceof Player && cancelMessageDefender != null) {
+				MessageParser.sendMessage((Player)defender, cancelMessageDefender);
 			}
 			event.setCancelled(true);
 			return;
@@ -60,6 +77,7 @@ public class CombatInstance {
 		double damage = basedamage + modifier;
 		boolean crit = false;
 		boolean miss = false;
+		boolean evade = false;
 		
 		// apply critical hit
 		if (SRPG.generator.nextDouble() <= critChance) {
@@ -67,11 +85,16 @@ public class CombatInstance {
 			crit = true;
 		}
 		// apply miss
-		if (SRPG.generator.nextDouble() <= missChance) {
+		double roll = SRPG.generator.nextDouble();
+		if (roll <= missChance + evadeChance) {
 			damage *= missMultiplier;
 			miss = true;
+			if (roll <= evadeChance) {
+				evade = true;
+			}
 		}
 		// send messages to player
+		// TODO: proper miss/evade messages
 		if (attacker instanceof Player) {
 			Player player = (Player)attacker;
 			if (miss) {

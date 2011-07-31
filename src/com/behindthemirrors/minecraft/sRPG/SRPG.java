@@ -75,9 +75,7 @@ public class SRPG extends JavaPlugin {
 		Boolean disable = false;
 		settings.load();
 		if (database.mySQLenabled) {
-			if (database.connect()) {
-				database.createStructure();
-			} else {
+			if (!database.connect()) {
 				output("disabling plugin");
 				disable = true;
 			}

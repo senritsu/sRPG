@@ -152,6 +152,6 @@ public class Utility {
 	public static String parseSingularPlural(String input, Integer amount) {
 		String singularEnding = input.substring(input.indexOf("(")+1, input.indexOf("|"));
 		String pluralEnding = input.substring(input.indexOf("|")+1, input.indexOf(")"));
-		return input.substring(0,input.indexOf("(")) + (amount > 1 ? pluralEnding : singularEnding);
+		return input.substring(0,input.indexOf("(")) + ((amount > 1 || amount == 0) ? pluralEnding : singularEnding);
 	}
 }
