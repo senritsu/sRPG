@@ -11,13 +11,25 @@ commands:
            /<command> [skillname]
            /<command> locale [locale]
 permissions:
-  srpg.basic:
+  srpg.basics:
     default: true
     description: Gives access to all normal features
     children:
       srpg.xp: true
+      srpg.charges: true
+      srpg.active: true
+      srpg.passive: true
+      srpg.jobs: true
   srpg.xp:
-    description: gain xp
+    description: access to gaining xp for jobs
+  srpg.charges:
+    description: access to gaining charges for active abilities
+  srpg.active:
+    description: access to all active abilities (you may use srpg.active.foo for every 'foo' defined in actives.yml)
+  srpg.passive:
+    description: access to all passive skills (you may use srpg.jobs.foo for every 'foo' defined in passives.yml)
+  srpg.jobs:
+    description: access to all enabled jobs (you may use srpg.jobs.foo for every 'foo' defined in jobs.yml)
   srpg.admin:
     default: op
     description: Gives access to admin commands
@@ -25,58 +37,3 @@ permissions:
       srpg.reload: true
   srpg.reload:
     description: reload config from ingame
-  srpg.skills:
-    description: Gives access to all skills
-    children:
-      srpg.skills.swords: true
-      srpg.skills.swords.active: true
-      srpg.skills.pickaxes: true
-      srpg.skills.pickaxes.active: true
-      srpg.skills.axes: true
-      srpg.skills.axes.active: true
-      srpg.skills.shovels: true
-      srpg.skills.shovels.active: true
-      srpg.skills.hoes: true
-      srpg.skills.bow: true
-      srpg.skills.ukemi: true
-      srpg.skills.evasion: true
-      srpg.skills.focus: true
-  srpg.skills.passive:
-    default: true
-    description: Gives access to all passive skills
-    children:
-      srpg.skills.swords: true
-      srpg.skills.pickaxes: true
-      srpg.skills.axes: true
-      srpg.skills.shovels: true
-      srpg.skills.hoes: true
-      srpg.skills.bow: true
-      srpg.skills.ukemi: true
-      srpg.skills.evasion: true
-      srpg.skills.focus: true
-  srpg.skills.swords:
-    description: Passive skill
-  srpg.skills.swords.active:
-    description: Active abilities for the passive skill
-  srpg.skills.pickaxes:
-    description: Passive skill
-  srpg.skills.pickaxes.active:
-    description: Active abilities for the passive skill
-  srpg.skills.axes:
-    description: Passive skill
-  srpg.skills.axes.active:
-    description: Active abilities for the passive skill
-  srpg.skills.shovels:
-    description: Passive skill
-  srpg.skills.shovels.active:
-    description: Active abilities for the passive skill
-  srpg.skills.hoes:
-    description: Passive skill
-  srpg.skills.bow:
-    description: Passive skill
-  srpg.skills.ukemi:
-    description: Passive skill
-  srpg.skills.evasion:
-    description: Passive skill
-  srpg.skills.focus:
-    description: Passive skill

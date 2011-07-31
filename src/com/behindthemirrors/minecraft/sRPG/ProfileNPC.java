@@ -36,8 +36,8 @@ public class ProfileNPC {
 		return getStat(name,def,null, null);
 	}
 	
-	public double getStat(String name, Material material) {
-		return getStat(name, 0.0, material, null);
+	public double getStat(String name, Material handMaterial) {
+		return getStat(name, 0.0, handMaterial, null);
 	}
 	
 	public double getStat(String name, Material handMaterial, Material targetMaterial) {

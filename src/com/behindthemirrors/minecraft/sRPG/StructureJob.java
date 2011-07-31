@@ -22,7 +22,7 @@ public class StructureJob implements Comparable<StructureJob> {
 	String description;
 	String details;
 	Integer maximumLevel;
-	HashMap<String,Integer> prerequisites;
+	HashMap<StructureJob,Integer> prerequisites;
 	Integer tier;
 	HashMap<String,Double> baseStats;
 	HashMap<String,ConfigurationNode> bonuses;
@@ -128,9 +128,9 @@ public class StructureJob implements Comparable<StructureJob> {
 			return true;
 		}
 		boolean result = true;
-		String job;
+		StructureJob job;
 		Integer level;
-		for (Map.Entry<String,Integer> entry : prerequisites.entrySet()) {
+		for (Map.Entry<StructureJob,Integer> entry : prerequisites.entrySet()) {
 			job = entry.getKey();
 			level = entry.getValue();
 			if (!(profile.jobLevels.containsKey(job) && level <= profile.jobLevels.get(job))) {

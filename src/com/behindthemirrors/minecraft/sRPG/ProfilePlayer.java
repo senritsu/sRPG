@@ -11,6 +11,8 @@ public class ProfilePlayer extends ProfileNPC {
 	// debug switch for player stuff
 	public static boolean debug = false;
 	
+	boolean suppressMessages = true;
+	
 	// TODO: maybe change to read directly from config
 	static Integer chargeMax;
 	static Integer chargeTicks;
@@ -36,10 +38,7 @@ public class ProfilePlayer extends ProfileNPC {
 	String locale;
 	
 	public void addXP(Integer amount) {
-		// TODO: maybe move the permission check before the actual xp calculations
-		if (!player.hasPermission("srpg.xp")) {
-			return;
-		}
+		SRPG.output(currentJob.name+": level "+jobLevels.get(currentJob)+"/"+currentJob.maximumLevel);
 		if (jobLevels.get(currentJob) >= currentJob.maximumLevel) {
 			return;
 		}
@@ -47,45 +46,42 @@ public class ProfilePlayer extends ProfileNPC {
 		jobXP.put(currentJob, jobXP.get(currentJob) + amount);
 		checkLevelUp(currentJob);
 		
-		recalculate();
-		MessageParser.sendMessage(player, "levelup");
 		// debug message
 		if (debug) {
 			SRPG.output("adding "+amount.toString()+" xp to player "+name);
 		}
+		SRPG.profileManager.save(this,"xp");
 	}
 	
-	public void checkLevelUp(StructureJob job) {
+	public boolean checkLevelUp(StructureJob job) {
 		Integer currentLevel = jobLevels.containsKey(job) ? jobLevels.get(job) : 0;
 		Integer amount = jobXP.get(job); 
 		// check for job levelup
-		int i = 0;
 		boolean done = false;
+		boolean levelup = false;
 		while (!done) {
-			SRPG.output("level up check iteration "+i);
-			SRPG.output("comparing "+amount+" to "+job.xpToNextLevel(currentLevel)+" for current level "+currentLevel);
-			if (amount >= job.xpToNextLevel(currentLevel)) {
+			if (amount >= job.xpToNextLevel(currentLevel) && currentLevel < job.maximumLevel) {
 				if (currentLevel+1 >= job.maximumLevel) {
 					jobXP.put(job, job.xpToNextLevel(currentLevel));
-					done = true;
 				}
-				jobLevels.put(job,currentLevel + 1);
-				if (amount <= 0) {
-					done = true;
-				}
+				currentLevel++;
+				jobLevels.put(job,currentLevel);
+				levelup = true;
 			} else {
-				done = true;
-			}
-			// debug
-			i++;
-			if (i > 10) {
 				break;
 			}
 		}
+		if (levelup) {
+			if (!suppressMessages) {
+				MessageParser.sendMessage(player, "levelup");
+			}
+			recalculate();
+		}
+		return levelup;
 		
 	}
 	
-	public void addChargeTick(String skillname) {
+	public void addChargeTick() {
 		chargeProgress++;
 		if (chargeProgress >= chargeTicks) {
 			if (charges < chargeMax) {
@@ -94,7 +90,9 @@ public class ProfilePlayer extends ProfileNPC {
 			} else {
 				chargeProgress--;
 			}
-			MessageParser.sendMessage(player, "charge-acquired");
+			if (!suppressMessages) {
+				MessageParser.sendMessage(player, "charge-acquired");
+			}
 		}
 	}
 	
@@ -121,12 +119,14 @@ public class ProfilePlayer extends ProfileNPC {
 		SRPG.output("checking prerequisites");
 		if (job.prerequisitesMet(this)) {
 			if (!jobLevels.containsKey(job)) {
-				jobLevels.put(job,0);
+				jobLevels.put(job,1);
 			}
 			SRPG.output("changing job");
 			currentJob = job;
-			checkLevelUp(job);
-			recalculate();
+			if (!checkLevelUp(job)) {
+				recalculate();
+			}
+			SRPG.profileManager.save(this,"job");
 		}
 	}
 	
@@ -139,9 +139,10 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	void recalculate() {
-		SRPG.output(jobXP.toString());
-		SRPG.output(jobLevels.toString());
-		SRPG.output(currentJob.toString());
+		for (StructureJob job : jobXP.keySet()) {
+			SRPG.output(job.name+", "+jobXP.get(job)+"xp, level "+(jobLevels.containsKey(job) ? jobLevels.get(job): 0)+"/"+job.maximumLevel);
+		}
+		SRPG.output("current job: "+currentJob.name);
 	}
 
 }

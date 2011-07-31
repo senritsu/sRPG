@@ -48,18 +48,19 @@ public class PassiveAbility {
 		}
 	}
 	
-	public static void trigger(Player player, BlockBreakEvent event) {
+	public static void trigger(ProfilePlayer profile, BlockBreakEvent event) {
 		// quickfix for NPCs
-		ProfilePlayer profile = SRPG.profileManager.get(player);
 		if (profile == null) return;
 		
-		Material handitem = player.getItemInHand().getType();
+		ItemStack handitem = profile.player.getItemInHand();
+		Material handmaterial = handitem.getType();
+		Material material = event.getBlock().getType();
 		
 		// check active tool and permissions
 			// chance for no durability loss by skill
 		double roll = SRPG.generator.nextDouble();
-		if (roll < profile.getStat("durability-recovery-chance",player.getItemInHand().getType())){
-			player.getItemInHand().setDurability((short)(player.getItemInHand().getDurability() + 1));
+		if (roll < profile.getStat("durability-recovery-chance",handmaterial)){
+			handitem.setDurability((short)(handitem.getDurability() + 1));
 		}
 		
 		// TODO: later make them more configurable and less hardcoded
@@ -67,26 +68,27 @@ public class PassiveAbility {
 		roll = SRPG.generator.nextDouble();
 		Block block = event.getBlock();
 		
-		double doubleDropChance = profile.getStat("double-drop-chance", handitem);
-		double tripleDropChance = profile.getStat("triple-drop-chance", handitem);
+		double doubleDropChance = profile.getStat("double-drop-chance", handmaterial,material);
+		double tripleDropChance = profile.getStat("triple-drop-chance", handmaterial,material);
 		
 		// check active tool and permissions
-		if (!(BlockEventListener.userPlacedBlocks.contains(block) || !Settings.MULTIDROP_VALID_BLOCKS.get(handitem).contains(block.getType()))) {
+		if (!(BlockEventListener.userPlacedBlocks.contains(block) && Settings.MULTIDROP_VALID_BLOCKS.containsKey(handmaterial) && Settings.MULTIDROP_VALID_BLOCKS.get(handmaterial).contains(material))) {
 			if (debug) {
 				SRPG.output("roll: "+(new Double(roll).toString()));
 				SRPG.output("chances: "+(new Double(doubleDropChance).toString())+" for double, "+(new Double(tripleDropChance).toString())+" for triple");
 			}
 			
 			ItemStack item = Utility.getNaturalDrops(block);
-			
-			if (roll < tripleDropChance) {
-				item.setAmount(item.getAmount() * 2);
-			} else if (roll >= tripleDropChance + doubleDropChance) {
-				item.setAmount(item.getAmount() * 0);
-			}
-			
-			if (item.getAmount() > 0) {
-				block.getWorld().dropItemNaturally(block.getLocation(), item);
+			if (item != null) {
+				if (roll < tripleDropChance) {
+					item.setAmount(item.getAmount() * 2);
+				} else if (roll >= tripleDropChance + doubleDropChance) {
+					item.setAmount(item.getAmount() * 0);
+				}
+				
+				if (item.getAmount() > 0) {
+					block.getWorld().dropItemNaturally(block.getLocation(), item);
+				}
 			}
 		}
 			
@@ -95,9 +97,9 @@ public class PassiveAbility {
 		// check active tool and permissions
 		Material[] selection = {};
 		int amount = 1; 
-		double common = profile.getStat("extradrop-common",handitem);
-		double uncommon = profile.getStat("extradrop-uncommon",handitem);
-		double rare = profile.getStat("extradrop-rare",handitem);
+		double common = profile.getStat("extradrop-common",handmaterial,material);
+		double uncommon = profile.getStat("extradrop-uncommon",handmaterial,material);
+		double rare = profile.getStat("extradrop-rare",handmaterial,material);
 		if (roll > uncommon+rare && roll <= common+uncommon+rare) {
 			selection = new Material[] {Material.BONE,Material.COAL,Material.FEATHER,Material.FLINT,Material.STICK,Material.SEEDS,Material.LEATHER_BOOTS};
 			amount = SRPG.generator.nextInt(3);

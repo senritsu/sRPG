@@ -92,7 +92,6 @@ public class DamageEventListener extends EntityListener{
 					if (toolName != null) {
 						combat.basedamage = damageTableTools.get(toolName);
 						// award charge tick
-						SRPG.profileManager.get(player).addChargeTick(Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(material));
 						//TODO: maybe move saving to the data class
 						SRPG.profileManager.save(player,"chargedata");
 					} else if (event instanceof EntityDamageByProjectileEvent && ((EntityDamageByProjectileEvent)event).getProjectile() instanceof Arrow) {

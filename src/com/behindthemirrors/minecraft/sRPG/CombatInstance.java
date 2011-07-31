@@ -95,8 +95,8 @@ public class CombatInstance {
 		}
 		// send messages to player
 		// TODO: proper miss/evade messages
-		if (attacker instanceof Player) {
-			Player player = (Player)attacker;
+		if (attacker instanceof ProfilePlayer) {
+			Player player = ((ProfilePlayer)attacker).player;
 			if (miss) {
 				if (damage <= 0) {
 					MessageParser.sendMessage(player, "miss-no-damage");
@@ -110,6 +110,10 @@ public class CombatInstance {
 					MessageParser.sendMessage(player, "miss-critical-damage");
 				}
 			}
+		}
+		
+		if (damage > 0 && attacker instanceof ProfilePlayer) {
+			((ProfilePlayer)attacker).addChargeTick();
 		}
 		
 		event.setDamage(damage > 0 ? (int)Math.round(damage) : 0);

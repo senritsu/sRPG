@@ -48,42 +48,30 @@ public class CommandListener implements CommandExecutor {
 					return true;
 				// get info about a skill or increase it
 				// TODO find NPE
-				} else if (Settings.SKILLS_ALIASES.get(SRPG.profileManager.get(player).locale).contains(args[0].toLowerCase())) {
-					String skillname = Settings.SKILLS.get(Settings.SKILLS_ALIASES.get(SRPG.profileManager.get(player).locale).indexOf(args[0].toLowerCase()));
-					// increasing/decreasing
-					if (args.length > 1) {
-						Integer amount = 1;
-						if (args.length > 2) {
-							try {
-								amount = Integer.parseInt(args[2]);
-							} catch (NumberFormatException e) {
+				} else if (args.length >= 3 && (args[0]+" "+args[1]).equalsIgnoreCase("change to")) {
+					if (Settings.jobs.containsKey(args[2].toLowerCase())) {
+						if (player.hasPermission("srpg.jobs") || player.hasPermission("srpg.jobs."+args[2])) {
+							StructureJob job = Settings.jobs.get(args[2]);
+							if (job == SRPG.profileManager.get(player).currentJob) {
+								player.sendMessage("this is your current job");
+							} else if (job.prerequisitesMet(SRPG.profileManager.get(player))) {
+								SRPG.profileManager.get(player).changeJob(job);
+								player.sendMessage("your job changed to "+job.name);
+							} else {
+								player.sendMessage("you do not meet the requirements for that job");
+								for (Map.Entry<StructureJob, Integer> entry : job.prerequisites.entrySet()) {
+									player.sendMessage(entry.getKey().name+": "+entry.getValue());
+								}
 							}
+						} else {
+							player.sendMessage("you cannot select that job");
 						}
-						if (args[1].equals("+")) {
-							for (int i=0;i<amount;i++) {
-								//SRPG.profileManager.get(player).addSkillpoint(skillname);
-								SRPG.profileManager.save(player,"skillpoints");
-							}
-							return true;
-						} else if (args[1].equals("-")) {
-							for (int i=0;i<amount;i++) {
-								//SRPG.profileManager.get(player).removeSkillpoint(skillname);
-								SRPG.profileManager.save(player,"skillpoints");
-							}
-							return true;
-						}
-					// information
 					} else {
-						MessageParser.sendMessage(player, "skill-info.common-header", skillname);
-						MessageParser.sendMessage(player, "skill-info."+skillname+".description", skillname);
-						MessageParser.sendMessage(player, "skill-info.skill-effect-header", skillname);
-						MessageParser.sendMessage(player, "skill-info."+skillname+".basic", skillname);
-						MessageParser.sendMessage(player, "skill-info.passive-header", skillname);
-						MessageParser.sendMessage(player, "skill-info."+skillname+".passive", skillname);
-						MessageParser.sendMessage(player, "skill-info.active-header", skillname);
-						MessageParser.sendMessage(player, "skill-info."+skillname+".active", skillname);
-						return true;
+						player.sendMessage("no job by that name");
 					}
+					return true;
+				} else if (false) {
+					String name = Settings.SKILLS.get(Settings.JOB_ALIASES.get(SRPG.profileManager.get(player).locale).indexOf(args[0].toLowerCase()));
 				// internal help (TODO: maybe eventually replaced with some help plugin)
 				} else if (args[0].equalsIgnoreCase("help")) {
 					//String topic = args[1];

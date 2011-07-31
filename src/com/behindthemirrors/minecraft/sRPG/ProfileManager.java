@@ -118,10 +118,10 @@ public class ProfileManager {
 				profile.checkLevelUp(Settings.jobs.get(jobs.get(i)));
 			}
 		}
-		
 		profile.charges = SRPG.database.getSingleIntValue("users", "charges", "user_id", profile.id);
 		profile.chargeProgress = SRPG.database.getSingleIntValue("users", "chargeprogress", "user_id", profile.id);
 		profile.changeJob(profile.currentJob);
+		profile.suppressMessages = false;
 	}
 	
 	// create database entry for player
@@ -155,6 +155,14 @@ public class ProfileManager {
 	
 	// save specific part of data to database
 	public void save(ProfilePlayer profile, String partial) {
+		// write xp
+		if (partial.isEmpty() || partial.equalsIgnoreCase("xp")) {
+			SRPG.database.setSingleIntValue("jobxp", profile.currentJob.signature, profile.jobXP.get(profile.currentJob), "user_id", profile.id);
+		}
+		// write job
+		if (partial.isEmpty() || partial.equalsIgnoreCase("job")) {
+			SRPG.database.setSingleStringValue("users", "currentjob", profile.currentJob.signature, "user_id", profile.id);
+		}
 		// write hp
 		if (partial.isEmpty() || partial.equalsIgnoreCase("hp")) {
 			SRPG.database.setSingleIntValue("users", "hp", profile.hp, "user_id", profile.id);

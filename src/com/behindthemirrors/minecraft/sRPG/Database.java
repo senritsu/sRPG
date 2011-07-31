@@ -16,7 +16,7 @@ import com.avaje.ebeaninternal.server.lib.sql.DataSourceException;
 
 public class Database {
 	
-	public static boolean debug = true;
+	public static boolean debug = false;
 	
     private Connection connection;
 	String dbTablePrefix;

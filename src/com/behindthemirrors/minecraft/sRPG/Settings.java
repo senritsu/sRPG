@@ -35,7 +35,7 @@ public class Settings {
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
 	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
 	static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
-	static HashMap<String,ArrayList<String>> SKILLS_ALIASES;
+	static HashMap<String,ArrayList<String>> JOB_ALIASES;
 	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","pickaxes","axes","shovels","hoes"}));
 	static ArrayList<String> GRADES =  new ArrayList<String>(Arrays.asList(new String[] {"wood","stone","iron","gold","diamond"}));
 	
@@ -158,7 +158,7 @@ public class Settings {
 			}
 			localization = new HashMap<String,Configuration>();
 			nameReplacements = new HashMap<String, HashMap<String,String>>();
-			SKILLS_ALIASES = new HashMap<String, ArrayList<String>>();
+			JOB_ALIASES = new HashMap<String, ArrayList<String>>();
 			
 			// create plugin default locale file
 			for (String name : new String[] {"EN"}) {
@@ -186,9 +186,9 @@ public class Settings {
 					localization.get(locale).load(); 
 					
 					// update skill aliases
-					SKILLS_ALIASES.put(locale,new ArrayList<String>());
+					JOB_ALIASES.put(locale,new ArrayList<String>());
 					for (String skillname : SKILLS) {
-						SKILLS_ALIASES.get(locale).add(localization.get(locale).getString("skills."+skillname).toLowerCase());
+						JOB_ALIASES.get(locale).add(localization.get(locale).getString("skills."+skillname).toLowerCase());
 					}
 				}
 			}
@@ -345,10 +345,10 @@ public class Settings {
 						jobs.put(name, new StructureJob(name,jobDefinitions.getNode(name)));
 						
 						// load job prerequisites from jobtree
-						jobs.get(name).prerequisites = new HashMap<String, Integer>();
+						jobs.get(name).prerequisites = new HashMap<StructureJob, Integer>();
 						if (jobsettings.getKeys("tree."+name+".prerequisites")!= null) {
-							for (String job : jobsettings.getKeys("tree."+name+".prerequisites")) {
-								jobs.get(name).prerequisites.put(job, jobsettings.getInt("tree."+name+".prerequisites."+job, 1));
+							for (String prereq : jobsettings.getKeys("tree."+name+".prerequisites")) {
+								jobs.get(name).prerequisites.put(jobs.get(prereq), jobsettings.getInt("tree."+name+".prerequisites."+prereq, 1));
 							}
 						} 
 					}
@@ -356,8 +356,8 @@ public class Settings {
 				// disable all jobs with missing prerequisites
 				ArrayList<String> deactivate = new ArrayList<String>();
 				for (String name : jobs.keySet()) {
-					for (String prereq : jobs.get(name).prerequisites.keySet()) {
-						if (!jobs.containsKey(prereq)) {
+					for (StructureJob job : jobs.get(name).prerequisites.keySet()) {
+						if (!jobs.containsKey(job.signature)) {
 							deactivate.add(name);
 							deactivate.addAll(Utility.getChildren(jobs, name));
 							break;

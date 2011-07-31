@@ -7,7 +7,6 @@ import java.util.Map;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -23,13 +22,13 @@ public class BlockEventListener extends BlockListener {
 	
 	// check block rarity and award xp according to config
 	public void onBlockBreak(BlockBreakEvent event) {
-		if (event.isCancelled()) {
+		ProfilePlayer profile = SRPG.profileManager.get(event.getPlayer());
+		if (event.isCancelled() || profile == null) {
 			return;
 		}
-		Player player = event.getPlayer();
 		Material material = event.getBlock().getType();
 		// check for permissions
-		if (player.hasPermission("srpg.xp")) {
+		if (profile.player.hasPermission("srpg.xp")) {
 			// award xp
 			String rarity = Settings.advanced.getString("xp.blocks.default"); 
 			Iterator<Map.Entry<String,ArrayList<Integer>>> groups = groupBlockMapping.entrySet().iterator();
@@ -39,23 +38,20 @@ public class BlockEventListener extends BlockListener {
 					rarity = pair.getKey();
 				}
 			}
-			if (SRPG.profileManager.get(player) != null && SRPG.generator.nextDouble() <= xpChances.get(rarity)) {
+			double roll = SRPG.generator.nextDouble();
+			SRPG.output(xpChances.get(rarity)+" chance to get "+xpValues.get(rarity)+"xp, roll was"+roll);
+			if (roll <= xpChances.get(rarity)) {
 				//TODO find the NPE here
-				SRPG.profileManager.get(player).addXP(xpValues.get(rarity));
-				//TODO: maybe move saving to the data class
-				SRPG.profileManager.save(player,"xp");
+				profile.addXP(xpValues.get(rarity));
 			}
 		}
 		// award charge
-		String tool = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
-		// check active tool and permissions
-		if (tool != null && player.hasPermission("srpg.skills."+tool+".active")) {
-			SRPG.profileManager.get(player).addChargeTick(tool);
+		if (profile.player.hasPermission("srpg.charges")) {
 			//TODO: maybe move saving to the data class
-			SRPG.profileManager.save(player,"chargedata");
+			profile.addChargeTick();
+			SRPG.profileManager.save(profile,"chargedata");
 		}
-		
-		PassiveAbility.trigger(player, event);
+		PassiveAbility.trigger(profile, event);
 	}
 	
 	public void onBlockPlace(BlockPlaceEvent event) {

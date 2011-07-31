@@ -3,9 +3,11 @@ package com.behindthemirrors.minecraft.sRPG;
 import java.util.logging.Logger;
 import java.util.Random;
 
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
 
@@ -97,6 +99,11 @@ public class SRPG extends JavaPlugin {
 	}
 	public void onDisable() {
 		pdfFile = this.getDescription();
+		for (World world : plugin.getServer().getWorlds()) {
+			for (Player player : world.getPlayers()) {
+				profileManager.save(player);
+			}
+		}
 		log.info(LOG_PREFIX + pdfFile.getName() + " v" + pdfFile.getVersion() + " has been disabled." );
 	}
 	
