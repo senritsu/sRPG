@@ -23,9 +23,26 @@ public class StructurePassive implements Comparable<StructurePassive> {
 		}
 	}
 
+	public Integer getPotency() {
+		Integer potency = 1;
+		if (signature.contains("!")) {
+			try {
+				potency = Integer.parseInt(signature.substring(signature.indexOf("!")+1));
+			} catch (NumberFormatException ex) {
+			}
+		}
+		return potency;
+	}
+	
 	@Override
 	public int compareTo(StructurePassive other) {
 		return name.compareTo(other.name);
 	}
-
+	
+	@Override
+	public String toString() {
+		return signature;
+		
+	}
+	
 }

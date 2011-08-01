@@ -5,8 +5,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Slime;
@@ -14,6 +18,13 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.ItemStack;
 
 public class Utility {
+	
+	static HashMap<String,List<Material>> materialGroupNames = new HashMap<String, List<Material>>();
+	
+	static {
+		materialGroupNames.put("swords", Arrays.asList(new Material[] {Material.WOOD_SWORD,Material.STONE_SWORD,Material.IRON_SWORD,Material.DIAMOND_SWORD}));
+	}
+	
 	public static String join(ArrayList<String> list, String delimiter) {
 		StringBuilder str = new StringBuilder();
 		Boolean first = true;
@@ -149,9 +160,60 @@ public class Utility {
 		return children;
 	}
 	
+	public static void putAll(HashMap<StructurePassive, EffectDescriptor> current, ArrayList<StructurePassive> arrayList, EffectDescriptor value) {
+		for (StructurePassive key : arrayList) {
+			current.put(key, value);
+		}
+	}
+	
+	public static void removeAll(ArrayList<String> list,String item) {
+		Iterator<String> iterator = list.iterator();
+		while (iterator.hasNext()) {
+			if (iterator.next().equals(item)) {
+				iterator.remove();
+			}
+		}
+	}
+	
+	public static String stripPotency(String input) {
+		if (input.contains("!")) {
+			input = input.substring(0,input.indexOf("!"));
+		}
+		return input;
+	}
+	
+	public static Integer parsePotency(String input) {
+		if (input.contains("!")) {
+			try { 
+				return Integer.parseInt(input.substring(input.indexOf("!")+1));
+			} catch (NumberFormatException ex) {
+			}
+		}
+		return 1;
+	}
+	
 	public static String parseSingularPlural(String input, Integer amount) {
 		String singularEnding = input.substring(input.indexOf("(")+1, input.indexOf("|"));
 		String pluralEnding = input.substring(input.indexOf("|")+1, input.indexOf(")"));
 		return input.substring(0,input.indexOf("(")) + ((amount > 1 || amount == 0) ? pluralEnding : singularEnding);
+	}
+	
+	public static ArrayList<Material> parseMaterialList(List<String> list) {
+		ArrayList<Material> materials = new ArrayList<Material>();
+		for (String entry : list) {
+			try {
+				materials.add(Material.getMaterial(Integer.parseInt(entry)));
+			} catch (NumberFormatException ex) {
+				if (materialGroupNames.containsKey(entry.toLowerCase())) {
+					materials.addAll(materialGroupNames.get(entry.toLowerCase()));
+				} else if (Material.getMaterial(entry) != null) {
+					materials.add(Material.getMaterial(entry));
+				}
+			}
+		}
+		if (list.isEmpty()) {
+			materials.add(null);
+		}
+		return materials;
 	}
 }

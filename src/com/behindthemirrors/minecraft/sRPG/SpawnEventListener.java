@@ -24,7 +24,7 @@ public class SpawnEventListener extends EntityListener {
 		SRPG.profileManager.add(entity);
 		// for testing
 		if (spawnInvincible) {
-			SRPG.profileManager.get(entity).addEffect("invincibility", 10);
+			SRPG.profileManager.get(entity).addEffect(Settings.passives.get("invincibility"), new EffectDescriptor(10));
 		}
 	}
 }

@@ -114,7 +114,7 @@ public class ProfileManager {
 		profile.jobLevels = new HashMap<StructureJob, Integer>();
 		for (int i=0; i < jobs.size();i++) {
 			profile.jobXP.put(Settings.jobs.get(jobs.get(i)), xp.get(i));
-			if (xp.get(i) > 0) {
+			if (xp.get(i) > 0 || Settings.jobs.get(jobs.get(i)).maximumLevel <= 1) {
 				profile.checkLevelUp(Settings.jobs.get(jobs.get(i)));
 			}
 		}

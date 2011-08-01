@@ -32,10 +32,10 @@ public class Settings {
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
 	
+	static HashMap<String, HashMap<String, String>> JOB_ALIASES;
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
 	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
 	static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
-	static HashMap<String,ArrayList<String>> JOB_ALIASES;
 	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","pickaxes","axes","shovels","hoes"}));
 	static ArrayList<String> GRADES =  new ArrayList<String>(Arrays.asList(new String[] {"wood","stone","iron","gold","diamond"}));
 	
@@ -158,7 +158,7 @@ public class Settings {
 			}
 			localization = new HashMap<String,Configuration>();
 			nameReplacements = new HashMap<String, HashMap<String,String>>();
-			JOB_ALIASES = new HashMap<String, ArrayList<String>>();
+			JOB_ALIASES = new HashMap<String, HashMap<String,String>>();
 			
 			// create plugin default locale file
 			for (String name : new String[] {"EN"}) {
@@ -186,9 +186,11 @@ public class Settings {
 					localization.get(locale).load(); 
 					
 					// update skill aliases
-					JOB_ALIASES.put(locale,new ArrayList<String>());
-					for (String skillname : SKILLS) {
-						JOB_ALIASES.get(locale).add(localization.get(locale).getString("skills."+skillname).toLowerCase());
+					JOB_ALIASES.put(locale,new HashMap<String,String>());
+					if (localization.get(locale).getKeys("jobs") != null) {
+						for (String name : localization.get(locale).getKeys("jobs")) {
+							JOB_ALIASES.get(locale).put(localization.get(locale).getString("jobs."+name).toLowerCase(),name);
+						}
 					}
 				}
 			}
@@ -329,14 +331,14 @@ public class Settings {
 				for (String name : passiveDefinitions.getKeys()) {
 					passives.put(name, new StructurePassive(name,passiveDefinitions.getNode(name)));
 				}
-				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.passive"),passives.size()));
+				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.passive"),passives.size()));
 				
 				// load ability definitions
 				actives = new HashMap<String, StructureActive>();
 				for (String name : activeDefinitions.getKeys()) {
 					actives.put(name, new StructureActive(name,activeDefinitions.getNode(name)));
 				}
-				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.active"),actives.size()));
+				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.active"),actives.size()));
 				
 				// load job definitions
 				jobs = new HashMap<String, StructureJob>();
@@ -376,15 +378,15 @@ public class Settings {
 					}
 				}
 				// status report
-				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"),jobs.size()));
+				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),jobs.size()));
 				if (deactivate.size() > 0) {
-					SRPG.output((new Integer(deactivate.size())).toString()+" "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
+					SRPG.output((new Integer(deactivate.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
 				}
 				if (jobs.isEmpty()) {
-					SRPG.output(Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"), 1)+" tree is empty!");
+					SRPG.output(Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"), 1)+" tree is empty!");
 					disable = true;
 				} else if (initialJobs.isEmpty()) {
-					SRPG.output("No "+Utility.parseSingularPlural(jobsettings.getString("job-terminology.job"), 1)+" without prerequisites available in the job tree!");
+					SRPG.output("No "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"), 1)+" without prerequisites available in the job tree!");
 					disable = true;
 				}
 			}

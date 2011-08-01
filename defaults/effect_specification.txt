@@ -1,22 +1,55 @@
 This is a list of all effects that may be used in passives, actives, or as job bonuses
 the modes for use as a job bonus are 'maximum' (the specified value is the value at max-level, the increase per level is evenly split over all levels), 'per-level' (total bonus is level times the specified value), 'static' (the specified value is a one-off bonus independent of level)
+All effects are summed up for every instance of it in some job, so the same effect multiple times stacks unless specified otherwise
 
-'crit-chance'
+###############
+special fields:
+  'value' can be a float or int and will be used as applies to the effect
+  'chance' as a float between 0.0 and 1.0 defines the percentage chance of the effect being triggered
+  'tools' (list of material ids or material group names) specifies the tools with which the effect works if the tool is in hand
+  'versus' (same as tools) specifies the tools or blocks onto which the effect works, either as a environmental block (for drop chances for example) or the opponents hand item (for combat-related effects)
+  'level-based' (string list) can reference other (numerical) nodes of the effect to only use the percentage of the given value corresponding to currentlevel divided by maxlevel
+  'inherited' (boolean, defaults to false) specifies if the effect is inheritable 
+  'as-attacker' (boolean, defaults to true) makes the effect available in combat as the attacker
+  'as-defender' (boolean, defaults to false) makes the effect available in combat as the defender
+###############
+
+'boost'
   can be used for: passive, bonus
-  required nodes: tools (string list), value (float)
-  bonus modes: maximum, per-level, static
-'crit-multiplier'
+  required nodes: name (string), value
+  optional nodes: tools, versus
+  possible names: crit-chance, crit-multiplier, damage-modifier, evade-chance, evade-efficiency, parry, parry-efficiency, roll-chance, roll-manual-window, roll-damage-reduction, fall-damage-reduction, durability-recovery-chance, double-drop-chance, triple-drop-chance, extradrop-chance-[rarity]
+  notes: names can be preceeded by 'anti-' to be inversely applied to the opponent if possible (for example anti-evasion to reduce an opponents chance of evasion), in case of extradrop-chance the rarity can be anything specified in the advanced configuration
+  
+'state-flag'
+  can be used for: passive, active, bonus
+  required nodes: name (string)
+  
+'set-combat-state'
   can be used for: passive, bonus
-  required nodes: tools (string list), value (float)
-  bonus modes: maximum, per-level, static
-'damage-modifier'
+  optional nodes: as-attacker, as-defender, tools, versus, chance, crit (boolean), evaded (boolean), parried (boolean), canceled (boolean)
+  
+'apply-buff'
+  can be used for: passive, bonus, active
+  required nodes: name (string), duration (int), trigger (string, only required for use as passive/bonus)
+  optional nodes: self (boolean, defaults to true), opponent (boolean, defaults to false), tools, versus
+  note: name can be anything specified in passives.yml
+  
+'added-attack'
   can be used for: passive, bonus
-  required nodes: tools (string list), value (integer)
-  bonus modes: maximum, per-level, static
-'anti-evasion'
+  required nodes: chance, min-damage (int)
+  optional nodes: as-attacker, as-defender, max-damage (int), tools, versus, tool-damage (boolean, overrides min/max damage with the damage of the currently carried item), trigger (string, can refer to any chance-based effect, overrides 'chance')
+
+'direct-damage'
+  can be used for: passive (buffs only), active
+  required nodes: value
+  optional nodes: chance, attribute (string, see attributes list above)
+
+'damage-reduction'
   can be used for: passive, bonus
-  required nodes: tools (string list), value (float)
-  bonus modes: maximum, per-level, static
+  required nodes: chance, efficiency (float)
+  optional nodes: causes (string list), tools, versus
+
 'transmute-held-item'
   notes: changes (part of) the held item stack to something else, list allows multiple types of items to be set
   can be used for: active

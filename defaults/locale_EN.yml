@@ -1,97 +1,41 @@
 basic:
-  xp: XP
-  level: Level
-  skill: Skill
-  skillpoints: Skillpoints
-  free-points: Upgrade Points
-  ability: Ability
-  milestone: Milestone
-  charge: Charge
   locale-name: EN (International)
   chat-prefix: [sRPG]
-skills:
-  swords: Swordfighting
-  pickaxes: Mining
-  axes: Woodcutting
-  shovels: Digging
-  hoes: Gardening
-  bow: Archery
-  ukemi: Athletics
-  evasion: Reflexes
-  focus: Focus
-milestones:
-  novice: Novice
-  apprentice: Apprentice
-  expert: Expert
-  master: Master
-active-abilities:
-  swords:
-    stone: Execute
-    iron: Violent Thrust
-    diamond: Indignation
-  pickaxes:
-    stone: Seismic Shock
-    iron: Prospecting
-    diamond: Resonance
-  axes:
-    stone: Crashdown
-    iron: Mighty Chop
-    diamond: Blast Wave
-  shovels:
-    stone: Line Drive
-    iron: Earth Divider
-    diamond: Impact
-
-passive-abilities:
-  swords:
-    apprentice: Heightened Awareness
-    expert: One with the Sword
-    master: Secret Teachings
-  pickaxes:
-    apprentice: Efficiency I
-    expert: Efficiency II
-    master: Efficiency III
-  axes:
-    apprentice: Efficiency I
-    expert: Efficiency II
-    master: Efficiency III
-  shovels:
-    apprentice: Keen Eye I
-    expert: Keen Eye II
-    master: Keen Eye III
-  bow:
-    apprentice: Strong Arm
-    expert: Steady Aim
-    master: Target Vitals
-  ukemi:
-    apprentice: Training I
-    expert: Training II
-    master: Training III
-  evasion:
-    apprentice: Escape Artist
-    expert: Catch Arrows
-    master: Counterattack
+terminology:
+  # wordstem(singular ending|plural ending)
+  xp: XP(|)
+  charge: Charge(|s)
+  job: Job(|s)
+  passive: Skill(|s)
+  active: Abilit(y|ies)
+  level: Level(|s)
+jobs:
+actives:
+passives:
 
 ##################################################################################################
 # Customizable Message Section
 ##################################################################################################
 # In the message text, the following variables are available:
-# <!level> for current player level
+# <!joblevel> for current player level
 # <!xp> for xp towards next level
 # <!xp2level> for xp necessary for one level
-# <!free> for free upgrade points
-# <!skillname> for the name of the skill in question
-# <!skillpoints> for skillpoints in the skill in question
-# <!maxskillpoints> for the upper limit for skillpoints
-# <!cost> for the associated cost to do something
-# <!ability> for the ability name in question
-# <!milestone> for last milestone reached with that skill
+# <!job> for the job name in the current context
+# <!active> for the name of some active ability in the current context
+# <!passive> for the name of some passive skill in the current context
 # <!damage> for currently relevant damage number
 # <!argument> refers to the argument specified for a command
 # 
 # apart from that you can reference any name from this file
 # example: <skills.axes> is whatever you set above for "axes" under the category "skills"
+#
+# You can also use a hash sign to refer to any part of the 'terminology' section parsed for singular/plural
+# example: <#level>, <#job+>
+# with the '+' resulting in the pluralized form, otherwise the singular is used
 # 
+# A '%' character converts the referred value to percentage
+# example: <%foo> converts 'foo: 0.2' to '20%'
+#
 # use [some-color] to color any following text
 # valid colors: aqua,black,blue,dark-aqua,dark-blue,dark-gray,dark-green,dark-purple,
 #               dark-red,gold,gray,green,light-purple,red,white,yellow
@@ -101,7 +45,7 @@ passive-abilities:
 # in that case one of the provided messages will be chosen at random
 ##################################################################################################
 messages:
-  randomize: [ability]
+  randomize: [ability,job-prerequisite-missing]
   
   ###########
   # GENERAL #
@@ -115,30 +59,32 @@ messages:
     - "* Active abilities consume charges that are accumulated by destroying blocks or hitting enemies with the associated tool"
     - "* ..." 
     - "[aqua]More information to come"
-  levelup: "[gold]Levelup! [white]You have [gold]<!free> [white]<basic.free-points> remaining"
+  levelup: "You are now a [gold]<#level> <!joblevel> [white]<!job>"
   status-header: "[blue]This is an overview of your character progression"
-  xp: "[gold]<basic.level> <!level> [white](<!xp>/<!xp2level> <basic.xp> to next <basic.level>)"
   locale-changed: "<basic.chat-prefix> Locale changed to <basic.locale-name>"
   
-  ##########
-  # SKILLS #
-  ##########
+  ########
+  # JOBS #
+  ########
   
-  check-skillpoints: "<!skillname>: <!skillpoints> (<!milestone>)"
-  check-focus: "<!skillname>: <!skillpoints>"
-  skill-no-free-points: "Not enough <basic.free-points>. You need at least [red]<!cost>"
-  skill-already-at-max: "That skill is already maxed out"
-  skill-already-at-zero: "No points left to remove"
-  skill-increased: "<!skillname> increased to <!skillpoints>!"
-  skill-decreased: "<!skillname> decreased to <!skillpoints>!"
-  skill-no-removal: "Removing <basic.skillpoints> is disabled"
-  free-skillpoints: "<basic.free-points> remaining: [gold]<!free>"
+  job-list-entry: "<!job>: Level <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level><basic.xp>)"
+  job-changed: "You changed your <#job> to <!job> (<#level> <!joblevel>)"
+  job-already-selected: "You already are a/an <!job>"
+  job-prerequisite-missing:
+    - "You are not cut out for being a/an <!job>"
+    - "Only those with more experience can walk the path of a/an <!job>"
+    - "You? A/An <!job>? Come back when you're not wet behind the ears anymore."
+  job-no-permissions: "You are not allowed to take that <#job>"
+  job-not-available: "There is no <#job> of that name"
+  job-info: 
+    - "[blue]<!job>"
+    - "<!description>"
   
   #############
   # ABILITIES #
   #############
   
-  charge-acquired: "Acquired a <basic.charge>"
+  charge-acquired: "Acquired a <#charge>"
   ability: 
     - "[blue]Take this! <!ability>!!"
     - "[blue]Go! <!ability>!!!"
@@ -162,6 +108,15 @@ messages:
   help-general: "By using the help command, you can get information about a variety of subjects"
   help-topics:
     not-available: ""
+  
+  ############
+  # JOB INFO #
+  ############
+  
+  job-info:
+    header: 
+    description: 
+    level-line: 
   
   ######################
   # SKILL DESCRIPTIONS #

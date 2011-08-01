@@ -23,7 +23,73 @@
 #
 # Also remember to put the description into double quotes if there is a conversion specification, else the ':' breaks the parser
 # 
-# ###############################################################################
+#################################################################################
+
+###############
+# JOB BONUSES #
+###############
+
+# TODO: think of a way of generalizing passives by adding a number behind them
+sword-incompetence:
+  name: 
+  description: 
+  effects:
+    boost:
+      name: damage-modifier
+      tools: [swords]
+      value: -1
+      
+snipers-eye:
+  name:
+  description:
+  effects:
+    boost:
+      name: crit-chance
+      value: 0.20
+      tools: [bow]
+      level-based: [value]
+      inherited: true
+
+#########
+# BUFFS #
+#########
+
+invincibility:
+  name: 
+  description: 
+  effects: 
+    set-combat-state:
+      as-attacker: false
+      as-defender: true
+      canceled: true
+
+rage:
+  name: 
+  description: 
+  effects: 
+    set-combat-state:
+      crit: true
+      
+poison:
+  name:
+  description:
+  effects:
+    direct-damage:
+      value: 1
+      #attribute: poison
+      
+weak-poison:
+  name:
+  description:
+  effects:
+    direct-damage:
+      value: 1
+      chance: 0.5
+      #attribute: poison
+
+###################
+# EVERYTHING ELSE #
+###################
 
 steady-aim:
   name: Steady Aim

@@ -24,7 +24,12 @@ public class CombatInstance {
 	public Double missMultiplier;
 	public Double evadeChance;
 	
+	boolean crit = false;
+	boolean miss = false;
+	boolean evade = false;
+	boolean parry = false;
 	private boolean canceled = false;
+	
 	private String cancelMessageAttacker;
 	private String cancelMessageDefender;
 	
@@ -51,33 +56,20 @@ public class CombatInstance {
 	
 	public void resolve() {
 		PassiveAbility.trigger(this);
-		TimedEffectResolver.trigger(this);
-		Material attackerHandItem = attacker instanceof Player ? ((Player)attacker).getItemInHand().getType() : null;
-		Material defenderHandItem = attacker instanceof Player ? ((Player)attacker).getItemInHand().getType() : null;
+		Material attackerHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
+		Material defenderHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
 		
-		evadeChance += defender.getStat("evasion", defenderHandItem);
-		critChance += attacker.getStat("crit-chance", attackerHandItem);
-		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem);
-		// TODO: parry
+		evadeChance += defender.getStat("evasion", defenderHandItem, attackerHandItem);
+		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem);
+		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem);
 		
-		if (canceled){
-			if (attacker instanceof Player && cancelMessageAttacker != null) {
-				MessageParser.sendMessage((Player)attacker, cancelMessageAttacker);
-			}
-			if (defender instanceof Player && cancelMessageDefender != null) {
-				MessageParser.sendMessage((Player)defender, cancelMessageDefender);
-			}
-			event.setCancelled(true);
-			return;
-		}
+		// TODO: add parry
+		
 		// override for deactivated tools
 		if (basedamage == null) {
 			basedamage = event.getDamage();
 		}
-		double damage = basedamage + modifier;
-		boolean crit = false;
-		boolean miss = false;
-		boolean evade = false;
+		double damage = basedamage + attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem);
 		
 		// apply critical hit
 		if (SRPG.generator.nextDouble() <= critChance) {
@@ -93,6 +85,20 @@ public class CombatInstance {
 				evade = true;
 			}
 		}
+		
+		EffectResolver.trigger(this);
+		
+		if (canceled){
+			if (attacker instanceof Player && cancelMessageAttacker != null) {
+				MessageParser.sendMessage((Player)attacker, cancelMessageAttacker);
+			}
+			if (defender instanceof Player && cancelMessageDefender != null) {
+				MessageParser.sendMessage((Player)defender, cancelMessageDefender);
+			}
+			event.setCancelled(true);
+			return;
+		}
+		
 		// send messages to player
 		// TODO: proper miss/evade messages
 		if (attacker instanceof ProfilePlayer) {
@@ -115,7 +121,6 @@ public class CombatInstance {
 		if (damage > 0 && attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).addChargeTick();
 		}
-		
 		event.setDamage(damage > 0 ? (int)Math.round(damage) : 0);
 	}
 }

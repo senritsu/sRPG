@@ -15,6 +15,7 @@ public class CommandListener implements CommandExecutor {
 	public boolean onCommand(CommandSender sender, Command command, String alias, String[] args) {
 		if (sender instanceof Player) {
 			Player player = (Player)sender;
+			ProfilePlayer profile = SRPG.profileManager.get(player);
 			if (command.getName().equals("srpg")) {
 				if (args.length < 1) {
 					MessageParser.sendMessage(player, "welcome");
@@ -22,8 +23,8 @@ public class CommandListener implements CommandExecutor {
 				// change locale
 				} else if (args[0].equalsIgnoreCase("locale")) {
 					if (args.length > 1 && Settings.localization.containsKey(args[1])) {
-						SRPG.profileManager.get(player).locale = args[1];
-						SRPG.profileManager.save(player, "locale");
+						profile.locale = args[1];
+						SRPG.profileManager.save(profile, "locale");
 						MessageParser.sendMessage(player, "locale-changed");
 						return true;
 					}
@@ -49,29 +50,48 @@ public class CommandListener implements CommandExecutor {
 				// get info about a skill or increase it
 				// TODO find NPE
 				} else if (args.length >= 3 && (args[0]+" "+args[1]).equalsIgnoreCase("change to")) {
-					if (Settings.jobs.containsKey(args[2].toLowerCase())) {
-						if (player.hasPermission("srpg.jobs") || player.hasPermission("srpg.jobs."+args[2])) {
-							StructureJob job = Settings.jobs.get(args[2]);
-							if (job == SRPG.profileManager.get(player).currentJob) {
-								player.sendMessage("this is your current job");
-							} else if (job.prerequisitesMet(SRPG.profileManager.get(player))) {
+					// TODO: accommodate for names with spaces
+					String name = Settings.JOB_ALIASES.get(profile.locale).get(args[2]);
+					if (name == null) {
+						name = Settings.jobs.containsKey(args[2].toLowerCase()) ? Settings.jobs.get(args[2].toLowerCase()).signature : null;
+					}
+					if (name != null) {
+						if (player.hasPermission("srpg.jobs") || player.hasPermission("srpg.jobs."+name)) {
+							StructureJob job = Settings.jobs.get(name);
+							if (job == profile.currentJob) {
+								MessageParser.sendMessage(player,"job-already-selected",job.signature);
+							} else if (job.prerequisitesMet(profile)) {
 								SRPG.profileManager.get(player).changeJob(job);
-								player.sendMessage("your job changed to "+job.name);
+								MessageParser.sendMessage(player,"job-changed",job.signature);
 							} else {
-								player.sendMessage("you do not meet the requirements for that job");
-								for (Map.Entry<StructureJob, Integer> entry : job.prerequisites.entrySet()) {
-									player.sendMessage(entry.getKey().name+": "+entry.getValue());
-								}
+								MessageParser.sendMessage(player,"job-prerequisite-missing",job.signature);
+//								for (Map.Entry<StructureJob, Integer> entry : job.prerequisites.entrySet()) {
+//									MessageParser.sendMessage(player,"job-prerequisite-missing",entry.getKey().signature+","+entry.getValue());
+//								}
 							}
 						} else {
-							player.sendMessage("you cannot select that job");
+							MessageParser.sendMessage(player,"job-no-permissions");
 						}
 					} else {
-						player.sendMessage("no job by that name");
+						MessageParser.sendMessage(player,"job-not-available");
 					}
 					return true;
-				} else if (false) {
-					String name = Settings.SKILLS.get(Settings.JOB_ALIASES.get(SRPG.profileManager.get(player).locale).indexOf(args[0].toLowerCase()));
+				} else if (args[0].equalsIgnoreCase("info")) {
+					String name = null;
+					if (args.length >= 2) {
+						name = Settings.JOB_ALIASES.get(profile.locale).get(args[2]);
+						if (name == null) {
+							name = Settings.jobs.containsKey(args[2].toLowerCase()) ? Settings.jobs.get(args[2].toLowerCase()).name : null;
+						}
+					} else {
+						name = profile.currentJob.signature;
+					}
+					if (name != null) {
+						MessageParser.sendMessage(player, "job-info",name);
+					} else {
+						MessageParser.sendMessage(player,"job-not-available");
+					}
+					
 				// internal help (TODO: maybe eventually replaced with some help plugin)
 				} else if (args[0].equalsIgnoreCase("help")) {
 					//String topic = args[1];
@@ -99,8 +119,8 @@ public class CommandListener implements CommandExecutor {
 					}
 					if (args[1].equalsIgnoreCase("effects")) {
 						TimedEffectManager.debug = !TimedEffectManager.debug;
-						TimedEffectResolver.debug = !TimedEffectResolver.debug;
-						SRPG.output("effect debugging set to "+TimedEffectResolver.debug);
+						EffectResolver.debug = !EffectResolver.debug;
+						SRPG.output("effect debugging set to "+EffectResolver.debug);
 						return true;
 					}
 					// display debug messages from combat listener 
@@ -143,12 +163,22 @@ public class CommandListener implements CommandExecutor {
 					return true;
 				} else if (args.length >= 2 && args[0].equalsIgnoreCase("enrage") && SRPG.profileManager.has(args[1])) {
 					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					profile.addEffect("rage", 10);
+					profile.addEffect(Settings.passives.get("rage"), new EffectDescriptor(10));
 					SRPG.output("enraged player "+args[1]);
 					return true;
-				} else if (args.length >= 3 && args[0].equalsIgnoreCase("poison") && SRPG.profileManager.has(args[1])) {
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("poison") && SRPG.profileManager.has(args[1])) {
 					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					profile.addEffect("poison"+args[2], 5);
+					Integer potency;
+					try {
+						potency = Integer.parseInt(args[2]); 
+					} catch (NumberFormatException ex) {
+						potency = 1;
+					} catch (IndexOutOfBoundsException ex) {
+						potency = 1;
+					}
+					EffectDescriptor descriptor = new EffectDescriptor(5);
+					profile.addEffect(Settings.passives.get(potency == 0 ? "weakpoison" : "poison"), descriptor);
+					descriptor.potency = potency == 0 ? 1 : potency;
 					SRPG.output("poisoned player "+args[1]);
 					return true;
 				// add xp to a player (handle with care, no removal atm)

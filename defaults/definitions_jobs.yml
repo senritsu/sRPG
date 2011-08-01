@@ -7,7 +7,7 @@ adventurer:
   tier: 0
   defaults:
     maximum-level: 1
-  bonuses:
+  traits:
   skills:
   abilities:
 
@@ -18,11 +18,8 @@ archer:
   details: 
   tier: 1
   defaults:
-  bonuses:
-    damage-modifier:
-      tools: [sword]
-      value: -1
-      mode: static
+  traits:
+    - sword-incompetence!1
   passive:
     level 3: 
       - steady-aim
@@ -43,14 +40,8 @@ sniper:
   defaults:
     crit-chance: 0.05
     miss-chance: 0.02
-  bonuses:
-    crit-chance:
-      tools: [bow]
-      value: 0.2
-      mode: maximum
-    damage-modifier:
-      tools: [sword]
-      value: -2
-      mode: static
+  traits:
+    - sword-incompetence!2
+    - snipers-eye
   skills:
   abilities:

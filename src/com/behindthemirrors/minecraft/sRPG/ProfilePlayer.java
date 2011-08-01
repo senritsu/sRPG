@@ -1,5 +1,6 @@
 package com.behindthemirrors.minecraft.sRPG;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.bukkit.Material;
@@ -38,8 +39,7 @@ public class ProfilePlayer extends ProfileNPC {
 	String locale;
 	
 	public void addXP(Integer amount) {
-		SRPG.output(currentJob.name+": level "+jobLevels.get(currentJob)+"/"+currentJob.maximumLevel);
-		if (jobLevels.get(currentJob) >= currentJob.maximumLevel) {
+		if (jobLevels.get(currentJob) >= currentJob.maximumLevel && !(amount < 0)) {
 			return;
 		}
 		
@@ -73,7 +73,7 @@ public class ProfilePlayer extends ProfileNPC {
 		}
 		if (levelup) {
 			if (!suppressMessages) {
-				MessageParser.sendMessage(player, "levelup");
+				MessageParser.sendMessage(player, "levelup",currentJob.signature);
 			}
 			recalculate();
 		}
@@ -121,7 +121,7 @@ public class ProfilePlayer extends ProfileNPC {
 			if (!jobLevels.containsKey(job)) {
 				jobLevels.put(job,1);
 			}
-			SRPG.output("changing job");
+			SRPG.output("changing job to "+job.name);
 			currentJob = job;
 			if (!checkLevelUp(job)) {
 				recalculate();
@@ -138,11 +138,43 @@ public class ProfilePlayer extends ProfileNPC {
 		
 	}
 	
-	void recalculate() {
-		for (StructureJob job : jobXP.keySet()) {
-			SRPG.output(job.name+", "+jobXP.get(job)+"xp, level "+(jobLevels.containsKey(job) ? jobLevels.get(job): 0)+"/"+job.maximumLevel);
+	public void recalculate() {
+		HashMap<StructurePassive,EffectDescriptor> current = new HashMap<StructurePassive, EffectDescriptor>();
+		HashMap<StructurePassive,EffectDescriptor> mastered = new HashMap<StructurePassive, EffectDescriptor>();
+		HashMap<StructurePassive,EffectDescriptor> inherited = new HashMap<StructurePassive, EffectDescriptor>();
+		HashMap<StructurePassive,EffectDescriptor> both = new HashMap<StructurePassive, EffectDescriptor>();
+		// add current job
+		current.putAll(currentJob.getPassives(jobLevels.get(currentJob)));
+		current.putAll(currentJob.traits);
+		// add inherited passives
+		ArrayList<StructureJob> parents = currentJob.getParents();
+		for (StructureJob job : jobLevels.keySet()) {
+			if (job == currentJob || jobLevels.get(job) == 0) {
+				continue;
+			} else if (parents.contains(job)) {
+				if (jobLevels.get(job) >= job.maximumLevel) {
+					both.putAll(job.traits);
+				} else {
+					inherited.putAll(job.traits);
+				}
+			} else if (jobLevels.get(job) >= job.maximumLevel) {
+				mastered.putAll(job.traits);
+			}
 		}
-		SRPG.output("current job: "+currentJob.name);
+		// TODO: add player-customized passives
+		for (int i = 0;i<1;i++) {
+			//current.addAll(something);
+		}
+		// build stats hashmap
+		stats.clear();
+		stats.put(null, new HashMap<Material, HashMap<String,Double>>());
+		stats.get(null).put(null, new HashMap<String, Double>());
+		addCollection(current);
+		addCollection(mastered,3);
+		addCollection(inherited,2);
+		addCollection(both,1);
+		super.recalculateBuffs();
+		SRPG.output("stats: "+stats.toString());
 	}
 
 }

@@ -39,7 +39,6 @@ public class BlockEventListener extends BlockListener {
 				}
 			}
 			double roll = SRPG.generator.nextDouble();
-			SRPG.output(xpChances.get(rarity)+" chance to get "+xpValues.get(rarity)+"xp, roll was"+roll);
 			if (roll <= xpChances.get(rarity)) {
 				//TODO find the NPE here
 				profile.addXP(xpValues.get(rarity));

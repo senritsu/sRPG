@@ -12,26 +12,29 @@ public class TimedEffectManager implements Runnable {
 	public void run() {
 		// check all currently active effects
 		//SRPG.output("tick");
-		Iterator<ProfileNPC> iterator = relevantPlayers.iterator();
-		while (iterator.hasNext()) {
-			ProfileNPC data = iterator.next();
-			Iterator<Map.Entry<String,Integer>> entries = data.effectCounters.entrySet().iterator();
-			while (entries.hasNext()) {
-				Map.Entry<String,Integer> entry = entries.next();
-				Integer remainingTicks = entry.getValue();
-				if (remainingTicks > 0) {
-					data.effectCounters.put(entry.getKey(), remainingTicks - 1);
-					TimedEffectResolver.trigger(data,entry.getKey());
+		Iterator<ProfileNPC> playerIterator = relevantPlayers.iterator();
+		while (playerIterator.hasNext()) {
+			ProfileNPC profile = playerIterator.next();
+			Iterator<Map.Entry<StructurePassive,EffectDescriptor>> effectIterator = profile.effects.entrySet().iterator();
+			while (effectIterator.hasNext()) {
+				Map.Entry<StructurePassive,EffectDescriptor> entry = effectIterator.next();
+				StructurePassive passive = entry.getKey();
+				EffectDescriptor descriptor = entry.getValue();
+				if (descriptor.duration > 0) {
+					descriptor.duration--;
+					EffectResolver.tick(profile,passive,descriptor);
 				} else {
 					if (debug) {
-						SRPG.output("effect "+entry.getKey()+" expired");
+						SRPG.output("effect "+passive.name+" expired");
 					}
-					entries.remove();
+					effectIterator.remove();
+					profile.timedStatsDirty = true;
 				}
 			}
-			if (data.effectCounters.isEmpty()) {
-				iterator.remove();
+			if (profile.effects.isEmpty()) {
+				playerIterator.remove();
 			}
+			profile.recalculateBuffs();
 		}
 	}
 	
