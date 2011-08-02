@@ -1,5 +1,8 @@
 package com.behindthemirrors.minecraft.sRPG;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -19,22 +22,37 @@ public class Database {
 	public static boolean debug = false;
 	
     private Connection connection;
-	String dbTablePrefix;
-	String dbPass;
-	String dbUser;
-	String dbName;
-	String dbPort;
-	String dbServer;
-	Boolean mySQLenabled;
-    
+	String tablePrefix;
+	String pass;
+	String user;
+	String name;
+	String port;
+	String server;
+	
+	String uint;
+	String autoinc;
+	String engine;
+    String text;
+    String unique;
+	
     public Database() {
         // Load the driver instance
         try {
-            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            if (Settings.mySQLenabled) {
+            	Class.forName("com.mysql.jdbc.Driver").newInstance();
+            } else {
+            	URLClassLoader classLoader = new URLClassLoader(new URL[]{new URL("jar:file:" + (new File("lib/sqlitejdbc-v056.jar")).getPath()+"!/")});
+            	classLoader.loadClass("org.sqlite.JDBC").newInstance();
+            }
+            uint = Settings.mySQLenabled ? "int(10) UNSIGNED" : "INTEGER";
+        	autoinc = Settings.mySQLenabled ? "AUTO_INCREMENT" : "AUTOINCREMENT";
+        	engine = Settings.mySQLenabled ? "ENGINE=MyISAM DEFAULT CHARSET=latin1" : "";
+        	text = Settings.mySQLenabled ? "VARCHAR(40)" : "TEXT";
+        	unique = Settings.mySQLenabled ? "UNIQUE KEY" : "UNIQUE";
         } catch (Exception ex) {
             throw new DataSourceException("Failed to initialize JDBC driver");
         }
-        // make the connection
+        //make the connection
     }
     
     public boolean connect() {
@@ -44,29 +62,30 @@ public class Database {
     
 	//Create the DB structure
     public void createStructure(){
-    	String prefix = "CREATE TABLE IF NOT EXISTS `" + dbTablePrefix;
-    	update(prefix + "global` (`pk` int(10) UNSIGNED NOT NULL PRIMARY KEY, `version` varchar(40) NOT NULL) ENGINE=MyISAM DEFAULT CHARSET=latin1;");
-        update(prefix +  "users` (`user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY," +
-                "`user` varchar(40) NOT NULL UNIQUE KEY," +
-                "`hp` int(10) NOT NULL DEFAULT 0," +
-                "`charges` int(10) NOT NULL DEFAULT 0," +
-                "`chargeprogress` int(10) NOT NULL DEFAULT 0," +
-                "`currentjob` varchar(40) NOT NULL," +
-                "`locale` varchar(40) NOT NULL" +
-                ") ENGINE=MyISAM DEFAULT CHARSET=latin1;");
-        String sql = prefix + "jobxp` (`user_id` int(10) UNSIGNED NOT NULL PRIMARY KEY";
+    	String prefix = "CREATE TABLE IF NOT EXISTS `" + tablePrefix;
+    	update(prefix + "global` (`pk` "+uint+" NOT NULL PRIMARY KEY, `version` "+text+" NOT NULL) "+engine+";");
+        update(prefix +  "users` (`user_id` "+uint+" NOT NULL PRIMARY KEY "+autoinc+"," +
+                "`user` "+text+" NOT NULL "+unique+"," +
+                "`hp` "+uint+" NOT NULL DEFAULT 0," +
+                "`charges` "+uint+" NOT NULL DEFAULT 0," +
+                "`chargeprogress` "+uint+" NOT NULL DEFAULT 0," +
+                "`currentjob` "+text+"," +
+                "`locale` "+text+" NOT NULL" +
+                ") "+engine+";");
+        String sql = prefix + "jobxp` (`user_id` "+uint+" NOT NULL PRIMARY KEY";
         for (String name : Settings.jobsettings.getKeys("tree")) {
-        	sql += ",`" + name + "` int(10) unsigned NOT NULL DEFAULT 0";
+        	sql += ",`" + name + "` "+uint+" NOT NULL DEFAULT 0";
         }
-        sql += ") ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+        sql += ") "+engine+";";
         update(sql);
     }
     
     public void updateDatabase(String version) {
+    	createStructure();
     	// here be version-dependent database update routines
     	Integer id = SRPG.database.getSingleIntValue("global","pk","pk",1);
-		if (id == 0) {
-			update("INSERT INTO " + dbTablePrefix + "global (pk,version) VALUES (1,'" + version + "');");
+		if (id == null) {
+			update("INSERT INTO " + tablePrefix + "global (pk,version) VALUES (1,'" + version + "');");
 		}
         String db_version = SRPG.database.getSingleStringValue("global","version","pk",1);
         if (!version.equalsIgnoreCase(db_version)) {
@@ -75,20 +94,20 @@ public class Database {
         // change database according to version differences
         if (db_version.equalsIgnoreCase("0.5alpha1") || db_version.equalsIgnoreCase("0.5alpha2")) {
         	SRPG.output("updating user table");
-        	createColumn("users","class","VARCHAR(40) NOT NULL DEFAULT \"adventurer\" AFTER user");
-        	createColumn("users","hp","INT(10) NOT NULL DEFAULT '0' AFTER locale");
+        	createColumn("users","class",text+" NOT NULL DEFAULT 'adventurer' AFTER user");
+        	createColumn("users","hp",uint+" NOT NULL DEFAULT 0 AFTER locale");
         	db_version = "0.5alpha3";
         }
         if (db_version.equalsIgnoreCase("0.5alpha3")) {
         	SRPG.output("changing lots of tables");
         	dropTable("chargedata");
         	dropTable("skillpoints");
-        	update("ALTER TABLE " + dbTablePrefix + "users CHANGE COLUMN class currentjob VARCHAR(40) NOT NULL;");
+        	update("ALTER TABLE " + tablePrefix + "users CHANGE COLUMN class currentjob "+text+";");
         	dropColumn("users", "xp");
         	ArrayList<String> columns = new ArrayList<String>();
         	columns.addAll(Arrays.asList(new String[] {"charges","chargeprogress"}));
         	createIntColumnsIfNotExist("users",columns);
-        	for (ArrayList<String> row : query("SELECT user_id FROM "+dbTablePrefix+"users;")) {
+        	for (ArrayList<String> row : query("SELECT user_id FROM "+tablePrefix+"users;")) {
         		insertSingleIntValue("jobxp", "user_id", Integer.parseInt(row.get(0)));
         	}
         }
@@ -107,11 +126,15 @@ public class Database {
     		if (connection != null && !connection.isClosed()) {
     			connection.close();
     		}
-            connection = DriverManager.getConnection("jdbc:mysql://" + dbServer + ":" + dbPort + "/" + dbName + "?user=" + dbUser + "&password=" + dbPass);            
+            if (Settings.mySQLenabled) {
+            	connection = DriverManager.getConnection("jdbc:mysql://" + server + ":" + port + "/" + name + "?user=" + user + "&password=" + pass);            
+            } else {
+            	connection = DriverManager.getConnection("jdbc:sqlite:plugins/srpg/srpg.db");
+            }
             
             SRPG.output("Connection success");
         } catch (SQLException ex) {
-        	SRPG.output("Connection to MySQL failed. Check status of MySQL server");
+        	SRPG.output("Connection to database failed. Check status of MySQL server or write permissions for SQLite .db");
         	SRPG.output("SQLException: " + ex.getMessage());
         	SRPG.output("SQLState: " + ex.getSQLState());
         	SRPG.output("VendorError: " + ex.getErrorCode());
@@ -120,12 +143,12 @@ public class Database {
     
     private boolean reconnect() {
         try {
-	        if(connection.isValid(5)) {
+	        if(!Settings.mySQLenabled || connection.isValid(5)) {
 	            return true;
 	        } else {
 	        	SRPG.output("Reconnecting to MySQL...");
 	        	getConnection();
-	        	if(connection.isValid(5)){
+	        	if(connection.isValid(5)) {
 	        		SRPG.profileManager.clear();
 		            
 		            for(Player player : SRPG.plugin.getServer().getOnlinePlayers()) {
@@ -178,7 +201,7 @@ public class Database {
     // key/value type overloads end
     
     public boolean setSingleValueRaw(String table, String column, String value, String keyColumn, String key) {
-    	String sql = "UPDATE "+dbTablePrefix+table+" SET "+column+" = "+value+" WHERE "+keyColumn+" = "+key+";";
+    	String sql = "UPDATE "+tablePrefix+table+" SET "+column+" = "+value+" WHERE "+keyColumn+" = "+key+";";
     	if (debug) {
     		SRPG.output("setSingleValue: "+sql);
     	}
@@ -186,7 +209,7 @@ public class Database {
     }
     
     public boolean setValuesRaw(String table, HashMap<String,String> map, String keyColumn, String key) {
-    	String sql = "UPDATE "+dbTablePrefix+table+" SET ";
+    	String sql = "UPDATE "+tablePrefix+table+" SET ";
     	boolean first = true;
     	for (Map.Entry<String,String> entry : map.entrySet()) {
     		if (!first) {
@@ -211,7 +234,7 @@ public class Database {
     }
     // value type overloads end
     public boolean insertSingleValueRaw(String table, String column, String value) {
-    	String sql = "INSERT INTO "+dbTablePrefix+table+" ("+column+") VALUES ("+value+");";
+    	String sql = "INSERT INTO "+tablePrefix+table+" ("+column+") VALUES ("+value+");";
     	if (debug) {
     		SRPG.output("insertSingleValue: "+sql);
     	}
@@ -240,7 +263,7 @@ public class Database {
     	ArrayList<String> values = new ArrayList<String>();
     	columns.addAll(map.keySet());
     	values.addAll(map.values());
-    	String sql = "INSERT INTO "+dbTablePrefix+table+" ("+Utility.join(columns, ",")+") VALUES ("+Utility.join(values, ",")+");";
+    	String sql = "INSERT INTO "+tablePrefix+table+" ("+Utility.join(columns, ",")+") VALUES ("+Utility.join(values, ",")+");";
     	if (debug) {
     		SRPG.output("insertValues: "+sql);
     	}
@@ -248,15 +271,15 @@ public class Database {
     }
     
     public void dropTable(String table) {
-    	update("DROP TABLE " + dbTablePrefix + table + ";");
+    	update("DROP TABLE " + tablePrefix + table + ";");
     }
     
     public void dropColumn(String table, String column) {
-    	update("ALTER TABLE "+dbTablePrefix+table+" DROP COLUMN " + column + ";");
+    	update("ALTER TABLE "+tablePrefix+table+" DROP COLUMN " + column + ";");
     }
     
     public boolean createColumn(String table, String column, String format) {
-    	return update("ALTER TABLE "+dbTablePrefix+table+" ADD "+column+" "+format+";");
+    	return update("ALTER TABLE "+tablePrefix+table+" ADD "+column+" "+format+";");
     }
     
     // value type overloads start
@@ -276,13 +299,13 @@ public class Database {
     	for (String entry : columns) {
     		formatted.add(entry+" "+format);
     	}
-    	String sql = "ALTER TABLE "+dbTablePrefix+table+" ADD ("+Utility.join(formatted,",")+");";
+    	String sql = "ALTER TABLE "+tablePrefix+table+" ADD ("+Utility.join(formatted,",")+");";
     	return update(sql);
     }
     
     public ArrayList<String> getColumns(String table) {
     	try {
-            if(!connection.isValid(5)) {
+            if(Settings.mySQLenabled && !connection.isValid(5)) {
             	reconnect();
             }
         } catch (SQLException e) {
@@ -295,7 +318,7 @@ public class Database {
         ArrayList<String> columns = new ArrayList<String>();
         
         try {
-        	ps = connection.prepareStatement("SELECT * FROM "+dbTablePrefix+table+";");
+        	ps = connection.prepareStatement("SELECT * FROM "+tablePrefix+table+";");
             rs = ps.executeQuery();
             for (int i = 1;i <= rs.getMetaData().getColumnCount();i++) {
             	columns.add(rs.getMetaData().getColumnName(i));
@@ -313,11 +336,19 @@ public class Database {
     
     // key/value type overloads start
     public Integer getSingleIntValue(String table, String column, String keyColumn, String key) {
-    	return Integer.parseInt(getSingleValueRaw(table, column, keyColumn, "'"+key+"'"));
+    	try {
+    		return Integer.parseInt(getSingleValueRaw(table, column, keyColumn, "'"+key+"'"));
+	    } catch (NumberFormatException ex) {
+			return null;
+		}
     }
     
     public Integer getSingleIntValue(String table, String column, String keyColumn, Integer key) {
-    	return Integer.parseInt(getSingleValueRaw(table, column, keyColumn, ""+key));
+    	try {
+    		return Integer.parseInt(getSingleValueRaw(table, column, keyColumn, ""+key));
+    	} catch (NumberFormatException ex) {
+    		return null;
+    	}
     }
     
     public String getSingleStringValue(String table, String column, String keyColumn, String key) {
@@ -329,13 +360,13 @@ public class Database {
     }
     // key/value type overloads end
     public String getSingleValueRaw(String table, String column, String keyColumn, String key) {
-    	String sql = "SELECT "+column+" FROM "+dbTablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
+    	String sql = "SELECT "+column+" FROM "+tablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
     	try {
     		if (debug) {
         		SRPG.output("getSingleValue: "+sql);
         	}
     		return query(sql).get(0).get(0);
-    	} catch (NullPointerException ex) {
+    	} catch (IndexOutOfBoundsException ex) {
     		return null;
     	}
     }
@@ -352,8 +383,12 @@ public class Database {
     // key type overloads end
     public ArrayList<Integer> getSingleIntRowRaw(String table, ArrayList<String> columns, String keyColumn, String key) {
     	ArrayList<Integer> list = new ArrayList<Integer>();
-    	for (String entry : getSingleRowRaw(table, columns, keyColumn, key)) {
-    		list.add(Integer.parseInt(entry));
+    	try {
+	    	for (String entry : getSingleRowRaw(table, columns, keyColumn, key)) {
+	    		list.add(Integer.parseInt(entry));
+	    	}
+    	} catch (NullPointerException ex) {
+    		return null;
     	}
     	return list;
     }
@@ -368,18 +403,22 @@ public class Database {
     }
     // key types overloads end
     public ArrayList<String> getSingleRowRaw(String table, ArrayList<String> columns, String keyColumn, String key) {
-    	String sql = "SELECT "+Utility.join(columns, ",")+" FROM "+dbTablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
+    	String sql = "SELECT "+Utility.join(columns, ",")+" FROM "+tablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
     	if (debug) {
     		SRPG.output("getSingleRow: "+sql);
     	}
-    	return query(sql).get(0);
+    	try { 
+    		return query(sql).get(0);
+    	} catch (IndexOutOfBoundsException ex) {
+    		return null;
+    	}
     }
     
     // read query
     public ArrayList<ArrayList<String>> query(String sql) {
         // check connection to MySQL
         try {
-            if(!connection.isValid(5)) {
+            if(Settings.mySQLenabled && !connection.isValid(5)) {
             	reconnect();
             }
         } catch (SQLException e) {

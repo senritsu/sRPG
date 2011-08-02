@@ -60,7 +60,6 @@ public class ProfileNPC {
 	}
 	
 	public double getStat(String name, Double def, Material handMaterial, Material targetMaterial) {
-		SRPG.output("trying to get stat: "+name+",in hand: "+handMaterial+", target: "+targetMaterial);
 		double value = 0.0;
 		boolean found = false;
 		if (handMaterial != null && stats.containsKey(handMaterial)) {
@@ -84,7 +83,6 @@ public class ProfileNPC {
 		if (!found) {
 			value = def;
 		}
-		SRPG.output("returning: "+value);
 		return value;
 	}
 	
@@ -127,10 +125,11 @@ public class ProfileNPC {
 					continue;
 				}
 				if (effect.startsWith("boost")) {
+					ArrayList<String> levelbased = (ArrayList<String>) node.getStringList("level-based", new ArrayList<String>());
 					String name = node.getString("name");
 					Double value = node.getDouble("value", 0.0) * inheritancefactor * descriptor.potency;
-					if (node.getBoolean("level-based", false)) {
-						value *= (double)descriptor.level / descriptor.maxlevel;
+					if (levelbased.contains("value")) {
+						value *= (double)(descriptor.level == null ? 0 : descriptor.level) / descriptor.maxlevel;
 					}
 					// parse tools node
 					ArrayList<Material> tools = Utility.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));

@@ -33,7 +33,7 @@ public class SRPG extends JavaPlugin {
 	public static ProfileManager profileManager = new ProfileManager();
 	static TimedEffectManager timedEffectManager = new TimedEffectManager();
 	static CascadeQueueScheduler cascadeQueueScheduler = new CascadeQueueScheduler(); 
-	static Database database = new Database();
+	static Database database;
 	
 	static Random generator = new Random();
 	
@@ -74,17 +74,10 @@ public class SRPG extends JavaPlugin {
 		
 		// try to load settings, disable plugin on fail
 		
-		Boolean disable = false;
+		boolean disable = false;
 		settings.load();
-		if (database.mySQLenabled) {
-			if (!database.connect()) {
-				output("disabling plugin");
-				disable = true;
-			}
-			
-			
-		} else {
-			output("mySQL disabled, other storage methods not supported yet");
+		if (!database.connect()) {
+			output("disabling plugin");
 			disable = true;
 		}
 		if (disable) {

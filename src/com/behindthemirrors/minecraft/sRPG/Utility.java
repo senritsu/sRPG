@@ -204,7 +204,11 @@ public class Utility {
 			try {
 				materials.add(Material.getMaterial(Integer.parseInt(entry)));
 			} catch (NumberFormatException ex) {
-				if (materialGroupNames.containsKey(entry.toLowerCase())) {
+				// hack
+				if (entry.equalsIgnoreCase("bow")) {
+					materials.add(Material.BOW);
+				// hack end
+				} else if (materialGroupNames.containsKey(entry.toLowerCase())) {
 					materials.addAll(materialGroupNames.get(entry.toLowerCase()));
 				} else if (Material.getMaterial(entry) != null) {
 					materials.add(Material.getMaterial(entry));

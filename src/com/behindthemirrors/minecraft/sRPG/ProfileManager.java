@@ -21,18 +21,13 @@ public class ProfileManager {
 		profile.player = player;
 		profile.name = player.getName();
 		profile.locale = Settings.defaultLocale;
-		// mySQL
-		if (SRPG.database.mySQLenabled) {
-			profile.id = SRPG.database.getSingleIntValue("users", "user_id", "user", player.getName());
-			if (profile.id == 0) {
-				enterIntoDatabase(player);
-				SRPG.output("created player data");
-			}
-			load(player);
-		// no other option available right now, may add SQLite or flatfile later on
-		} else {
-			SRPG.output("player data not loaded due to mySQL being disabled");
+		
+		profile.id = SRPG.database.getSingleIntValue("users", "user_id", "user", player.getName());
+		if (profile.id == null) {
+			enterIntoDatabase(player);
+			SRPG.output("created player data");
 		}
+		load(player);
 	}
 	
 	public void add(LivingEntity entity) {
@@ -113,13 +108,15 @@ public class ProfileManager {
 		profile.jobXP = new HashMap<StructureJob, Integer>();
 		profile.jobLevels = new HashMap<StructureJob, Integer>();
 		for (int i=0; i < jobs.size();i++) {
-			profile.jobXP.put(Settings.jobs.get(jobs.get(i)), xp.get(i));
-			if (xp.get(i) > 0 || Settings.jobs.get(jobs.get(i)).maximumLevel <= 1) {
-				profile.checkLevelUp(Settings.jobs.get(jobs.get(i)));
+			StructureJob job = Settings.jobs.get(jobs.get(i));
+			profile.jobXP.put(job, xp.get(i));
+			if (xp.get(i) > 0 || job.maximumLevel <= 1 || job == profile.currentJob) {
+				profile.checkLevelUp(job);
 			}
 		}
 		profile.charges = SRPG.database.getSingleIntValue("users", "charges", "user_id", profile.id);
 		profile.chargeProgress = SRPG.database.getSingleIntValue("users", "chargeprogress", "user_id", profile.id);
+		profile.suppressRecalculation = false;
 		profile.changeJob(profile.currentJob);
 		profile.suppressMessages = false;
 	}

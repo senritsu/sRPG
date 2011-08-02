@@ -13,6 +13,7 @@ public class ProfilePlayer extends ProfileNPC {
 	public static boolean debug = false;
 	
 	boolean suppressMessages = true;
+	boolean suppressRecalculation = true;
 	
 	// TODO: maybe change to read directly from config
 	static Integer chargeMax;
@@ -139,16 +140,30 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public void recalculate() {
+		if (suppressRecalculation) {
+			return;
+		}
 		HashMap<StructurePassive,EffectDescriptor> current = new HashMap<StructurePassive, EffectDescriptor>();
 		HashMap<StructurePassive,EffectDescriptor> mastered = new HashMap<StructurePassive, EffectDescriptor>();
 		HashMap<StructurePassive,EffectDescriptor> inherited = new HashMap<StructurePassive, EffectDescriptor>();
 		HashMap<StructurePassive,EffectDescriptor> both = new HashMap<StructurePassive, EffectDescriptor>();
 		// add current job
+		for (EffectDescriptor descriptor : currentJob.getPassives(jobLevels.get(currentJob)).values()) {
+			descriptor.level = jobLevels.get(currentJob);
+		}
+		for (EffectDescriptor descriptor : currentJob.traits.values()) {
+			descriptor.level = jobLevels.get(currentJob);
+		}
 		current.putAll(currentJob.getPassives(jobLevels.get(currentJob)));
 		current.putAll(currentJob.traits);
 		// add inherited passives
 		ArrayList<StructureJob> parents = currentJob.getParents();
+		// TODO: put the current job level into the descriptors
 		for (StructureJob job : jobLevels.keySet()) {
+			for (EffectDescriptor descriptor : job.traits.values()) {
+				descriptor.level = jobLevels.get(job);
+				SRPG.output(job.name+"trait descriptor level: "+descriptor.level);
+			}
 			if (job == currentJob || jobLevels.get(job) == 0) {
 				continue;
 			} else if (parents.contains(job)) {

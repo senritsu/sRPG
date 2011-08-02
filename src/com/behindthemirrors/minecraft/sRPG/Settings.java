@@ -20,6 +20,8 @@ public class Settings {
 	
 	static File dataFolder;
 	
+	static boolean mySQLenabled;
+	
 	static Configuration config;
 	static Configuration advanced;
 	static Configuration jobsettings;
@@ -211,15 +213,17 @@ public class Settings {
 			
 			// read config data
 			node = config.getNode("mySQL");
-			SRPG.database.mySQLenabled = node.getBoolean("enabled", false);
-			if (SRPG.database.mySQLenabled) {
-				SRPG.database.dbServer = node.getString("server");
-				SRPG.database.dbPort = node.getString("port");
-				SRPG.database.dbName = node.getString("dbName");
-				SRPG.database.dbUser = node.getString("dbUser");
-				SRPG.database.dbPass = node.getString("dbPass");
-				SRPG.database.dbTablePrefix = node.getString("table_prefix");
+			mySQLenabled = node.getBoolean("enabled", false);
+			Database db = new Database();
+			if (mySQLenabled) {
+				db.server = node.getString("server");
+				db.port = node.getString("port");
+				db.name = node.getString("dbName");
+				db.user = node.getString("dbUser");
+				db.pass = node.getString("dbPass");
 			}
+			db.tablePrefix = node.getString("table_prefix");
+			SRPG.database = db;
 			
 			// read ability settings
 			ProfilePlayer.chargeMax = advanced.getInt("abilities.max-charges", 1);

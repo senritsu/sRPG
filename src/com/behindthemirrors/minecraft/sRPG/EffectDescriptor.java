@@ -23,6 +23,11 @@ public class EffectDescriptor {
 		this.duration = duration;
 	}
 	
+	public EffectDescriptor(String signature, Integer level, Integer maxlevel) {
+		this(level, maxlevel);
+		this.potency = Utility.parsePotency(signature);
+	}
+	
 	public EffectDescriptor (Integer level, Integer maxlevel) {
 		this.level = level;
 		this.maxlevel = maxlevel;

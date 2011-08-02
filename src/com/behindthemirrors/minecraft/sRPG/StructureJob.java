@@ -49,14 +49,10 @@ public class StructureJob implements Comparable<StructureJob> {
 			}
 		}
 		
-		SRPG.output("initialized job "+name+" with a maximum level of "+maximumLevel);
-		
 		traits = new HashMap<StructurePassive, EffectDescriptor>();
-		SRPG.output("loading traits for job "+this.toString());
 		for (String trait : root.getStringList("traits",new ArrayList<String>())) {
-			SRPG.output("processing trait "+trait);
 			// TODO: make NPE safe
-			EffectDescriptor descriptor = new EffectDescriptor(trait);
+			EffectDescriptor descriptor = new EffectDescriptor(trait,0,maximumLevel);
 			traits.put(Settings.passives.get(Utility.stripPotency(trait)),descriptor);
 		}
 		
@@ -67,7 +63,7 @@ public class StructureJob implements Comparable<StructureJob> {
 				passives.put(level, new HashMap<StructurePassive, EffectDescriptor>());
 				for (String passive : root.getStringList("passives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
-					EffectDescriptor descriptor = new EffectDescriptor(passive);
+					EffectDescriptor descriptor = new EffectDescriptor(passive,0,maximumLevel);
 					passives.get(level).put(Settings.passives.get(Utility.stripPotency(passive)), descriptor);
 				}
 			}
@@ -80,7 +76,7 @@ public class StructureJob implements Comparable<StructureJob> {
 				actives.put(level, new HashMap<StructureActive, EffectDescriptor>());
 				for (String active : root.getStringList("actives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
-					EffectDescriptor descriptor = new EffectDescriptor(active);
+					EffectDescriptor descriptor = new EffectDescriptor(active,0,maximumLevel);
 					actives.get(level).put(Settings.actives.get(Utility.stripPotency(active)),descriptor);
 				}
 			}
