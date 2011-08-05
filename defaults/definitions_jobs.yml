@@ -8,8 +8,8 @@ adventurer:
   defaults:
     maximum-level: 1
   traits:
-  skills:
-  abilities:
+  passive:
+  active:
 
 archer:
   enabled: true
@@ -43,5 +43,5 @@ sniper:
   traits:
     - sword-incompetence!2
     - snipers-eye
-  skills:
-  abilities:
+  passive:
+  active:

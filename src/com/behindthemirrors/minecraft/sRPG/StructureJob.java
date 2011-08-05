@@ -25,7 +25,7 @@ public class StructureJob implements Comparable<StructureJob> {
 	Integer maximumLevel;
 	HashMap<StructureJob,Integer> prerequisites;
 	Integer tier;
-	HashMap<String,Double> baseStats;
+	HashMap<String,Double> defaults;
 	// TODO: convert bonuses to StructurePassive
 	HashMap<StructurePassive,EffectDescriptor> traits;
 	HashMap<Integer,HashMap<StructurePassive,EffectDescriptor>> passives;
@@ -40,12 +40,20 @@ public class StructureJob implements Comparable<StructureJob> {
 		
 		tier = root.getInt("tier",1);
 		
-		baseStats = new HashMap<String, Double>();
+		defaults = new HashMap<String, Double>();
 		for (String stat : Settings.jobsettings.getKeys("settings.defaults")) {
 			if (stat.equals("maximum-level")) {
 				maximumLevel = root.getInt("defaults."+stat,Settings.jobsettings.getInt("settings.defaults."+stat, 1));
 			} else {
-				baseStats.put(stat, root.getDouble("defaults."+stat,Settings.jobsettings.getDouble("settings.defaults."+stat, 0.0)));
+				defaults.put(stat, root.getDouble("defaults."+stat,Settings.jobsettings.getDouble("settings.defaults."+stat, 0.0)));
+			}
+		}
+		// add additional defaults for monsters
+		if (root.getKeys("defaults") != null) {
+			for (String stat : root.getKeys("defaults")) {
+				if (!defaults.containsKey(stat)) {
+					defaults.put(stat, root.getDouble("defaults."+stat,1));
+				}
 			}
 		}
 		

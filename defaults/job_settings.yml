@@ -16,11 +16,13 @@ settings:
   
   # singular and plural endings specified in brackets '()' separated by a pipe '|'
   defaults: # may be modified by specific jobs under the node 'defaults'
+    damage-unarmed: 1
+    damage-unknown-item: 1
     maximum-level: 10
     crit-chance: 0.02
     crit-multiplier: 1.5
     miss-chance: 0.05
-    miss-multiplier: 0.0
+    miss-damage-factor: 1.0
 
 job-prefixes:
   Level 1: Novice

@@ -22,12 +22,15 @@ public class TimedEffectManager implements Runnable {
 				EffectDescriptor descriptor = entry.getValue();
 				if (descriptor.duration > 0) {
 					descriptor.duration--;
-					EffectResolver.tick(profile,passive,descriptor);
+					ResolverPassive.tick(profile,passive,descriptor);
 				} else {
 					if (debug) {
 						SRPG.output("effect "+passive.name+" expired");
 					}
 					effectIterator.remove();
+					if (profile instanceof ProfilePlayer){
+						MessageParser.sendMessage(profile, "lost-buff",passive.name);
+					}
 					profile.timedStatsDirty = true;
 				}
 			}

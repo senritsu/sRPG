@@ -2,7 +2,7 @@ settings:
   # dangerous-depths can be enabled/disabled in the basic configuration
   dangerous-depths:
     thresholds: []
-    damage-increases: []
+    mob-level: []
   combat:
     crit-chance: 0.05
     crit-multiplier: 1.5
@@ -16,77 +16,6 @@ settings:
 
 # NOTE: damage and health values not in hearts (1 heart = 2 damage/health)
 stats:
-  animals:
-    pig:
-      health: 10
-      xp: 1
-    sheep:
-      health: 10
-      xp: 1
-    chicken:
-      health: 4
-      xp: 1
-    cow:
-      health: 10
-      xp: 1
-    squid:
-      health: 10
-      xp: 1
-  monsters:
-    zombie:
-      health: 20
-      damage: 5
-      xp: 1
-    spider:
-      health: 20
-      damage: 2
-      xp: 1
-    skeleton:
-      health: 20
-      damage: 4
-      xp: 1
-    creeper:
-      health: 20
-      damage: 16
-      xp: 1
-    pigzombie:
-      health: 20
-      damage: 6
-      xp: 1
-    ghast:
-      health: 10
-      damage: 7
-      xp: 15
-    giant:
-      health: 50
-      damage: 17
-      xp: 50
-    slime:
-      huge:
-        health: 32
-        damage: 1
-        xp: 1
-      big:
-        health: 16
-        damage: 1
-        xp: 1
-      normal:
-        health: 4
-        damage: 1
-        xp: 1
-      small:
-        health: 1
-        damage: 1
-        xp: 1
-    wolf: 
-      wild:
-        health: 8
-        damage: 2
-        xp: 1
-      tamed:
-        health: 20
-        damage: 4
-        xp: 1
   tools:
     swords:
       wood:

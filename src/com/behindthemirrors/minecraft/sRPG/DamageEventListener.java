@@ -2,37 +2,29 @@
 package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
-import org.bukkit.entity.Arrow;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
-import org.bukkit.Material;
-
 
 public class DamageEventListener extends EntityListener{
 	
 	static boolean debug = false;
 	
-	public static HashMap<String,Integer> damageTableMonsters;
-	public static HashMap<String,Integer> xpTableCreatures;
-	public static HashMap<String,Integer> damageTableTools;
-	public static boolean increaseDamageWithDepth;
-	public static ArrayList<int[]> depthTiers;
-	
 	private HashMap<Integer,Player> damageTracking = new HashMap<Integer,Player>();
+
+	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
+	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
 	
 	@Override
 	public void onEntityDamage(EntityDamageEvent event) {
-		String sourcename = "";
 		LivingEntity source = null;
 		Player player = null;
 		LivingEntity target = (LivingEntity)event.getEntity();
@@ -45,98 +37,53 @@ public class DamageEventListener extends EntityListener{
 			if (target instanceof Player) {
 				PassiveAbility.trigger(event);
 			}
-		} else if (event.getCause() == DamageCause.ENTITY_ATTACK || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
-			if (event instanceof EntityDamageByEntityEvent) {
-				source = (LivingEntity)((EntityDamageByEntityEvent)event).getDamager();
-			//} else if (event instanceof EntityDamageByProjectileEvent) {
-			//	entity = ((EntityDamageByProjectileEvent)event).getDamager();
-			}
-			
-			if (source != null) {
-				sourcename = Utility.getEntityName(source);
-			}
-			
+		} else if (event.getCause() == DamageCause.ENTITY_ATTACK) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+			source = (LivingEntity)((EntityDamageByEntityEvent)event).getDamager();
 			CombatInstance combat = new CombatInstance(event);
-			// damage from monsters
-			if (Settings.MONSTERS.contains(sourcename)) {
-				// for now no distinction between arrow hits and normal hits
-				combat.basedamage = damageTableMonsters.get(sourcename);
-				if (sourcename.equalsIgnoreCase("creeper")) {
-					combat.basedamage = (int)Math.round(new Double(event.getDamage()*damageTableMonsters.get(sourcename))/14);
-				}
-				if (sourcename.equalsIgnoreCase("ghast")) {
-					combat.basedamage = (int)Math.round(new Double(event.getDamage()*damageTableMonsters.get(sourcename))/5);
-				}
-				// depth modifier
-				if (increaseDamageWithDepth) {
-					for (int[] depth : depthTiers) {
-						if (((EntityDamageByEntityEvent)event).getDamager().getLocation().getY() < (double)depth[0]) {
-							combat.modifier += depth[1];
-						}
-					}
-				}
-			// damage from players
-			} else if (sourcename.equalsIgnoreCase("player") && event instanceof EntityDamageByEntityEvent) {
-				player = (Player)(((EntityDamageByEntityEvent)event).getDamager());
-				
+			
+			// debug message
+			if (source instanceof Player && event instanceof EntityDamageByEntityEvent) {
 				// debug message, displays remaining health of target before damage from this attack is applied
-				if (event.getEntity() instanceof LivingEntity) {
-					if (debug) {
-						SRPG.output("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.");
+				if (debug) {
+					SRPG.output("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.");
+				}
+			}
+			
+			// check attack restrictions
+			combat.attacker = SRPG.profileManager.get(source);
+			combat.defender = SRPG.profileManager.get(target);
+			if (source instanceof Player && Settings.advanced.getBoolean("combat.restrictions.enabled", false)) {
+				String prefix = Settings.advanced.getString("combat.restrictions.group-prefix");
+				boolean forbidden = false;
+				for (String group : Settings.advanced.getKeys("combat.restrictions.groups")) {
+					if (((Player)source).hasPermission(prefix+group)) {
+						forbidden = true;
+						String targetname = Utility.getEntityName(target);
+						for (String otherGroup : Settings.advanced.getStringList("combat.restrictions.groups."+group,null)) {
+							if ((target instanceof Player && ((Player)target).hasPermission(prefix+otherGroup)) || 
+									(otherGroup.equalsIgnoreCase("animals") && DamageEventListener.ANIMALS.contains(targetname)) || 
+									(otherGroup.equalsIgnoreCase("monsters") && DamageEventListener.MONSTERS.contains(targetname)) ) {
+								forbidden = false;
+							}
+						}
+						break;
 					}
 				}
-				// select damage value from config depending on what item is held
-				if (event instanceof EntityDamageByEntityEvent) {
-					Material material = player.getItemInHand().getType();
-					String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(material);
-					if (toolName != null) {
-						combat.basedamage = damageTableTools.get(toolName);
-						// award charge tick
-						//TODO: maybe move saving to the data class
-						SRPG.profileManager.save(player,"chargedata");
-					} else if (event instanceof EntityDamageByProjectileEvent && ((EntityDamageByProjectileEvent)event).getProjectile() instanceof Arrow) {
-						combat.basedamage = damageTableTools.get("bow");
-					} else {
-						combat.basedamage = damageTableTools.get("fists"); 
-					}
+				if (forbidden) {
+					combat.cancel();
 				}
 			}
 			
 			// resolve combat
-			if (event instanceof EntityDamageByEntityEvent) {
-				combat.attacker = SRPG.profileManager.get(source);
-				combat.defender = SRPG.profileManager.get(target);
-				if (player != null && Settings.advanced.getBoolean("combat.restrictions.enabled", false)) {
-					String prefix = Settings.advanced.getString("combat.restrictions.group-prefix");
-					boolean forbidden = false;
-					for (String group : Settings.advanced.getKeys("combat.restrictions.groups")) {
-						if (player.hasPermission(prefix+group)) {
-							forbidden = true;
-							String targetname = Utility.getEntityName(target);
-							for (String otherGroup : Settings.advanced.getStringList("combat.restrictions.groups."+group,null)) {
-								if ((target instanceof Player && ((Player)target).hasPermission(prefix+otherGroup)) || 
-										(otherGroup.equalsIgnoreCase("animals") && Settings.ANIMALS.contains(targetname)) || 
-										(otherGroup.equalsIgnoreCase("monsters") && Settings.MONSTERS.contains(targetname)) ) {
-									forbidden = false;
-								}
-							}
-							break;
-						}
-					}
-					if (forbidden) {
-						combat.cancel();
-					}
-				}
-				combat.resolve();
-				if (debug) {
-					SRPG.output("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString());
-				}
+			combat.resolve();
+			if (debug) {
+				SRPG.output("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString());
 			}
 			
 			// track entity if damage source was player, for xp gain on kill
-			int id = target.getEntityId();
 			if (!(target instanceof Player) && !event.isCancelled() && event.getDamage() > 0) {
-				if (player != null) {
+				int id = target.getEntityId();
+				if (source instanceof Player) {
 					if (debug) {
 						SRPG.output("id of damaged entity: "+event.getEntity().getEntityId());
 					}
@@ -190,23 +137,26 @@ public class DamageEventListener extends EntityListener{
 	
 	// check if entity was tracked, and if yes give the player who killed it xp
 	public void onEntityDeath (EntityDeathEvent event) {
-		Entity entity = event.getEntity();
+		if (!(event.getEntity() instanceof LivingEntity)) {
+			return;
+		}
+		LivingEntity entity = (LivingEntity)event.getEntity();
 		int id = entity.getEntityId();
 		if (debug) {
 			SRPG.output("entity with id "+id+" died");
 		}
 		if (damageTracking.containsKey(id)) {
+			ProfileNPC profile = SRPG.profileManager.get(entity);
 			if (debug) {
 				SRPG.output("giving player"+damageTracking.get(id)+" xp");
 			}
-			String monster = Utility.getEntityName(entity);
-			SRPG.profileManager.get(damageTracking.get(id)).addXP(xpTableCreatures.get(monster));
+			SRPG.profileManager.get(damageTracking.get(id)).addXP((int) profile.getStat("xp"));
 			//TODO: maybe move saving to the data class
 			SRPG.profileManager.save(damageTracking.get(id),"xp");
 			damageTracking.remove(id);
 		}
-		if (entity instanceof LivingEntity && !(entity instanceof Player)) {
-			SRPG.profileManager.remove((LivingEntity)entity);
+		if (!(entity instanceof Player)) {
+			SRPG.profileManager.remove(entity);
 		}
 	}
 }

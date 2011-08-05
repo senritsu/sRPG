@@ -119,8 +119,8 @@ public class CommandListener implements CommandExecutor {
 					}
 					if (args[1].equalsIgnoreCase("effects")) {
 						TimedEffectManager.debug = !TimedEffectManager.debug;
-						EffectResolver.debug = !EffectResolver.debug;
-						SRPG.output("effect debugging set to "+EffectResolver.debug);
+						ResolverPassive.debug = !ResolverPassive.debug;
+						SRPG.output("effect debugging set to "+ResolverPassive.debug);
 						return true;
 					}
 					// display debug messages from combat listener 
@@ -147,7 +147,7 @@ public class CommandListener implements CommandExecutor {
 				} else if (args.length >= 2 && args[0].equalsIgnoreCase("list")) {
 					// display hp values
 					if (args[1].equalsIgnoreCase("tooldamage")) {
-						Iterator<Map.Entry<String,Integer>> pairs = DamageEventListener.damageTableTools.entrySet().iterator();
+						Iterator<Map.Entry<String,Integer>> pairs = CombatInstance.damageTableTools.entrySet().iterator();
 						while (pairs.hasNext()) {
 							Map.Entry<String,Integer>pair = pairs.next();
 							SRPG.output(pair.getKey()+": "+pair.getValue());
@@ -177,24 +177,47 @@ public class CommandListener implements CommandExecutor {
 						potency = 1;
 					}
 					EffectDescriptor descriptor = new EffectDescriptor(5);
-					profile.addEffect(Settings.passives.get(potency == 0 ? "weakpoison" : "poison"), descriptor);
-					descriptor.potency = potency == 0 ? 1 : potency;
+					descriptor.potency = potency < 1 ? 1 : potency;
+					StructurePassive buff = Settings.passives.get(potency == 0 ? "weakpoison" : "poison");
+					profile.addEffect(buff, descriptor);
+					MessageParser.sendMessage(profile, "acquired-buff",buff.name);
 					SRPG.output("poisoned player "+args[1]);
 					return true;
 				// add xp to a player (handle with care, no removal atm)
 				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp") && SRPG.profileManager.has(args[1])) {
 					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
+					if (profile == null) {
+						return false;
+					}
 					Integer amount;
 					try {
 						amount = Integer.parseInt(args[2]);
 					} catch (NumberFormatException e) {
 						SRPG.output("Not a valid number");
-						return true;
+						return false;
 					}
 					
 					profile.addXP(amount);
 					SRPG.profileManager.save(profile, "xp");
 					SRPG.output("gave "+amount.toString()+" xp to player "+args[1]);
+					return true;
+				} else if (args.length >= 4 && args[0].equalsIgnoreCase("setboost") && SRPG.profileManager.has(args[1])) {
+					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
+					if (profile == null) {
+						SRPG.output("No player by that name");
+						return false;
+					}
+					Double value;
+					try {
+						value = Double.parseDouble(args[3]);
+					} catch (NumberFormatException e) {
+						SRPG.output("Not a valid number");
+						return false;
+					}
+					
+					profile.stats.get(0).get(null).get(null).put(args[2], value);
+					SRPG.output("Set boost "+args[2]+" to "+value);
+					SRPG.output(profile.stats.toString());
 					return true;
 				}
 			}

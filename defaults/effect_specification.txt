@@ -12,6 +12,8 @@ special fields:
   'inherited' (boolean, defaults to false) specifies if the effect is inheritable 
   'as-attacker' (boolean, defaults to true) makes the effect available in combat as the attacker
   'as-defender' (boolean, defaults to false) makes the effect available in combat as the defender
+  'self' (boolean, defaults vary) makes the effect act on the user
+  'self' (boolean, defaults vary) makes the effect act on the target/opponent
 ###############
 
 'boost'
@@ -21,36 +23,48 @@ special fields:
   possible names: crit-chance, crit-multiplier, damage-modifier, evade-chance, evade-efficiency, parry, parry-efficiency, roll-chance, roll-manual-window, roll-damage-reduction, fall-damage-reduction, durability-recovery-chance, double-drop-chance, triple-drop-chance, extradrop-chance-[rarity]
   notes: names can be preceeded by 'anti-' to be inversely applied to the opponent if possible (for example anti-evasion to reduce an opponents chance of evasion), in case of extradrop-chance the rarity can be anything specified in the advanced configuration
   
-'state-flag'
-  can be used for: passive, active, bonus
-  required nodes: name (string)
-  
 'set-combat-state'
   can be used for: passive, bonus
   optional nodes: as-attacker, as-defender, tools, versus, chance, crit (boolean), evaded (boolean), parried (boolean), canceled (boolean)
   
+'trigger'
+  can be used for: passive, bonus
+  required nodes: action (string, refers to any active), conditions (string list, can have: combat-offensive, combat-defensive)
+  optional nodes: chance, tools, versus
+
 'apply-buff'
-  can be used for: passive, bonus, active
-  required nodes: name (string), duration (int), trigger (string, only required for use as passive/bonus)
+  notes: name can be anything specified in passives.yml
+  can be used for: active
+  required nodes: name (string), duration (int)
   optional nodes: self (boolean, defaults to true), opponent (boolean, defaults to false), tools, versus
-  note: name can be anything specified in passives.yml
   
-'added-attack'
+'attack'
   can be used for: passive, bonus
   required nodes: chance, min-damage (int)
-  optional nodes: as-attacker, as-defender, max-damage (int), tools, versus, tool-damage (boolean, overrides min/max damage with the damage of the currently carried item), trigger (string, can refer to any chance-based effect, overrides 'chance')
+  optional nodes: as-attacker, as-defender, max-damage (int), tools, versus, tool-damage (boolean, overrides min/max damage with the damage of the currently carried item), trigger (string, can refer to any chance-based effect)
 
 'direct-damage'
-  can be used for: passive (buffs only), active
-  required nodes: value
-  optional nodes: chance, attribute (string, see attributes list above)
+  can be used for: passive (has only effect for buffs), active
+  required nodes: value (int)
+  optional nodes: self (boolean, default false), opponent (boolean, default true), chance, attribute (string, see attributes list above)
 
 'damage-reduction'
   can be used for: passive, bonus
-  required nodes: chance, efficiency (float)
-  optional nodes: causes (string list), tools, versus
+  optional nodes: efficiency (float), causes (string list), tools, versus, chance
 
-'transmute-held-item'
-  notes: changes (part of) the held item stack to something else, list allows multiple types of items to be set
+'manipulate-item'
+  notes: when used on monsters, the hand location only works for skeletons (bow) and zombie pigmen (gold sword), and the inventory location corresponds to drops for that monster/animal
+  can be used for: passive (triggered only), active
+  required nodes: action (string, may be: drop, destroy, steal)
+  optional nodes: self (boolean, defaults to false), opponent (boolean, defaults to true), chance, location (string list of: quickbar, hand (included in quickbar), inventory, armor), protected-for (integer, seconds in which nobody can pick up the item if action == drop), whitelist (string list, similar to tools in syntax), blacklist (see whitelist, whitelist has priority), all (boolean, defaults to false, acts on all items in the specified location), amount (integer, if specified act on the specified amount, else on the whole stack)
+
+'transmute-item'
+  notes: changes (part of) the held item stack to something else, list allows multiple types of items to be set, if hand item is part of the from list, the corresponding from-amount will be used up and transformed into ALL entries of the to/to-amounts list. for different results make another effect entry
   can be used for: active
   required nodes: from (integer list), from-amounts (integer list), to (integer list), to-amounts (integer list)
+  
+'impulse'
+  optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), force (float, rescales x,y,z)
+  
+'teleport'
+  optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), max-range (float), max-range-horizontal (float), max-range-vertical (float), max-range-blocks (integer), trace-line (boolean), transparent (string list, see tools, by default only air is transparent, only has effect if trace-line is true), safe-teleport (boolean, default true, if false may land inside solid ground)

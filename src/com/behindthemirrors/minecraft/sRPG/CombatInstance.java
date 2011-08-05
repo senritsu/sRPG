@@ -1,28 +1,30 @@
 package com.behindthemirrors.minecraft.sRPG;
 
+import java.util.HashMap;
+
 import org.bukkit.Material;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
 
 public class CombatInstance {
 	
-	static double defaultCritChance;
-	static double defaultCritMultiplier;
-	static double defaultMissChance;
-	static double defaultMissMultiplier;
+	// TODO: change default references to be parsed from job class of attacker
 	
 	private EntityDamageEvent event;
 	public ProfileNPC attacker;
 	public ProfileNPC defender;
 	
-	public Integer basedamage;
-	public Integer modifier;
-	public Double critChance;
-	public Double critMultiplier;
-	public Double missChance;
-	public Double missMultiplier;
-	public Double evadeChance;
+	public double basedamage;
+	public double modifier;
+	public double critChance;
+	public double critMultiplier;
+	public double missChance;
+	public double missMultiplier;
+	public double evadeChance;
+	public double parryChance;
 	
 	boolean crit = false;
 	boolean miss = false;
@@ -32,16 +34,15 @@ public class CombatInstance {
 	
 	private String cancelMessageAttacker;
 	private String cancelMessageDefender;
+	public static HashMap<String,Integer> damageTableTools;
 	
 	public CombatInstance(EntityDamageEvent event) {
 		this.event = event;
-		basedamage = event.getDamage();
 		modifier = 0;
-		critChance = defaultCritChance;
-		critMultiplier = defaultCritMultiplier;
-		missChance = defaultMissChance;
-		missMultiplier = defaultMissMultiplier;
+		critChance = 0.0;
+		missChance = 0.0;
 		evadeChance = 0.0;
+		parryChance = 0.0;
 	}
 	
 	public void cancel() {
@@ -59,34 +60,49 @@ public class CombatInstance {
 		Material attackerHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
 		Material defenderHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
 		
-		evadeChance += defender.getStat("evasion", defenderHandItem, attackerHandItem);
-		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem);
-		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem);
+		evadeChance += defender.getStat("evade-chance", defenderHandItem, attackerHandItem) - attacker.getStat("anti-evade-chance", attackerHandItem, defenderHandItem);
+		parryChance += defender.getStat("parry-chance", defenderHandItem, attackerHandItem) - attacker.getStat("anti-parry-chance", attackerHandItem, defenderHandItem);
+		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem) - defender.getStat("anti-crit-chance", defenderHandItem, attackerHandItem);
+		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem) - defender.getStat("anti-crit-multiplier", defenderHandItem, attackerHandItem);
 		
-		// TODO: add parry
-		
-		// override for deactivated tools
-		if (basedamage == null) {
-			basedamage = event.getDamage();
-		}
-		double damage = basedamage + attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem);
-		
-		// apply critical hit
-		if (SRPG.generator.nextDouble() <= critChance) {
-			damage *= critMultiplier;
-			crit = true;
-		}
-		// apply miss
-		double roll = SRPG.generator.nextDouble();
-		if (roll <= missChance + evadeChance) {
-			damage *= missMultiplier;
-			miss = true;
-			if (roll <= evadeChance) {
-				evade = true;
+		if (attackerHandItem != null) {
+			String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(attackerHandItem);
+			if (toolName != null) {
+				basedamage = damageTableTools.get(toolName);
+			} else if (event instanceof EntityDamageByProjectileEvent && ((EntityDamageByProjectileEvent)event).getProjectile() instanceof Arrow) {
+				basedamage = damageTableTools.get("bow");
+			} else {
+				basedamage = attacker.getStat("damage-unknown-item", 1);
+			}
+		} else {
+			String entityName = Utility.getEntityName(attacker.entity);
+			basedamage = attacker.getStat("damage-unarmed", 1);
+			if (entityName.equalsIgnoreCase("creeper")) {
+				basedamage = Math.round(new Double(event.getDamage()*basedamage)/14);
+			}
+			if (entityName.equalsIgnoreCase("ghast")) {
+				basedamage = Math.round(new Double(event.getDamage()*basedamage)/5);
 			}
 		}
 		
-		EffectResolver.trigger(this);
+		double damage = basedamage + attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem) - attacker.getStat("anti-damage-modifier", attackerHandItem, defenderHandItem);
+		
+		// apply critical hit
+		if (SRPG.generator.nextDouble() <= critChance) {
+			crit = true;
+		}
+		// apply miss
+		if (SRPG.generator.nextDouble() <= missChance) {
+			miss = true;
+		}
+		if (SRPG.generator.nextDouble() <= evadeChance) {
+			evade = true;
+		}
+		if (SRPG.generator.nextDouble() <= parryChance) {
+			parry = true;
+		}
+		
+		ResolverPassive.trigger(this);
 		
 		if (canceled){
 			if (attacker instanceof Player && cancelMessageAttacker != null) {
@@ -99,24 +115,38 @@ public class CombatInstance {
 			return;
 		}
 		
-		// send messages to player
-		// TODO: proper miss/evade messages
-		if (attacker instanceof ProfilePlayer) {
-			Player player = ((ProfilePlayer)attacker).player;
-			if (miss) {
-				if (damage <= 0) {
-					MessageParser.sendMessage(player, "miss-no-damage");
-				} else {
-					MessageParser.sendMessage(player, "miss-damage");
-				}
-			} else if (crit) {
-				if (!miss) {
-					MessageParser.sendMessage(player, "critical-hit");
-				} else if (damage > 0) {
-					MessageParser.sendMessage(player, "miss-critical-damage");
-				}
+		double factor = 1.0;
+		if (miss) {
+			if (factor > 0) {
+				MessageParser.sendMessage(attacker, "miss-attacker");
+				MessageParser.sendMessage(defender, "miss-defender");
 			}
+			factor -= attacker.getStat("miss-damage-factor", attackerHandItem, defenderHandItem) -  defender.getStat("anti-miss-damage-factor", defenderHandItem, attackerHandItem);
 		}
+		if (parry) {
+			if (factor > 0) {
+				MessageParser.sendMessage(attacker, "parry-attacker");
+				MessageParser.sendMessage(defender, "parry-defender");
+			}
+			factor -= defender.getStat("parry-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("anti-parry-efficiency", attackerHandItem, defenderHandItem);
+		}
+		if (factor > 0 && evade) {
+			if (factor > 0) {
+				MessageParser.sendMessage(attacker, "evade-attacker");
+				MessageParser.sendMessage(defender, "evade-defender");
+			}
+			factor -= defender.getStat("evade-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("anti-evade-efficiency", attackerHandItem, defenderHandItem);
+		}
+		
+		damage *= factor <= 1.0 ? factor : 1.0;
+		
+		if (crit && damage > 0) {
+			MessageParser.sendMessage(attacker, "crit-attacker");
+			MessageParser.sendMessage(defender, "crit-defender");
+			damage *= critMultiplier;
+		}
+		
+		// send messages to player
 		
 		if (damage > 0 && attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).addChargeTick();

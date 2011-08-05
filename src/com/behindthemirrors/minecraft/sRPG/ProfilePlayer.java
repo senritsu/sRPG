@@ -19,9 +19,7 @@ public class ProfilePlayer extends ProfileNPC {
 	static Integer chargeMax;
 	static Integer chargeTicks;
 	
-	HashMap<StructureJob,Integer> jobLevels;
 	HashMap<StructureJob,Integer> jobXP;
-	StructureJob currentJob;
 	StructureActive currentActive;
 	
 	Integer id = 0;
@@ -143,19 +141,9 @@ public class ProfilePlayer extends ProfileNPC {
 		if (suppressRecalculation) {
 			return;
 		}
-		HashMap<StructurePassive,EffectDescriptor> current = new HashMap<StructurePassive, EffectDescriptor>();
 		HashMap<StructurePassive,EffectDescriptor> mastered = new HashMap<StructurePassive, EffectDescriptor>();
 		HashMap<StructurePassive,EffectDescriptor> inherited = new HashMap<StructurePassive, EffectDescriptor>();
 		HashMap<StructurePassive,EffectDescriptor> both = new HashMap<StructurePassive, EffectDescriptor>();
-		// add current job
-		for (EffectDescriptor descriptor : currentJob.getPassives(jobLevels.get(currentJob)).values()) {
-			descriptor.level = jobLevels.get(currentJob);
-		}
-		for (EffectDescriptor descriptor : currentJob.traits.values()) {
-			descriptor.level = jobLevels.get(currentJob);
-		}
-		current.putAll(currentJob.getPassives(jobLevels.get(currentJob)));
-		current.putAll(currentJob.traits);
 		// add inherited passives
 		ArrayList<StructureJob> parents = currentJob.getParents();
 		// TODO: put the current job level into the descriptors
@@ -181,14 +169,11 @@ public class ProfilePlayer extends ProfileNPC {
 			//current.addAll(something);
 		}
 		// build stats hashmap
-		stats.clear();
-		stats.put(null, new HashMap<Material, HashMap<String,Double>>());
-		stats.get(null).put(null, new HashMap<String, Double>());
-		addCollection(current);
+		super.recalculate();
 		addCollection(mastered,3);
 		addCollection(inherited,2);
 		addCollection(both,1);
-		super.recalculateBuffs();
+		
 		SRPG.output("stats: "+stats.toString());
 	}
 

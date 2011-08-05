@@ -81,7 +81,7 @@ messages:
     - "<!description>"
   
   #############
-  # ABILITIES #
+  # MECHANICS #
   #############
   
   charge-acquired: "Acquired a <#charge>"
@@ -90,16 +90,18 @@ messages:
     - "[blue]Go! <!ability>!!!"
   ability-not-implemented: "[dark-gray]just kidding, most abilities are not implemented yet"
   # COMBAT
-  critical-hit: "[red]Critical Hit!"
-  miss-no-damage: "[red]Miss!"
-  miss-damage: "[red]Glancing Blow!"
-  miss-critical-damage: "[red]Lucky Hit!"
+  crit-attacker: "[red]Critical Hit!"
+  crit-defender: "[red]You got critically hit!"
+  miss-attacker: "[red]Miss!"
+  miss-defender: "[red]The opponents attack missed you!"
   parry-attacker: "[gray]Your attack was parried!"
   parry-defender: "[gray]Successful Parry!"
   evade-attacker: "[gray]Your attack was evaded!"
   evade-defender: "[gray]Successful evasion!"
   roll-manual: "[green]You rolled to avoid damage"
   roll-auto: "[green]You rolled by reflex to avoid damage"
+  acquired-buff: "You got afflicted with <!buff>"
+  lost-buff: "<!buff> has faded"
   
   ########
   # HELP #

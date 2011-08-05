@@ -95,7 +95,8 @@ steady-aim:
   name: Steady Aim
   description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
   effects: 
-    crit-chance: 
+    boost:
+      crit-chance: 
       tools: [bow]
       value: 0.05
 
@@ -103,7 +104,8 @@ steady-aim-2:
   name: Steady Aim II
   description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
   effects: 
-    crit-chance: 
+    boost:
+      crit-chance: 
       tools: [bow]
       value: 0.1
   replaces: steady-aim
@@ -112,7 +114,8 @@ bow-training:
   name: Bow Training
   description: "[+<damage-modifier:hearts>] of damage when using a bow"
   effects: 
-    damage-modifier: 
+    boost:
+      damage-modifier: 
       tools: [bow]
       value: 1
 
@@ -120,6 +123,7 @@ deadly-aim:
   name: Deadly Accuracy
   description: "[-<anti-evasion.value:percent>] chance of your target evading your arrows"
   effects: 
-    anti-evasion: 
+    boost: 
+      anti-evasion: 
       tools: [bow]
       value: 0.1

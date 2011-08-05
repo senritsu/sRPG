@@ -20,9 +20,15 @@ import org.bukkit.inventory.ItemStack;
 public class Utility {
 	
 	static HashMap<String,List<Material>> materialGroupNames = new HashMap<String, List<Material>>();
+	static HashMap<Integer,String> SLIME_SIZES = new HashMap<Integer,String>();
 	
 	static {
 		materialGroupNames.put("swords", Arrays.asList(new Material[] {Material.WOOD_SWORD,Material.STONE_SWORD,Material.IRON_SWORD,Material.DIAMOND_SWORD}));
+		// initialize slime int size to string mapping
+		String[] sizes = {"small","normal","big","huge"};
+		for (int i=1; i<5;i++) {
+			Utility.SLIME_SIZES.put(i, sizes[i-1]);
+		}
 	}
 	
 	public static String join(ArrayList<String> list, String delimiter) {
@@ -78,12 +84,12 @@ public class Utility {
 		// TODO: implement tamed check for wolf
 		if (name.equals("wolf")) {
 			if (((Wolf)entity).getOwner() != null) {
-				name += ".tamed";
+				name += "-tamed";
 			} else {
-				name += ".wild";
+				name += "-wild";
 			}
 		} else if (name.equals("slime")) {
-			name += "." + Settings.SLIME_SIZES.get(((Slime)entity).getSize());
+			name += "-" + SLIME_SIZES.get(((Slime)entity).getSize());
 		}
 		return name;
 	}
@@ -220,4 +226,5 @@ public class Utility {
 		}
 		return materials;
 	}
+
 }

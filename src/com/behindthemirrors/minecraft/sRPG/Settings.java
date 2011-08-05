@@ -29,19 +29,17 @@ public class Settings {
 	static HashMap<String,StructureActive> actives;
 	static HashMap<String,StructurePassive> passives;
 	static HashMap<String,StructureJob> jobs;
+	static HashMap<String,StructureJob> mobs;
 	static ArrayList<StructureJob> initialJobs;
 	
 	static HashMap<String,Configuration> localization;
 	static String defaultLocale;
 	
 	static HashMap<String, HashMap<String, String>> JOB_ALIASES;
-	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
-	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
 	static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
 	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","pickaxes","axes","shovels","hoes"}));
 	static ArrayList<String> GRADES =  new ArrayList<String>(Arrays.asList(new String[] {"wood","stone","iron","gold","diamond"}));
 	
-	static HashMap<Integer,String> SLIME_SIZES = new HashMap<Integer,String>();
 	static Material[] TOOL_MATERIALS = {Material.WOOD_SWORD,Material.STONE_SWORD,Material.IRON_SWORD,Material.GOLD_SWORD, Material.DIAMOND_SWORD,
 									    Material.WOOD_PICKAXE,Material.STONE_PICKAXE,Material.IRON_PICKAXE,Material.GOLD_PICKAXE,Material.DIAMOND_PICKAXE,
 									    Material.WOOD_AXE,Material.STONE_AXE,Material.IRON_AXE,Material.GOLD_AXE,Material.DIAMOND_AXE,
@@ -49,18 +47,8 @@ public class Settings {
 									    Material.WOOD_HOE,Material.STONE_HOE,Material.IRON_HOE,Material.GOLD_HOE,Material.DIAMOND_HOE};
 	static HashMap<Material,String> TOOL_MATERIAL_TO_STRING = new HashMap<Material,String>();
 	static HashMap<Material,String> TOOL_MATERIAL_TO_TOOL_GROUP = new HashMap<Material,String>();
-	static HashMap<Material,ArrayList<Material>> MULTIDROP_VALID_BLOCKS = new HashMap<Material, ArrayList<Material>>();
-	static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
-															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.BURNING_FURNACE,Material.JUKEBOX,
-															Material.NOTE_BLOCK,Material.STORAGE_MINECART,Material.WOOD_DOOR,
-															Material.WOODEN_DOOR,Material.CHEST,Material.WORKBENCH,Material.TNT,
-															Material.MINECART,Material.BOAT,Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.TRAP_DOOR}));
-	
-	static HashMap<String,String> colorMap = new HashMap<String, String>();
-	static HashMap<String, HashMap<String, String>> nameReplacements;
-	
-	public Settings() {
-		// initialize Material to strig mappings
+	static {
+		// initialize Material to string mappings
 		for (int i = 0; i < TOOLS.size(); i++) {
 			int length = GRADES.size();
 			for (int j = 0; j < length; j++) {
@@ -69,11 +57,9 @@ public class Settings {
 			}
 		}
 		TOOL_MATERIAL_TO_TOOL_GROUP.put(Material.BOW,"bow");
-		// initialize slime int size to string mapping
-		String[] sizes = {"small","normal","big","huge"};
-		for (int i=1; i<5;i++) {
-			SLIME_SIZES.put(i, sizes[i-1]);
-		}
+	}
+	static HashMap<Material,ArrayList<Material>> MULTIDROP_VALID_BLOCKS = new HashMap<Material, ArrayList<Material>>();
+	static {
 		// TODO: rework the multidrop implementation because it sucks
 		// initialize tool mining multidrop whitelist
 		ArrayList<Material> arraylist = new ArrayList<Material>();
@@ -108,8 +94,15 @@ public class Settings {
 		MULTIDROP_VALID_BLOCKS.put(Material.STONE_AXE,log);
 		MULTIDROP_VALID_BLOCKS.put(Material.IRON_AXE,log);
 		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_AXE,log);
-		// initialize valid blocks for rare shovel drop
-		
+	}
+	static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
+															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.BURNING_FURNACE,Material.JUKEBOX,
+															Material.NOTE_BLOCK,Material.STORAGE_MINECART,Material.WOOD_DOOR,
+															Material.WOODEN_DOOR,Material.CHEST,Material.WORKBENCH,Material.TNT,
+															Material.MINECART,Material.BOAT,Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.TRAP_DOOR}));
+	
+	static HashMap<String,String> colorMap = new HashMap<String, String>();
+	static {
 		// initialize color tag replacement map
 		String[] colorStrings = new String[] {
 				"[aqua]","[black]","[blue]","[dark_aqua]",
@@ -128,6 +121,8 @@ public class Settings {
 		}
 	}
 	
+	static HashMap<String, HashMap<String, String>> nameReplacements;
+
 	Configuration openConfig(File folder, String name, String description, String defaultFileName) {
 		File file = Utility.createDefaultFile(new File(folder, name+".yml"),description,defaultFileName+".yml");
 		if (file.exists()){
@@ -169,6 +164,7 @@ public class Settings {
 			// create plugin default difficulties
 			for (String name : new String[] {"default","original"}) {
 				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+".yml"), "'"+name+"' difficulty settings", "difficulty_"+name+".yml");
+				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+"_mobs.yml"), "'"+name+"' mob settings", "definitions_mobs_"+name+".yml");
 			}
 			
 			for (String locale : availableLocales) {
@@ -247,73 +243,38 @@ public class Settings {
 				
 				
 				// damage increase with depth
-				DamageEventListener.increaseDamageWithDepth = config.getBoolean("settings.combat.dangerous-depths", false);
+				SpawnEventListener.dangerousDepths = config.getBoolean("settings.combat.dangerous-depths", false);
 				
-				DamageEventListener.depthTiers = new ArrayList<int[]>();
+				SpawnEventListener.depthTiers = new ArrayList<int[]>();
 				ArrayList<Integer> thresholds = (ArrayList<Integer>) difficultyConfig.getIntList("settings.dangerous-depths.thresholds", null);
-				ArrayList<Integer> damageIncreases = (ArrayList<Integer>) difficultyConfig.getIntList("settings.dangerous-depths.damage-increases", null);
-				for (int i = 0;i < thresholds.size();i++) {
-					DamageEventListener.depthTiers.add(new int[] {thresholds.get(i),
-																  damageIncreases.get(i)});
-				}
-				// animal health and xp
-				SpawnEventListener.healthTableCreatures = new HashMap<String, Integer>();
-				DamageEventListener.xpTableCreatures = new HashMap<String, Integer>();
-				for (String animal : Settings.ANIMALS) {
-					node = difficultyConfig.getNode("stats.animals."+animal);
-					SpawnEventListener.healthTableCreatures.put(animal, node.getInt("health", 1));
-					DamageEventListener.xpTableCreatures.put(animal, node.getInt("xp", 0));
-				}
-				// monster health, damage and xp
-				DamageEventListener.damageTableMonsters = new HashMap<String, Integer>();
-				ArrayList<String> monsters = new ArrayList<String>();
-				for (String monster : Settings.MONSTERS) {
-					if (monster.equals("slime")) {
-						for (int i=1;i<5;i++) {
-							monsters.add(monster + "." + Settings.SLIME_SIZES.get(i));
-						}
-					} else if (monster.equals("wolf")){
-						for (String state : new String[] {".wild",".tamed"}) {
-							monsters.add(monster + state);
-						}
-					} else {
-						monsters.add(monster);
+				ArrayList<Integer> levelincrease = (ArrayList<Integer>) difficultyConfig.getIntList("settings.dangerous-depths.level-increase", null);
+				if (thresholds.size() == levelincrease.size()) {
+					for (int i = 0;i < thresholds.size();i++) {
+						SpawnEventListener.depthTiers.add(new int[] {thresholds.get(i),levelincrease.get(i)});
 					}
-				}
-				for (String monster : monsters) {
-					node = difficultyConfig.getNode("stats.monsters."+monster);
-					SpawnEventListener.healthTableCreatures.put(monster, node.getInt("health", 1));
-					DamageEventListener.damageTableMonsters.put(monster, node.getInt("damage", 1));
-					DamageEventListener.xpTableCreatures.put(monster, node.getInt("xp", 0));
+				} else {
+					SRPG.output("Warning: Invalid depth settings in difficulty config");
 				}
 				
 				// tool damage
-				DamageEventListener.damageTableTools = new HashMap<String, Integer>();
+				CombatInstance.damageTableTools = new HashMap<String, Integer>();
 				node = difficultyConfig.getNode("stats.tools");
 				for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
 					if (!node.getBoolean(tool+".override", false)) {
-						DamageEventListener.damageTableTools.put(tool, node.getInt(tool+".damage", 1));
+						CombatInstance.damageTableTools.put(tool, node.getInt(tool+".damage", 1));
 					}
 				}
 				if (!node.getBoolean("bow.override", false)) {
-					DamageEventListener.damageTableTools.put("bow",node.getInt("bow.damage", 1));
+					CombatInstance.damageTableTools.put("bow",node.getInt("bow.damage", 1));
 				}
-				if (!node.getBoolean("fists.override", false)) {
-					DamageEventListener.damageTableTools.put("fists",node.getInt("fists.damage", 1));
-				}
-				// critical hit and miss settings
-				node = difficultyConfig.getNode("settings.combat");
-				CombatInstance.defaultCritChance = node.getDouble("crit-chance", 0.0);
-				CombatInstance.defaultCritMultiplier = node.getDouble("crit-multiplier", 2.0);
-				CombatInstance.defaultMissChance = node.getDouble("miss-chance", 0.0);
-				CombatInstance.defaultMissMultiplier = node.getDouble("miss-multiplier", 0.0);
 			}
 			
 			jobsettings = openConfig(dataFolder,"job_settings","class configuration","job_settings");
 			Configuration passiveDefinitions = openConfig(new File(dataFolder,"definitions"), "passive", "skill definitions","definitions_passive");
-			Configuration activeDefinitions = openConfig(new File(dataFolder,"definitions"), "active", "skill definitions","definitions_active");
+			Configuration activeDefinitions = openConfig(new File(dataFolder,"definitions"), "active", "ability definitions","definitions_active");
 			Configuration jobDefinitions = openConfig(new File(dataFolder,"definitions"), "jobs", "job definitions","definitions_jobs");
-			if (jobsettings == null || passiveDefinitions == null || activeDefinitions == null || jobDefinitions == null) {
+			Configuration mobDefinitions = openConfig(new File(dataFolder,"difficulties"), difficulty+"_mobs", "'"+difficulty+"'mob definitions","definitions_mobs_default");
+			if (jobsettings == null || passiveDefinitions == null || activeDefinitions == null || jobDefinitions == null || mobDefinitions == null) {
 				disable = true;
 			} else {
 				// load job xp formula
@@ -381,6 +342,13 @@ public class Settings {
 						initialJobs.add(job);
 					}
 				}
+				
+				// load mobs
+				mobs = new HashMap<String, StructureJob>();
+				for (String name : mobDefinitions.getKeys()) {
+					mobs.put(name, new StructureJob(name,mobDefinitions.getNode(name)));
+				}
+				
 				// status report
 				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),jobs.size()));
 				if (deactivate.size() > 0) {

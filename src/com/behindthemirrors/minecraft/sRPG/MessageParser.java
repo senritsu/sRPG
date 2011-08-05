@@ -40,6 +40,16 @@ public class MessageParser {
 		player.sendMessage(text);
 	}
 	
+	public static void sendMessage(ProfileNPC profile, String message) {
+		sendMessage(profile, message, null);
+	}
+	
+	public static void sendMessage(ProfileNPC profile, String message, String context) {
+		if (profile instanceof ProfilePlayer) {
+			sendMessage(((ProfilePlayer)profile).player,message, context);
+		}
+	}
+	
 	public static void sendMessage(Player player, String message) {
 		sendMessage(player, message, null);
 	}
@@ -86,7 +96,7 @@ public class MessageParser {
 		    	} else if (match.equalsIgnoreCase("<!jobmaxlevel>")) {
 		    		matcher.appendReplacement(sb, Integer.toString(Settings.jobs.get(context).maximumLevel));
 		    		
-		    	} else if  (match.equalsIgnoreCase("<!cost>")) {
+		    	} else if  (match.equalsIgnoreCase("<!cost>") || match.equalsIgnoreCase("<!buff>")) {
 		    		matcher.appendReplacement(sb, context);
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!active>")) {

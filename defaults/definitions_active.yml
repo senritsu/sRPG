@@ -14,3 +14,18 @@ improvised-arrows:
       from-amounts: [4,16,32]
       to: [262,262,262]
       to-amounts: [8,8,8]
+
+poisoned-arrows:
+  name: 
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  effects: 
+    apply-buff:
+      name: poison!2
+      duration: 3
+      self: false
+      opponent: true

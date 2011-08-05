@@ -12,15 +12,18 @@ public class ProfileNPC {
 
 	LivingEntity entity;
 	HashMap<StructurePassive,EffectDescriptor> effects = new HashMap<StructurePassive, EffectDescriptor>();
-	HashMap<Material, HashMap<Material,HashMap<String,Double>>> stats;
-	HashMap<Material, HashMap<Material,HashMap<String,Double>>> timedStats;
+	ArrayList<HashMap<Material, HashMap<Material,HashMap<String,Double>>>> stats; // general stats at index 0, timed stats at index 1
+	
+	StructureJob currentJob;
+	HashMap<StructureJob,Integer> jobLevels;
+
 	// TODO: add triggered effects
 	boolean timedStatsDirty = true;
 	
 	public ProfileNPC () {
-		stats = new HashMap<Material, HashMap<Material,HashMap<String,Double>>>();
-		stats.put(null, new HashMap<Material,HashMap<String,Double>>());
-		stats.get(null).put(null, new HashMap<String, Double>());
+		stats.add(new HashMap<Material, HashMap<Material,HashMap<String,Double>>>());
+		stats.get(0).put(null, new HashMap<Material,HashMap<String,Double>>());
+		stats.get(0).get(null).put(null, new HashMap<String, Double>());
 	}
 	
 	public void addEffect(StructurePassive effect, EffectDescriptor descriptor) {
@@ -62,23 +65,25 @@ public class ProfileNPC {
 	public double getStat(String name, Double def, Material handMaterial, Material targetMaterial) {
 		double value = 0.0;
 		boolean found = false;
-		if (handMaterial != null && stats.containsKey(handMaterial)) {
-			if (stats.get(handMaterial).get(null).containsKey(name)) {
-				value += stats.get(handMaterial).get(null).get(name);
+		for (HashMap<Material, HashMap<Material,HashMap<String,Double>>> map : stats) {
+			if (handMaterial != null && map.containsKey(handMaterial)) {
+				if (map.get(handMaterial).get(null).containsKey(name)) {
+					value += map.get(handMaterial).get(null).get(name);
+					found = true;
+				}
+				if (targetMaterial != null && map.get(handMaterial).containsKey(targetMaterial) && map.get(handMaterial).get(targetMaterial).containsKey(name)) {
+					value += map.get(handMaterial).get(targetMaterial).get(name);
+					found = true;
+				}
+			}
+			if (targetMaterial != null && map.get(null).containsKey(targetMaterial) && map.get(null).get(targetMaterial).containsKey(name)) {
+				value += map.get(null).get(targetMaterial).get(name);
 				found = true;
 			}
-			if (targetMaterial != null && stats.get(handMaterial).containsKey(targetMaterial) && stats.get(handMaterial).get(targetMaterial).containsKey(name)) {
-				value += stats.get(handMaterial).get(targetMaterial).get(name);
+			if (map.get(null).get(null).containsKey(name)) {
+				value += map.get(null).get(null).get(name);
 				found = true;
 			}
-		}
-		if (targetMaterial != null && stats.get(null).containsKey(targetMaterial) && stats.get(null).get(targetMaterial).containsKey(name)) {
-			value += stats.get(null).get(targetMaterial).get(name);
-			found = true;
-		}
-		if (stats.get(null).get(null).containsKey(name)) {
-			value += stats.get(null).get(null).get(name);
-			found = true;
 		}
 		if (!found) {
 			value = def;
@@ -87,21 +92,41 @@ public class ProfileNPC {
 	}
 	
 	public void recalculate() {
+		stats.get(0).clear();
+		stats.get(0).put(null, new HashMap<Material, HashMap<String,Double>>());
+		stats.get(0).get(null).put(null, new HashMap<String, Double>());
+		if (currentJob != null) {
+			stats.get(0).get(null).get(null).putAll(currentJob.defaults);
+			
+			HashMap<StructurePassive,EffectDescriptor> current = new HashMap<StructurePassive, EffectDescriptor>();
+			
+			for (EffectDescriptor descriptor : currentJob.getPassives(jobLevels.get(currentJob)).values()) {
+				descriptor.level = jobLevels.get(currentJob);
+			}
+			for (EffectDescriptor descriptor : currentJob.traits.values()) {
+				descriptor.level = jobLevels.get(currentJob);
+			}
+			
+			current.putAll(currentJob.getPassives(jobLevels.get(currentJob)));
+			current.putAll(currentJob.traits);
+			
+			addCollection(current);
+		}
 		recalculateBuffs();
 	}
 	
 	public void recalculateBuffs() {
 		if (!timedStatsDirty) {
-			timedStats.clear();
-			timedStats.put(null, new HashMap<Material, HashMap<String,Double>>());
-			timedStats.get(null).put(null, new HashMap<String, Double>());
-			addCollection(effects,timedStats);
+			stats.get(1).clear();
+			stats.get(1).put(null, new HashMap<Material, HashMap<String,Double>>());
+			stats.get(1).get(null).put(null, new HashMap<String, Double>());
+			addCollection(effects,stats.get(1));
 			timedStatsDirty = false;
 		}
 	}
 	
 	public void addCollection(HashMap<StructurePassive,EffectDescriptor> passives) {
-		addCollection(passives, 0, stats);
+		addCollection(passives, 0, stats.get(0));
 	}
 	
 	public void addCollection(HashMap<StructurePassive,EffectDescriptor> passives, HashMap<Material, HashMap<Material,HashMap<String,Double>>> statTarget) {
@@ -109,7 +134,7 @@ public class ProfileNPC {
 	}
 	
 	public void addCollection(HashMap<StructurePassive,EffectDescriptor> passives, Integer inheritance) {
-		addCollection(passives, inheritance, stats);
+		addCollection(passives, inheritance, stats.get(0));
 	}
 	
 	public void addCollection(HashMap<StructurePassive,EffectDescriptor> passives, Integer inheritance, HashMap<Material, HashMap<Material,HashMap<String,Double>>> statTarget) {

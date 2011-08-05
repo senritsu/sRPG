@@ -22,6 +22,7 @@ public class PlayerEventListener extends PlayerListener {
 	}
 	
 	public void onPlayerInteract(PlayerInteractEvent event) {
+		SRPG.output("got player interact event");
 		Action action = event.getAction();
 		Player player = event.getPlayer();
 		Material material = null;
@@ -43,6 +44,8 @@ public class PlayerEventListener extends PlayerListener {
 				SRPG.profileManager.get(player).activate(player.getItemInHand().getType());
 			}
 		}
+		event.setCancelled(true);
+		SRPG.output("event canceled: "+event.isCancelled());
 	}
 	
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
