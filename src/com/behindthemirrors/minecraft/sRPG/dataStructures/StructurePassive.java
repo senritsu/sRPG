@@ -1,4 +1,4 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.dataStructures;
 
 import java.util.HashMap;
 
@@ -6,11 +6,11 @@ import org.bukkit.util.config.ConfigurationNode;
 
 public class StructurePassive implements Comparable<StructurePassive> {
 
-	String signature;
-	String name;
-	String description;
+	public String signature;
+	public String name;
+	public String description;
 	String replaces;
-	HashMap<String,ConfigurationNode> effects;
+	public HashMap<String,ConfigurationNode> effects;
 	
 	public StructurePassive(String uniqueName, ConfigurationNode node) {
 		signature = uniqueName;

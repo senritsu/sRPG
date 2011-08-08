@@ -1,14 +1,19 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
+
+import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 
 
 public class PlayerEventListener extends PlayerListener {
@@ -21,31 +26,30 @@ public class PlayerEventListener extends PlayerListener {
 		SRPG.profileManager.remove(event.getPlayer());
 	}
 	
+	public void onItemHeldChange (PlayerItemHeldEvent event) {
+		ProfilePlayer profile = SRPG.profileManager.get(event.getPlayer());
+		profile.validateActives(profile.player.getInventory().getItem(event.getNewSlot()).getType());
+	}
+	
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		SRPG.output("got player interact event");
 		Action action = event.getAction();
 		Player player = event.getPlayer();
+		ProfilePlayer profile = SRPG.profileManager.get(player);
 		Material material = null;
 		if (action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_BLOCK) {
 			material = event.getClickedBlock().getType();
 		}
 		// block ability ready if interaction was with some interactable block
-		String tool = Settings.TOOL_MATERIAL_TO_TOOL_GROUP.get(player.getItemInHand().getType());
-		if (tool != null && player.hasPermission("srpg.skills."+tool+".active")) {
+		if (player.hasPermission("srpg.actives") && !event.isCancelled()) {
 			if (action == Action.RIGHT_CLICK_AIR || (action == Action.RIGHT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
-				if (SRPG.profileManager.get(player).prepared) {
-					// cycle active
-				}
-				if (SRPG.profileManager.get(player).prepare()) {
-					// prepare if not yet prepared
-					MessageParser.chargeDisplay(player);
-				}
+				profile.prepare();
 			} else if (action == Action.LEFT_CLICK_AIR || (action == Action.LEFT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
-				SRPG.profileManager.get(player).activate(player.getItemInHand().getType());
+				if (profile.activate()) {
+					event.setCancelled(true);
+				}
 			}
 		}
-		event.setCancelled(true);
-		SRPG.output("event canceled: "+event.isCancelled());
 	}
 	
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {

@@ -1,4 +1,4 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.dataStructures;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,22 +8,30 @@ import org.bukkit.Material;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.config.ConfigurationNode;
 
+import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.Utility;
+
+
 public class ProfileNPC {
 
-	LivingEntity entity;
-	HashMap<StructurePassive,EffectDescriptor> effects = new HashMap<StructurePassive, EffectDescriptor>();
-	ArrayList<HashMap<Material, HashMap<Material,HashMap<String,Double>>>> stats; // general stats at index 0, timed stats at index 1
+	public LivingEntity entity;
+	public HashMap<StructurePassive,EffectDescriptor> effects = new HashMap<StructurePassive, EffectDescriptor>();
+	public HashMap<StructurePassive,EffectDescriptor> passives = new HashMap<StructurePassive, EffectDescriptor>();
+	public ArrayList<HashMap<Material, HashMap<Material,HashMap<String,Double>>>> stats; // general stats at index 0, timed stats at index 1
 	
-	StructureJob currentJob;
-	HashMap<StructureJob,Integer> jobLevels;
+	public StructureJob currentJob;
+	public HashMap<StructureJob,Integer> jobLevels;
 
 	// TODO: add triggered effects
-	boolean timedStatsDirty = true;
+	public boolean timedStatsDirty = true;
 	
 	public ProfileNPC () {
+		stats = new ArrayList<HashMap<Material,HashMap<Material,HashMap<String,Double>>>>();
 		stats.add(new HashMap<Material, HashMap<Material,HashMap<String,Double>>>());
 		stats.get(0).put(null, new HashMap<Material,HashMap<String,Double>>());
 		stats.get(0).get(null).put(null, new HashMap<String, Double>());
+		jobLevels = new HashMap<StructureJob, Integer>();
 	}
 	
 	public void addEffect(StructurePassive effect, EffectDescriptor descriptor) {
@@ -96,21 +104,18 @@ public class ProfileNPC {
 		stats.get(0).put(null, new HashMap<Material, HashMap<String,Double>>());
 		stats.get(0).get(null).put(null, new HashMap<String, Double>());
 		if (currentJob != null) {
+			int level = jobLevels.get(currentJob);
+			passives.clear();
+			for (Map.Entry<StructurePassive,EffectDescriptor> entry : currentJob.traits.entrySet()) {
+				passives.put(entry.getKey(), entry.getValue().copy(level));
+			}
+			for (Map.Entry<StructurePassive,EffectDescriptor> entry : currentJob.getPassives(level).entrySet()) {
+				passives.put(entry.getKey(), entry.getValue().copy(level));
+			}
+			
 			stats.get(0).get(null).get(null).putAll(currentJob.defaults);
 			
-			HashMap<StructurePassive,EffectDescriptor> current = new HashMap<StructurePassive, EffectDescriptor>();
-			
-			for (EffectDescriptor descriptor : currentJob.getPassives(jobLevels.get(currentJob)).values()) {
-				descriptor.level = jobLevels.get(currentJob);
-			}
-			for (EffectDescriptor descriptor : currentJob.traits.values()) {
-				descriptor.level = jobLevels.get(currentJob);
-			}
-			
-			current.putAll(currentJob.getPassives(jobLevels.get(currentJob)));
-			current.putAll(currentJob.traits);
-			
-			addCollection(current);
+			addCollection(passives);
 		}
 		recalculateBuffs();
 	}
@@ -142,7 +147,6 @@ public class ProfileNPC {
 		for (Map.Entry<StructurePassive,EffectDescriptor> entry : passives.entrySet()) {
 			StructurePassive passive = entry.getKey();
 			EffectDescriptor descriptor = entry.getValue();
-			SRPG.output("adding "+passive.signature+" with potency "+descriptor.potency);
 			for (Map.Entry<String, ConfigurationNode> detailsEntry : passive.effects.entrySet()) {
 				String effect = detailsEntry.getKey();
 				ConfigurationNode node = detailsEntry.getValue();

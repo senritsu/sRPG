@@ -8,6 +8,10 @@ import java.util.regex.Pattern;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+
+
 public class MessageParser {
 	
 	static ArrayList<String> vowels = new ArrayList<String>();
@@ -16,7 +20,7 @@ public class MessageParser {
 		vowels.addAll(Arrays.asList(new String[] {"a","i","u","e","o"}));
 	}
 	
-	public static void chargeDisplay(Player player) {
+	public static void chargeDisplay(Player player, boolean changed) {
 		ProfilePlayer profile = SRPG.profileManager.get(player);
 		Integer charges = profile.charges;
 		Integer cost = profile.currentActive.cost;
@@ -36,6 +40,9 @@ public class MessageParser {
 		//if (charges < PlayerData.chargeMax) {
 		//	text += " ("+(PlayerData.chargeTicks-data.chargeProgress.get(skillname))+" blocks to next charge)";
 		//}
+		if (changed) {
+			text += " >";
+		}
 		text += " (Current "+Utility.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology.active"),1)+": "+profile.currentActive.name+")";
 		player.sendMessage(text);
 	}
@@ -54,7 +61,7 @@ public class MessageParser {
 		sendMessage(player, message, null);
 	}
 	
-	static void sendMessage(Player player, String message, String context) {
+	public static void sendMessage(Player player, String message, String context) {
 		ProfilePlayer profile = SRPG.profileManager.get(player);
 		ArrayList<String> messageList = (ArrayList<String>)Settings.localization.get(SRPG.profileManager.get(player).locale).getStringList("messages."+message,new ArrayList<String>());
 		if (messageList.isEmpty()) {

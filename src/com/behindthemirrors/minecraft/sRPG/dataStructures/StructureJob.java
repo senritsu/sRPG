@@ -1,4 +1,4 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.dataStructures;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,22 +8,26 @@ import java.util.Map;
 
 import org.bukkit.util.config.ConfigurationNode;
 
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.Utility;
+
+
 public class StructureJob implements Comparable<StructureJob> {
 	
-	static HashMap<Integer,String> ranks;
-	static double xp_base;
-	static double xp_offset;
-	static double level_coefficient;
-	static double level_exponent;
-	static double tier_coefficient;
-	static double tier_exponent;
+	public static HashMap<Integer,String> ranks;
+	public static double xp_base;
+	public static double xp_offset;
+	public static double level_coefficient;
+	public static double level_exponent;
+	public static double tier_coefficient;
+	public static double tier_exponent;
 	
-	String signature;
-	String name;
+	public String signature;
+	public String name;
 	String description;
 	String details;
-	Integer maximumLevel;
-	HashMap<StructureJob,Integer> prerequisites;
+	public Integer maximumLevel;
+	public HashMap<StructureJob,Integer> prerequisites;
 	Integer tier;
 	HashMap<String,Double> defaults;
 	// TODO: convert bonuses to StructurePassive
@@ -67,7 +71,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		passives = new HashMap<Integer, HashMap<StructurePassive,EffectDescriptor>>();
 		if (root.getKeys("passives") != null) {
 			for (String levelString : root.getKeys("passives")) {
-				Integer level = Integer.parseInt(levelString.substring(levelString.indexOf(" ")));
+				Integer level = Integer.parseInt(levelString.substring(levelString.indexOf(" ")+1));
 				passives.put(level, new HashMap<StructurePassive, EffectDescriptor>());
 				for (String passive : root.getStringList("passives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
@@ -80,7 +84,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		actives = new HashMap<Integer, HashMap<StructureActive,EffectDescriptor>>();
 		if (root.getKeys("actives") != null) {
 			for (String levelString : root.getKeys("actives")) {
-				Integer level = Integer.parseInt(levelString.substring(levelString.indexOf(" ")));
+				Integer level = Integer.parseInt(levelString.substring(levelString.indexOf(" ")+1));
 				actives.put(level, new HashMap<StructureActive, EffectDescriptor>());
 				for (String active : root.getStringList("actives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
@@ -146,7 +150,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		return new ArrayList<StructureJob>(parents);
 	}
 	
-	boolean prerequisitesMet(ProfilePlayer profile) {
+	public boolean prerequisitesMet(ProfilePlayer profile) {
 		if (prerequisites == null) {
 			return true;
 		}
@@ -164,7 +168,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		return result;
 	}
 	
-	Integer xpToNextLevel(Integer currentLevel) {
+	public Integer xpToNextLevel(Integer currentLevel) {
 		return (int)Math.round(xp_base * level_coefficient * Math.pow(currentLevel.doubleValue(), level_exponent) * tier_coefficient * Math.pow(tier.doubleValue(),tier_exponent) + currentLevel.doubleValue() * xp_offset * tier.doubleValue());
 	}
 

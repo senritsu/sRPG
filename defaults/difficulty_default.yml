@@ -2,13 +2,14 @@ settings:
   # dangerous-depths can be enabled/disabled in the basic configuration
   dangerous-depths:
     thresholds: [40,15]
-    mob-level: [1,2]
+    level-increase: [1,2]
   combat:
-    armor-strength: # not used yet
-      leather: 1.0
-      iron: 1.2
-      gold: 1.2
-      diamond: 1.5
+    armor-strength: # the number is the maximum damage reduction you can get with a full set of that armor type
+      leather: 0.3
+      chain: 0.6
+      iron: 0.8
+      diamond: 0.7
+      gold: 0.4
 
 # NOTE: damage and health values not in hearts (1 heart = 2 damage/health)
 stats:

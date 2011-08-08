@@ -1,4 +1,4 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,11 +11,17 @@ import org.bukkit.event.block.BlockListener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 
+import com.behindthemirrors.minecraft.sRPG.PassiveAbility;
+import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+
+
 
 public class BlockEventListener extends BlockListener {
 	
 	public static ArrayList<Material> trackingMaterials;
-	static ArrayList<Block> userPlacedBlocks = new ArrayList<Block>();
+	public static ArrayList<Block> userPlacedBlocks = new ArrayList<Block>();
 	public static HashMap<String,ArrayList<Integer>> groupBlockMapping;
 	public static HashMap<String,Double> xpChances;
 	public static HashMap<String,Integer> xpValues;

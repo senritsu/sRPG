@@ -2,7 +2,7 @@ settings:
   # dangerous-depths can be enabled/disabled in the basic configuration
   dangerous-depths:
     thresholds: []
-    mob-level: []
+    level-increase: []
   combat:
     crit-chance: 0.05
     crit-multiplier: 1.5

@@ -13,11 +13,14 @@ import org.bukkit.event.Event.Priority;
 
 import org.bukkit.plugin.Plugin;
 
+import com.behindthemirrors.minecraft.sRPG.listeners.BlockEventListener;
+import com.behindthemirrors.minecraft.sRPG.listeners.CommandListener;
+import com.behindthemirrors.minecraft.sRPG.listeners.DamageEventListener;
+import com.behindthemirrors.minecraft.sRPG.listeners.PlayerEventListener;
+import com.behindthemirrors.minecraft.sRPG.listeners.SpawnEventListener;
+
 // MAIN TODO LIST
 // 
-// - fix creeper damage for damage rebalancing
-// - fix slime HP at spawn (as soon as bukkit allows it)
-// - add active abilities
 // - crafting skill and persistent item stats
 // - gardening skill using the hoe
 // - add all necessary chat commands and shortcuts
@@ -28,14 +31,14 @@ public class SRPG extends JavaPlugin {
 	static final String LOG_PREFIX = "[sRPG] ";
 	static final String CHAT_PREFIX = "[sRPG] ";
 	
-	static Plugin plugin;
+	public static Plugin plugin;
 	static PluginManager pm;
 	public static ProfileManager profileManager = new ProfileManager();
-	static TimedEffectManager timedEffectManager = new TimedEffectManager();
+	public static TimedEffectManager timedEffectManager = new TimedEffectManager();
 	static CascadeQueueScheduler cascadeQueueScheduler = new CascadeQueueScheduler(); 
 	static Database database;
 	
-	static Random generator = new Random();
+	public static Random generator = new Random();
 	
 	static final DamageEventListener damageListener = new DamageEventListener();
 	static final SpawnEventListener spawnListener = new SpawnEventListener();
@@ -46,7 +49,7 @@ public class SRPG extends JavaPlugin {
 	static PluginDescriptionFile pdfFile;
 	
 	static final Logger log = Logger.getLogger("Minecraft");
-	static final Settings settings = new Settings();
+	public static final Settings settings = new Settings();
 	
 	public void onEnable() {
 		// set all instance related references
@@ -60,18 +63,6 @@ public class SRPG extends JavaPlugin {
 		
 		// create plugins/SRPG/
 		getDataFolder().mkdirs();
-		
-		pm.registerEvent(Event.Type.ENTITY_DAMAGE, damageListener, Priority.Highest, this);
-		pm.registerEvent(Event.Type.ENTITY_REGAIN_HEALTH, damageListener, Priority.Normal, this);
-		pm.registerEvent(Event.Type.ENTITY_DEATH, damageListener, Priority.Monitor, this);
-		pm.registerEvent(Event.Type.CREATURE_SPAWN, spawnListener, Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Highest, this);
-		pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
-		pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
-		pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Monitor, this);
-		
 		// try to load settings, disable plugin on fail
 		
 		boolean disable = false;
@@ -83,11 +74,24 @@ public class SRPG extends JavaPlugin {
 		if (disable) {
 			pm.disablePlugin(this);
 		} else {
+			pm.registerEvent(Event.Type.ENTITY_DAMAGE, damageListener, Priority.Highest, this);
+			pm.registerEvent(Event.Type.ENTITY_REGAIN_HEALTH, damageListener, Priority.Normal, this);
+			pm.registerEvent(Event.Type.ENTITY_DEATH, damageListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.CREATURE_SPAWN, spawnListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Monitor, this);
+			
 			pdfFile = this.getDescription();
 			output(pdfFile.getName() + " v" + pdfFile.getVersion() + " has been enabled." );
 			database.updateDatabase(pdfFile.getVersion());
 			this.getServer().getScheduler().scheduleSyncRepeatingTask(this, timedEffectManager, 20, 20);
 			this.getServer().getScheduler().scheduleSyncRepeatingTask(this, cascadeQueueScheduler, 1, 1);
+			spawnListener.addExistingCreatures();
 		}
 	}
 	public void onDisable() {

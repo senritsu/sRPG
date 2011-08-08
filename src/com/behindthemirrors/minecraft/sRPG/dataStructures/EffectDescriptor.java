@@ -1,11 +1,14 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.dataStructures;
+
+import com.behindthemirrors.minecraft.sRPG.Utility;
+
 
 public class EffectDescriptor {
 	
-	Integer level;
-	Integer maxlevel;
-	Integer duration;
-	Integer potency = 1;
+	public Integer level;
+	public Integer maxlevel;
+	public Integer duration;
+	public Integer potency = 1;
 	
 	public EffectDescriptor () {
 		level = 1;
@@ -47,4 +50,15 @@ public class EffectDescriptor {
 		this.duration = duration;
 	}
 
+	public EffectDescriptor copy(Integer level) {
+		EffectDescriptor descriptor = new EffectDescriptor(level,maxlevel,duration);
+		descriptor.potency = potency;
+		return descriptor;
+	}
+	
+	@Override
+	public String toString() {
+		return "(lvl "+level+"/"+maxlevel+",p"+potency+")";
+	}
+	
 }

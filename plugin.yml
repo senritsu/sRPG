@@ -17,16 +17,16 @@ permissions:
     children:
       srpg.xp: true
       srpg.charges: true
-      srpg.active: true
-      srpg.passive: true
+      srpg.actives: true
+      srpg.passives: true
       srpg.jobs: true
   srpg.xp:
     description: access to gaining xp for jobs
   srpg.charges:
     description: access to gaining charges for active abilities
-  srpg.active:
+  srpg.actives:
     description: access to all active abilities (you may use srpg.active.foo for every 'foo' defined in actives.yml)
-  srpg.passive:
+  srpg.passives:
     description: access to all passive skills (you may use srpg.jobs.foo for every 'foo' defined in passives.yml)
   srpg.jobs:
     description: access to all enabled jobs (you may use srpg.jobs.foo for every 'foo' defined in jobs.yml)

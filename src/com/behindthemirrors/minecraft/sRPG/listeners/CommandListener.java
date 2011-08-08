@@ -1,4 +1,4 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -9,6 +9,18 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+
+import com.behindthemirrors.minecraft.sRPG.CombatInstance;
+import com.behindthemirrors.minecraft.sRPG.MessageParser;
+import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
+import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.TimedEffectManager;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+
 
 public class CommandListener implements CommandExecutor {
 	@Override
@@ -45,7 +57,7 @@ public class CommandListener implements CommandExecutor {
 					return true;
 				// display available charges with the current tool
 				} else if (args[0].equalsIgnoreCase("charges")) {
-					MessageParser.chargeDisplay(player);
+					MessageParser.chargeDisplay(player, false);
 					return true;
 				// get info about a skill or increase it
 				// TODO find NPE

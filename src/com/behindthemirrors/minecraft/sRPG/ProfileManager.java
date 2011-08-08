@@ -3,6 +3,11 @@ package com.behindthemirrors.minecraft.sRPG;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
+
+
 import java.util.ArrayList;
 import java.util.HashMap;
 

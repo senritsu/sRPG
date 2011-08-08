@@ -1,5 +1,5 @@
 
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +14,16 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 
-public class DamageEventListener extends EntityListener{
+import com.behindthemirrors.minecraft.sRPG.CombatInstance;
+import com.behindthemirrors.minecraft.sRPG.PassiveAbility;
+import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+
+
+public class DamageEventListener extends EntityListener {
 	
 	static boolean debug = false;
 	
@@ -26,7 +35,6 @@ public class DamageEventListener extends EntityListener{
 	@Override
 	public void onEntityDamage(EntityDamageEvent event) {
 		LivingEntity source = null;
-		Player player = null;
 		LivingEntity target = (LivingEntity)event.getEntity();
 		
 		if (debug && target instanceof Player && event.getCause() != DamageCause.FIRE_TICK&& event.getCause() != DamageCause.FIRE) {
@@ -70,6 +78,9 @@ public class DamageEventListener extends EntityListener{
 					}
 				}
 				if (forbidden) {
+					if (debug) {
+						SRPG.output("combat canceled because of combat restrictions");
+					}
 					combat.cancel();
 				}
 			}
@@ -87,7 +98,7 @@ public class DamageEventListener extends EntityListener{
 					if (debug) {
 						SRPG.output("id of damaged entity: "+event.getEntity().getEntityId());
 					}
-					damageTracking.put(id, player);
+					damageTracking.put(id, (Player)source);
 				} else if (damageTracking.containsKey(id)) {
 					damageTracking.remove(id);
 				}
@@ -98,7 +109,7 @@ public class DamageEventListener extends EntityListener{
 		boolean deactivated = true; // not production ready yet
 		if (!deactivated && !event.isCancelled() && target instanceof Player && SRPG.profileManager.profiles.containsKey((Player)target)) {
 			SRPG.output("overriding damage routine");
-			player = (Player)target;
+			Player player = (Player)target;
 			ProfilePlayer profile = SRPG.profileManager.get(player);
 			SRPG.output(profile.hp.toString());
 			profile.hp -= event.getDamage();
@@ -150,7 +161,15 @@ public class DamageEventListener extends EntityListener{
 			if (debug) {
 				SRPG.output("giving player"+damageTracking.get(id)+" xp");
 			}
-			SRPG.profileManager.get(damageTracking.get(id)).addXP((int) profile.getStat("xp"));
+			try {
+				SRPG.profileManager.get(damageTracking.get(id)).addXP((int) profile.getStat("xp"));
+			} catch (NullPointerException ex) {
+				SRPG.output("NPE at xp awarding");
+				SRPG.output("profile: "+(profile == null ? null : profile.toString()));
+				SRPG.output("tracking entry: "+(damageTracking.get(id) == null ? null : damageTracking.get(id).toString()));
+				SRPG.output("xp stat: "+profile.getStat("xp"));
+				SRPG.output("NPE end");
+			}
 			//TODO: maybe move saving to the data class
 			SRPG.profileManager.save(damageTracking.get(id),"xp");
 			damageTracking.remove(id);

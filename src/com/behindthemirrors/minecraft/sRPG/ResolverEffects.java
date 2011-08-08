@@ -2,6 +2,11 @@ package com.behindthemirrors.minecraft.sRPG;
 
 import org.bukkit.util.config.ConfigurationNode;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+
+
 public class ResolverEffects {
 
 	static void setCombatState(CombatInstance combat, ConfigurationNode node) {

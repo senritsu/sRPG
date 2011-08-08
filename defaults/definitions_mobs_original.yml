@@ -12,8 +12,7 @@ pig:
     health: 10
     xp: 1
   traits:
-  passive:
-  active:
+  passives:
 
 sheep:
   enabled: true
@@ -25,8 +24,7 @@ sheep:
     health: 10
     xp: 1
   traits:
-  passive:
-  active:
+  passives:
 
 chicken:
   enabled: true
@@ -38,8 +36,7 @@ chicken:
     health: 4
     xp: 1
   traits:
-  passive:
-  active:
+  passives:
 
 cow:
   enabled: true
@@ -51,8 +48,7 @@ cow:
     health: 10
     xp: 1
   traits:
-  passive:
-  active:
+  passives:
 
 squid:
   enabled: true
@@ -64,8 +60,7 @@ squid:
     health: 10
     xp: 1
   traits:
-  passive:
-  active:
+  passives:
 
 zombie:
   enabled: true
@@ -78,8 +73,7 @@ zombie:
     damage-unarmed: 5
     xp: 10
   traits:
-  passive:
-  active:
+  passives:
 
 spider:
   enabled: true
@@ -92,8 +86,7 @@ spider:
     damage-unarmed: 2
     xp: 10
   traits:
-  passive:
-  active:
+  passives:
 
 skeleton:
   enabled: true
@@ -106,8 +99,7 @@ skeleton:
     damage-unarmed: 4
     xp: 10
   traits:
-  passive:
-  active:
+  passives:
 
 creeper:
   enabled: true
@@ -120,8 +112,7 @@ creeper:
     damage-unarmed: 16
     xp: 20
   traits:
-  passive:
-  active:
+  passives:
 
 pigzombie:
   enabled: true
@@ -134,8 +125,7 @@ pigzombie:
     damage-unarmed: 6
     xp: 20
   traits:
-  passive:
-  active:
+  passives:
 
 ghast:
   enabled: true
@@ -148,8 +138,7 @@ ghast:
     damage-unarmed: 7
     xp: 15
   traits:
-  passive:
-  active:
+  passives:
 
 giant:
   enabled: true
@@ -162,8 +151,7 @@ giant:
     damage-unarmed: 17
     xp: 100
   traits:
-  passive:
-  active:
+  passives:
 
 slime-huge:
   enabled: true
@@ -176,8 +164,7 @@ slime-huge:
     damage-unarmed: 4
     xp: 24
   traits:
-  passive:
-  active:
+  passives:
 
 slime-big:
   enabled: true
@@ -190,8 +177,7 @@ slime-big:
     damage-unarmed: 4
     xp: 8
   traits:
-  passive:
-  active:
+  passives:
 
 slime-normal:
   enabled: true
@@ -204,8 +190,7 @@ slime-normal:
     damage-unarmed: 2
     xp: 4
   traits:
-  passive:
-  active:
+  passives:
 
 slime-small:
   enabled: true
@@ -218,8 +203,7 @@ slime-small:
     damage-unarmed: 0
     xp: 2
   traits:
-  passive:
-  active:
+  passives:
 
 wolf-wild:
   enabled: true
@@ -232,8 +216,7 @@ wolf-wild:
     damage-unarmed: 2
     xp: 10
   traits:
-  passive:
-  active:
+  passives:
 
 wolf-tamed:
   enabled: true
@@ -246,5 +229,4 @@ wolf-tamed:
     damage-unarmed: 4
     xp: 10
   traits:
-  passive:
-  active:
+  passives:

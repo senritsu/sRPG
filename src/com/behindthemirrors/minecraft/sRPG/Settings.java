@@ -7,6 +7,14 @@ import org.bukkit.entity.Player;
 import org.bukkit.util.config.Configuration;
 import org.bukkit.util.config.ConfigurationNode;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureActive;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+import com.behindthemirrors.minecraft.sRPG.listeners.BlockEventListener;
+import com.behindthemirrors.minecraft.sRPG.listeners.SpawnEventListener;
+
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,21 +30,21 @@ public class Settings {
 	
 	static boolean mySQLenabled;
 	
-	static Configuration config;
-	static Configuration advanced;
-	static Configuration jobsettings;
+	public static Configuration config;
+	public static Configuration advanced;
+	public static Configuration jobsettings;
 	
-	static HashMap<String,StructureActive> actives;
-	static HashMap<String,StructurePassive> passives;
-	static HashMap<String,StructureJob> jobs;
-	static HashMap<String,StructureJob> mobs;
+	public static HashMap<String,StructureActive> actives;
+	public static HashMap<String,StructurePassive> passives;
+	public static HashMap<String,StructureJob> jobs;
+	public static HashMap<String,StructureJob> mobs;
 	static ArrayList<StructureJob> initialJobs;
 	
-	static HashMap<String,Configuration> localization;
+	public static HashMap<String,Configuration> localization;
 	static String defaultLocale;
 	
-	static HashMap<String, HashMap<String, String>> JOB_ALIASES;
-	static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
+	public static HashMap<String, HashMap<String, String>> JOB_ALIASES;
+	public static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
 	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","pickaxes","axes","shovels","hoes"}));
 	static ArrayList<String> GRADES =  new ArrayList<String>(Arrays.asList(new String[] {"wood","stone","iron","gold","diamond"}));
 	
@@ -46,7 +54,7 @@ public class Settings {
 									    Material.WOOD_SPADE,Material.STONE_SPADE,Material.IRON_SPADE,Material.GOLD_SPADE,Material.DIAMOND_SPADE,
 									    Material.WOOD_HOE,Material.STONE_HOE,Material.IRON_HOE,Material.GOLD_HOE,Material.DIAMOND_HOE};
 	static HashMap<Material,String> TOOL_MATERIAL_TO_STRING = new HashMap<Material,String>();
-	static HashMap<Material,String> TOOL_MATERIAL_TO_TOOL_GROUP = new HashMap<Material,String>();
+	public static HashMap<Material,String> TOOL_MATERIAL_TO_TOOL_GROUP = new HashMap<Material,String>();
 	static {
 		// initialize Material to string mappings
 		for (int i = 0; i < TOOLS.size(); i++) {
@@ -58,6 +66,7 @@ public class Settings {
 		}
 		TOOL_MATERIAL_TO_TOOL_GROUP.put(Material.BOW,"bow");
 	}
+	static ArrayList<Double> ARMOR_FACTORS;
 	static HashMap<Material,ArrayList<Material>> MULTIDROP_VALID_BLOCKS = new HashMap<Material, ArrayList<Material>>();
 	static {
 		// TODO: rework the multidrop implementation because it sucks
@@ -95,7 +104,7 @@ public class Settings {
 		MULTIDROP_VALID_BLOCKS.put(Material.IRON_AXE,log);
 		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_AXE,log);
 	}
-	static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
+	public static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
 															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.BURNING_FURNACE,Material.JUKEBOX,
 															Material.NOTE_BLOCK,Material.STORAGE_MINECART,Material.WOOD_DOOR,
 															Material.WOODEN_DOOR,Material.CHEST,Material.WORKBENCH,Material.TNT,
@@ -241,6 +250,10 @@ public class Settings {
 				// TODO: add try/catch for .yml parsing errors
 				difficultyConfig.load();
 				
+				ARMOR_FACTORS = new ArrayList<Double>();
+				for (String type : new String[] {"leather","chain","iron","diamond","gold"}) {
+					ARMOR_FACTORS.add(difficultyConfig.getDouble("settings.combat.armor-strength."+type, 1.0));
+				}
 				
 				// damage increase with depth
 				SpawnEventListener.dangerousDepths = config.getBoolean("settings.combat.dangerous-depths", false);
@@ -270,8 +283,8 @@ public class Settings {
 			}
 			
 			jobsettings = openConfig(dataFolder,"job_settings","class configuration","job_settings");
-			Configuration passiveDefinitions = openConfig(new File(dataFolder,"definitions"), "passive", "skill definitions","definitions_passive");
-			Configuration activeDefinitions = openConfig(new File(dataFolder,"definitions"), "active", "ability definitions","definitions_active");
+			Configuration passiveDefinitions = openConfig(new File(dataFolder,"definitions"), "passives", "skill definitions","definitions_passives");
+			Configuration activeDefinitions = openConfig(new File(dataFolder,"definitions"), "actives", "ability definitions","definitions_actives");
 			Configuration jobDefinitions = openConfig(new File(dataFolder,"definitions"), "jobs", "job definitions","definitions_jobs");
 			Configuration mobDefinitions = openConfig(new File(dataFolder,"difficulties"), difficulty+"_mobs", "'"+difficulty+"'mob definitions","definitions_mobs_default");
 			if (jobsettings == null || passiveDefinitions == null || activeDefinitions == null || jobDefinitions == null || mobDefinitions == null) {

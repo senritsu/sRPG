@@ -8,8 +8,12 @@ adventurer:
   defaults:
     maximum-level: 1
   traits:
-  passive:
-  active:
+  passives:
+  actives:
+    level 1:
+      - dummy1
+      - dummy2
+      - dummy3
 
 archer:
   enabled: true
@@ -20,7 +24,7 @@ archer:
   defaults:
   traits:
     - sword-incompetence!1
-  passive:
+  passives:
     level 3: 
       - steady-aim
     level 5: 
@@ -28,7 +32,7 @@ archer:
     level 10: 
       - steady-aim-2
       - deadly-accuracy
-  active:
+  actives:
     level 4:
       - improvised-arrows
 sniper:
@@ -43,5 +47,5 @@ sniper:
   traits:
     - sword-incompetence!2
     - snipers-eye
-  passive:
-  active:
+  passives:
+  actives:

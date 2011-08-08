@@ -9,6 +9,11 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.inventory.ItemStack;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.listeners.BlockEventListener;
+
+
 // TODO: completely integrate permission checks
 
 public class PassiveAbility {

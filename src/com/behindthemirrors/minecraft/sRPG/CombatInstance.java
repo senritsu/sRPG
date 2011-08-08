@@ -8,10 +8,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByProjectileEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+
+
 
 public class CombatInstance {
-	
-	// TODO: change default references to be parsed from job class of attacker
 	
 	private EntityDamageEvent event;
 	public ProfileNPC attacker;
@@ -102,7 +104,12 @@ public class CombatInstance {
 			parry = true;
 		}
 		
+		SRPG.output("triggering resolver");
+		SRPG.output(attacker.passives.toString());
 		ResolverPassive.trigger(this);
+		if (attacker instanceof ProfilePlayer) {
+			((ProfilePlayer)attacker).activate(this, defenderHandItem);
+		}
 		
 		if (canceled){
 			if (attacker instanceof Player && cancelMessageAttacker != null) {
@@ -146,7 +153,9 @@ public class CombatInstance {
 			damage *= critMultiplier;
 		}
 		
-		// send messages to player
+		SRPG.output("combat damage: "+damage);
+		damage *= Utility.getArmorFactor(defender);
+		SRPG.output("combat damage after armor mitigation: "+damage);
 		
 		if (damage > 0 && attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).addChargeTick();

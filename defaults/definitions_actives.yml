@@ -1,5 +1,30 @@
 # broadcast-ranges can be any positive float to specify a distance in blocks, empty or 0 to not broadcast anything, -1 for worldwide broadcast, and -2 for serverwide broadcast
 
+dummy1:
+  name: Dummy Ability 1
+  effects:
+    apply-buff:
+      name: invincibility
+      duration: 5
+  
+dummy2:
+  name: Dummy Ability 2
+  effects:
+    apply-buff:
+      name: rage
+      duration: 5
+  
+dummy3:
+  name: Dummy Ability 3 (sword only)
+  tools: [swords]
+  combat: true
+  effects:
+    apply-buff:
+      name: poison!5
+      self: false
+      opponent: true
+      duration: 5
+
 improvised-arrows:
   name: Improvised Arrows
   description: 
@@ -15,8 +40,8 @@ improvised-arrows:
       to: [262,262,262]
       to-amounts: [8,8,8]
 
-poisoned-arrows:
-  name: 
+apply-poison:
+  name: Apply Poison
   description: 
   feedback: 
   broadcast: 

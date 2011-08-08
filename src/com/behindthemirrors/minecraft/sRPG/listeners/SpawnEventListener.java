@@ -1,9 +1,21 @@
-package com.behindthemirrors.minecraft.sRPG;
+package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import java.util.ArrayList;
+
+import org.bukkit.World;
+import org.bukkit.entity.CreatureType;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityListener;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
+
+import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
+import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+
 
 
 public class SpawnEventListener extends EntityListener {
@@ -14,6 +26,16 @@ public class SpawnEventListener extends EntityListener {
 	
 	public static ArrayList<int[]> depthTiers;
 	public static boolean dangerousDepths;
+	
+	public void addExistingCreatures() {
+		for (World world : SRPG.plugin.getServer().getWorlds()) {
+			for (Entity entity : world.getEntities()) {
+				if (entity instanceof LivingEntity) {
+					onCreatureSpawn(new CreatureSpawnEvent(entity,CreatureType.CHICKEN,entity.getLocation(), SpawnReason.NATURAL));
+				}
+			}
+		}
+	}
 	
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
 		String creature = Utility.getEntityName(event.getEntity());

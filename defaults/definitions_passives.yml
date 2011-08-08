@@ -55,7 +55,7 @@ snipers-eye:
 #########
 
 invincibility:
-  name: 
+  name: Invincibility
   description: 
   effects: 
     set-combat-state:
@@ -64,14 +64,14 @@ invincibility:
       canceled: true
 
 rage:
-  name: 
+  name: Rage
   description: 
   effects: 
     set-combat-state:
       crit: true
       
 poison:
-  name:
+  name: Poison
   description:
   effects:
     direct-damage:
@@ -79,7 +79,7 @@ poison:
       #attribute: poison
       
 weak-poison:
-  name:
+  name: Weak Poison
   description:
   effects:
     direct-damage:
@@ -91,12 +91,30 @@ weak-poison:
 # EVERYTHING ELSE #
 ###################
 
+deadly-arrows:
+  name: Deadly Arrows
+  description: 
+  effects:
+    boost:
+      name: crit-chance
+      value: 1.0
+  replaces: poisoned-arrows
+
+poisoned-arrows:
+  name: Poisoned Arrows
+  description: 
+  effects:
+    trigger:
+      chance: 0.5
+      action: apply-poison
+      conditions: [combat-offensive]
+
 steady-aim:
   name: Steady Aim
   description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
   effects: 
     boost:
-      crit-chance: 
+      name: crit-chance
       tools: [bow]
       value: 0.05
 
@@ -105,7 +123,7 @@ steady-aim-2:
   description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
   effects: 
     boost:
-      crit-chance: 
+      name: crit-chance
       tools: [bow]
       value: 0.1
   replaces: steady-aim
@@ -115,7 +133,7 @@ bow-training:
   description: "[+<damage-modifier:hearts>] of damage when using a bow"
   effects: 
     boost:
-      damage-modifier: 
+      name: damage-modifier
       tools: [bow]
       value: 1
 
@@ -124,6 +142,6 @@ deadly-aim:
   description: "[-<anti-evasion.value:percent>] chance of your target evading your arrows"
   effects: 
     boost: 
-      anti-evasion: 
+      name: anti-evasion
       tools: [bow]
       value: 0.1

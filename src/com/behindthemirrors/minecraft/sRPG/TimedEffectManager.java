@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+
+
 public class TimedEffectManager implements Runnable {
 	
-	static boolean debug = false;
+	public static boolean debug = false;
 	ArrayList<ProfileNPC> relevantPlayers = new ArrayList<ProfileNPC>();
 	
 	public void run() {
