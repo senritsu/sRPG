@@ -11,7 +11,7 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
-import com.behindthemirrors.minecraft.sRPG.MessageParser;
+import com.behindthemirrors.minecraft.sRPG.Messager;
 import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
@@ -30,34 +30,27 @@ public class CommandListener implements CommandExecutor {
 			ProfilePlayer profile = SRPG.profileManager.get(player);
 			if (command.getName().equals("srpg")) {
 				if (args.length < 1) {
-					MessageParser.sendMessage(player, "welcome");
+					Messager.sendMessage(player, "welcome");
 					return true;
 				// change locale
 				} else if (args[0].equalsIgnoreCase("locale")) {
 					if (args.length > 1 && Settings.localization.containsKey(args[1])) {
 						profile.locale = args[1];
 						SRPG.profileManager.save(profile, "locale");
-						MessageParser.sendMessage(player, "locale-changed");
+						Messager.sendMessage(player, "locale-changed");
 						return true;
 					}
 				// display xp,skillpoints,milestones (if enabled)
 				} else if (args[0].equalsIgnoreCase("status")) {
-					MessageParser.sendMessage(player, "status-header");
+					Messager.sendMessage(player, "status-header");
 					// display xp
 					if (player.hasPermission("srpg.xp")) {
-						MessageParser.sendMessage(player, "xp");
-					}
-					// display individual skills
-					for (String skillname : Settings.SKILLS) {
-						if (!player.hasPermission("srpg.skills."+skillname) || skillname.equals("focus")) {
-							continue;
-						}
-						MessageParser.sendMessage(player, "check-skillpoints",skillname);
+						Messager.sendMessage(player, "xp");
 					}
 					return true;
 				// display available charges with the current tool
 				} else if (args[0].equalsIgnoreCase("charges")) {
-					MessageParser.chargeDisplay(player, false);
+					Messager.chargeDisplay(player, false);
 					return true;
 				// get info about a skill or increase it
 				// TODO find NPE
@@ -71,21 +64,21 @@ public class CommandListener implements CommandExecutor {
 						if (player.hasPermission("srpg.jobs") || player.hasPermission("srpg.jobs."+name)) {
 							StructureJob job = Settings.jobs.get(name);
 							if (job == profile.currentJob) {
-								MessageParser.sendMessage(player,"job-already-selected",job.signature);
-							} else if (job.prerequisitesMet(profile)) {
+								Messager.sendMessage(player,"job-already-selected",job.signature);
+							} else if (profile.jobAvailability.get(job)) {
 								SRPG.profileManager.get(player).changeJob(job);
-								MessageParser.sendMessage(player,"job-changed",job.signature);
+								Messager.sendMessage(player,"job-changed",job.signature);
 							} else {
-								MessageParser.sendMessage(player,"job-prerequisite-missing",job.signature);
+								Messager.sendMessage(player,"job-prerequisite-missing",job.signature);
 //								for (Map.Entry<StructureJob, Integer> entry : job.prerequisites.entrySet()) {
 //									MessageParser.sendMessage(player,"job-prerequisite-missing",entry.getKey().signature+","+entry.getValue());
 //								}
 							}
 						} else {
-							MessageParser.sendMessage(player,"job-no-permissions");
+							Messager.sendMessage(player,"job-no-permissions");
 						}
 					} else {
-						MessageParser.sendMessage(player,"job-not-available");
+						Messager.sendMessage(player,"job-not-available");
 					}
 					return true;
 				} else if (args[0].equalsIgnoreCase("info")) {
@@ -99,16 +92,30 @@ public class CommandListener implements CommandExecutor {
 						name = profile.currentJob.signature;
 					}
 					if (name != null) {
-						MessageParser.sendMessage(player, "job-info",name);
+						StructureJob job = Settings.jobs.get(name);
+						Integer level = profile.jobLevels.get(job);
+						Messager.sendMessage(player, "job-header",name);
+						Messager.sendMessage(player, "job-progress",name);
+						for (int i=0;i<job.maximumLevel;i++) {
+							if (level < i) {
+								break;
+							}
+							if (job.passives.containsKey(i)) {
+								Messager.sendMessage(player, "level-header",job.signature);
+								for (StructurePassive passive : job.passives.get(i).keySet()) {
+									Messager.sendMessage(player, "passive-short", passive.signature);
+								}
+							}
+						}
 					} else {
-						MessageParser.sendMessage(player,"job-not-available");
+						Messager.sendMessage(player,"job-not-available");
 					}
 					
 				// internal help (TODO: maybe eventually replaced with some help plugin)
 				} else if (args[0].equalsIgnoreCase("help")) {
 					//String topic = args[1];
 					// TODO: distinguish between help command with arguments and without
-					MessageParser.sendMessage(player, "help-general");
+					Messager.sendMessage(player, "help-general");
 					return true;
 				}
 			}
@@ -192,7 +199,7 @@ public class CommandListener implements CommandExecutor {
 					descriptor.potency = potency < 1 ? 1 : potency;
 					StructurePassive buff = Settings.passives.get(potency == 0 ? "weakpoison" : "poison");
 					profile.addEffect(buff, descriptor);
-					MessageParser.sendMessage(profile, "acquired-buff",buff.name);
+					Messager.sendMessage(profile, "acquired-buff",buff.name);
 					SRPG.output("poisoned player "+args[1]);
 					return true;
 				// add xp to a player (handle with care, no removal atm)

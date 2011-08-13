@@ -9,9 +9,10 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
-import com.behindthemirrors.minecraft.sRPG.MessageParser;
+import com.behindthemirrors.minecraft.sRPG.Messager;
 import com.behindthemirrors.minecraft.sRPG.ResolverActive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
+import com.behindthemirrors.minecraft.sRPG.Settings;
 
 
 
@@ -28,6 +29,7 @@ public class ProfilePlayer extends ProfileNPC {
 	public static Integer chargeTicks;
 	
 	public HashMap<StructureJob,Integer> jobXP;
+	public HashMap<StructureJob,Boolean> jobAvailability;
 	public HashMap<StructureActive,EffectDescriptor> actives = new HashMap<StructureActive, EffectDescriptor>();
 	public ArrayList<StructureActive> validActives = new ArrayList<StructureActive>();
 	public StructureActive currentActive;
@@ -84,9 +86,17 @@ public class ProfilePlayer extends ProfileNPC {
 				break;
 			}
 		}
+		for (StructureJob otherJob : Settings.jobs.values()) {
+			boolean previous = jobAvailability.containsKey(otherJob) ? jobAvailability.get(otherJob) : false;
+			boolean now = otherJob.prerequisitesMet(this);
+			if (!previous && now) {
+				Messager.sendMessage(player, "job-unlocked",otherJob.signature);
+			}
+			jobAvailability.put(otherJob, now);
+		}
 		if (levelup) {
 			if (!suppressMessages) {
-				MessageParser.sendMessage(player, "levelup",currentJob.signature);
+				Messager.sendMessage(player, "levelup",currentJob.signature);
 			}
 			recalculate();
 		}
@@ -104,7 +114,7 @@ public class ProfilePlayer extends ProfileNPC {
 				chargeProgress--;
 			}
 			if (!suppressMessages) {
-				MessageParser.sendMessage(player, "charge-acquired");
+				Messager.sendMessage(player, "charge-acquired");
 			}
 		}
 	}
@@ -121,7 +131,7 @@ public class ProfilePlayer extends ProfileNPC {
 				changed = false;
 			}
 			currentActive = validActives.get(index);
-			MessageParser.chargeDisplay(player, changed);
+			Messager.chargeDisplay(player, changed);
 			SRPG.output("set current ability to "+currentActive.toString());
 			return true;
 		}

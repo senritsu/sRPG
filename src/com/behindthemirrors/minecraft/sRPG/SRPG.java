@@ -35,7 +35,7 @@ public class SRPG extends JavaPlugin {
 	static PluginManager pm;
 	public static ProfileManager profileManager = new ProfileManager();
 	public static TimedEffectManager timedEffectManager = new TimedEffectManager();
-	static CascadeQueueScheduler cascadeQueueScheduler = new CascadeQueueScheduler(); 
+	public static CascadeQueue cascadeQueueScheduler = new CascadeQueue(); 
 	static Database database;
 	
 	public static Random generator = new Random();
@@ -84,7 +84,7 @@ public class SRPG extends JavaPlugin {
 			pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
-			pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Highest, this);
 			
 			pdfFile = this.getDescription();
 			output(pdfFile.getName() + " v" + pdfFile.getVersion() + " has been enabled." );

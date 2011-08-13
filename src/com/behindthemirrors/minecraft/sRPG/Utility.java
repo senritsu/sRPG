@@ -222,6 +222,16 @@ public class Utility {
 		return input.substring(0,input.indexOf("(")) + ((amount > 1 || amount == 0) ? pluralEnding : singularEnding);
 	}
 	
+	public static Material parseMaterial(String string) {
+		Material material;
+		try {
+			material = Material.getMaterial(Integer.parseInt(string));
+		} catch (NumberFormatException ex) {
+			material = Material.getMaterial(string);
+		}
+		return material != null ? material : Material.AIR;
+	}
+	
 	public static ArrayList<Material> parseMaterialList(List<String> list) {
 		HashSet<Material> materials = new HashSet<Material>();
 		for (String entry : list) {

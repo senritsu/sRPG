@@ -113,10 +113,10 @@ public class CombatInstance {
 		
 		if (canceled){
 			if (attacker instanceof Player && cancelMessageAttacker != null) {
-				MessageParser.sendMessage((Player)attacker, cancelMessageAttacker);
+				Messager.sendMessage((Player)attacker, cancelMessageAttacker);
 			}
 			if (defender instanceof Player && cancelMessageDefender != null) {
-				MessageParser.sendMessage((Player)defender, cancelMessageDefender);
+				Messager.sendMessage((Player)defender, cancelMessageDefender);
 			}
 			event.setCancelled(true);
 			return;
@@ -125,22 +125,22 @@ public class CombatInstance {
 		double factor = 1.0;
 		if (miss) {
 			if (factor > 0) {
-				MessageParser.sendMessage(attacker, "miss-attacker");
-				MessageParser.sendMessage(defender, "miss-defender");
+				Messager.sendMessage(attacker, "miss-attacker");
+				Messager.sendMessage(defender, "miss-defender");
 			}
 			factor -= attacker.getStat("miss-damage-factor", attackerHandItem, defenderHandItem) -  defender.getStat("anti-miss-damage-factor", defenderHandItem, attackerHandItem);
 		}
 		if (parry) {
 			if (factor > 0) {
-				MessageParser.sendMessage(attacker, "parry-attacker");
-				MessageParser.sendMessage(defender, "parry-defender");
+				Messager.sendMessage(attacker, "parry-attacker");
+				Messager.sendMessage(defender, "parry-defender");
 			}
 			factor -= defender.getStat("parry-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("anti-parry-efficiency", attackerHandItem, defenderHandItem);
 		}
 		if (factor > 0 && evade) {
 			if (factor > 0) {
-				MessageParser.sendMessage(attacker, "evade-attacker");
-				MessageParser.sendMessage(defender, "evade-defender");
+				Messager.sendMessage(attacker, "evade-attacker");
+				Messager.sendMessage(defender, "evade-defender");
 			}
 			factor -= defender.getStat("evade-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("anti-evade-efficiency", attackerHandItem, defenderHandItem);
 		}
@@ -148,8 +148,8 @@ public class CombatInstance {
 		damage *= factor <= 1.0 ? factor : 1.0;
 		
 		if (crit && damage > 0) {
-			MessageParser.sendMessage(attacker, "crit-attacker");
-			MessageParser.sendMessage(defender, "crit-defender");
+			Messager.sendMessage(attacker, "crit-attacker");
+			Messager.sendMessage(defender, "crit-defender");
 			damage *= critMultiplier;
 		}
 		

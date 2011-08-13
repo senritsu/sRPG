@@ -39,9 +39,9 @@ public class PassiveAbility {
 			if (manualRoll || roll < autorollChance) {
 				damage -= profile.getStat("roll-damage-reduction",0);
 				if (manualRoll) {
-					MessageParser.sendMessage(player, "roll-manual");
+					Messager.sendMessage(player, "roll-manual");
 				} else {
-					MessageParser.sendMessage(player, "roll-auto");
+					Messager.sendMessage(player, "roll-auto");
 				}
 			}
 			// no negative damage

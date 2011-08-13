@@ -52,6 +52,11 @@ special fields:
   can be used for: passive, bonus
   optional nodes: efficiency (float), causes (string list), tools, versus, chance
 
+'change-block'
+  can be used for: active
+  required nodes: change-to (string, any material id or name, defaults to AIR / destroy block)
+  optional nodes: delay (int), temporary (boolean), duration (int, only for temporary), protect (boolean, only for temporary), drop (boolean, only for change-to == AIR), break-event (boolean, only for change-to == AIR)
+
 'manipulate-item'
   notes: when used on monsters, the hand location only works for skeletons (bow) and zombie pigmen (gold sword), and the inventory location corresponds to drops for that monster/animal
   can be used for: passive (triggered only), active

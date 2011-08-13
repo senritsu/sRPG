@@ -12,7 +12,7 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 
 
-public class MessageParser {
+public class Messager {
 	
 	static ArrayList<String> vowels = new ArrayList<String>();
 	
@@ -94,8 +94,7 @@ public class MessageParser {
 		    		matcher.appendReplacement(sb, Integer.toString(currentLevel < profile.currentJob.maximumLevel ? profile.currentJob.xpToNextLevel(currentLevel) : profile.currentJob.xpToNextLevel(currentLevel-1)));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!job>")) {
-	    			String name = Settings.localization.get(profile.locale).getString("jobs."+context);
-		    		matcher.appendReplacement(sb, name != null ? name : Settings.jobs.get(context).name);
+		    		matcher.appendReplacement(sb, localizedJob(context, profile));
 		    		
 		    	} else if (match.equalsIgnoreCase("<!joblevel>")) {
 		    		matcher.appendReplacement(sb, Integer.toString(profile.jobLevels.get(Settings.jobs.get(context))));
@@ -103,16 +102,18 @@ public class MessageParser {
 		    	} else if (match.equalsIgnoreCase("<!jobmaxlevel>")) {
 		    		matcher.appendReplacement(sb, Integer.toString(Settings.jobs.get(context).maximumLevel));
 		    		
-		    	} else if  (match.equalsIgnoreCase("<!cost>") || match.equalsIgnoreCase("<!buff>")) {
+		    	} else if (match.equalsIgnoreCase("<!cost>")) {
 		    		matcher.appendReplacement(sb, context);
 		    		
-		    	} else if  (match.equalsIgnoreCase("<!active>")) {
-		    		String name = Settings.localization.get(profile.locale).getString("actives."+context);
-		    		matcher.appendReplacement(sb, name != null ? name : Settings.actives.get(context).name);
+		    	} else if (match.equalsIgnoreCase("<!buffed>")) {
+		    		String localized = localize(context,"passives."+context+".adjective",profile);
+		    		matcher.appendReplacement(sb, localized != null ? localized : Settings.passives.get(context).adjective);
 		    		
-		    	} else if  (match.equalsIgnoreCase("<!passive>")) {
-		    		String name = Settings.localization.get(profile.locale).getString("passives."+context);
-		    		matcher.appendReplacement(sb, name != null ? name : Settings.passives.get(context).name);
+		    	} else if (match.equalsIgnoreCase("<!buff>") || match.equalsIgnoreCase("<!passive>")) {
+		    		matcher.appendReplacement(sb, localizedPassive(context, profile));
+		    		
+		    	} else if  (match.equalsIgnoreCase("<!active>")) {
+		    		matcher.appendReplacement(sb, localizedActive(context,profile));
 		    		
 		    	} else if  (match.equalsIgnoreCase("<!charges>")) {
 		    		matcher.appendReplacement(sb, profile.charges.toString());
@@ -128,22 +129,26 @@ public class MessageParser {
 	    					Utility.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term), 1);
 		    		matcher.appendReplacement(sb, term);
 		    		
-		    	} else if (match.startsWith("<%")) {
-		    		// TODO: update
-		    		double value = Settings.advanced.getDouble(match.substring(2,match.length()-1),0.0);
-		    		String result = "";
-		    		if (value < 0.01) {
-		    			result = "0."+Integer.toString((int)(value*1000));
-		    		} else {
-		    			result = Integer.toString((int)(value*100));
-		    		}
-		    		matcher.appendReplacement(sb, result+"%");
-		    		
 		    	} else {
+		    		// TODO: update for descriptions for passives and the sort, maybe move parsing to separate function
 		    		String replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
-		    		if (!replacement.isEmpty()) {
-		    			matcher.appendReplacement(sb, replacement);
-		    		}
+		    		if (match.contains(":")) {
+			    		// TODO: use proper java string formatting
+			    		double value = Settings.advanced.getDouble(replacement.substring(0,match.indexOf(":")),0.0);
+			    		String conversion = replacement.substring(match.indexOf(":")+1);
+			    		if (conversion.equals("percent")) {
+				    		if (value < 0.01) {
+				    			replacement = "0."+Integer.toString((int)(value*1000));
+				    		} else {
+				    			replacement = Integer.toString((int)(value*100));
+				    		}
+			    		} else if (conversion.equalsIgnoreCase("hearts")) {
+			    			Integer hearts = new Integer((int)(value/2));
+			    			replacement = (hearts == 0 && value%2 != 0 ? "" : hearts.toString()) + (value%2 != 0 ? (hearts > 0 ? " " : "")+"1/2" : "");
+			    		}
+			    		
+			    	}
+	    			matcher.appendReplacement(sb, replacement);
 		    	}
 		    }
 	    	matcher.appendTail(sb);
@@ -177,5 +182,47 @@ public class MessageParser {
 		    
 		    player.sendMessage(sb.toString());
 		}
+	}
+	
+	public static String localize(String string, String path) {
+		return localize(string, path, null);
+	}
+	
+	public static String localize(String string, String path, ProfilePlayer profile) {
+		String locale = profile != null ? profile.locale : Settings.defaultLocale;
+		if (path.startsWith("jobs")) {
+			if (Settings.JOB_ALIASES.containsKey(string)) {
+				string = Settings.JOB_ALIASES.get(locale).get(string);
+			}
+		}
+		String localized = Settings.localization.get(locale).getString(path);
+		return localized;
+	}
+	
+	public String localizedPassive(String name) {
+		return localizedPassive(name, null);
+	}
+	
+	public static String localizedPassive(String name, ProfilePlayer profile) {
+		String localized = localize(name,"passives."+name+".name",profile);
+		return localized != null ? localized : (Settings.passives.containsKey(name) ? Settings.passives.get(name).name : "");
+	}
+	
+	public String localizedActive(String name) {
+		return localizedActive(name, null);
+	}
+	
+	public static String localizedActive(String name, ProfilePlayer profile) {
+		String localized = localize(name,"actives."+name+".name",profile);
+		return localized != null ? localized : (Settings.actives.containsKey(name) ? Settings.actives.get(name).name : "");
+	}
+	
+	public String localizedJob(String name) {
+		return localizedJob(name, null);
+	}
+	
+	public static String localizedJob(String name, ProfilePlayer profile) {
+		String localized = localize(name,"jobs."+name+".name",profile);
+		return localized != null ? localized : (Settings.jobs.containsKey(name) ? Settings.jobs.get(name).name : "");
 	}
 }

@@ -9,6 +9,7 @@ public class StructurePassive implements Comparable<StructurePassive> {
 	public String signature;
 	public String name;
 	public String description;
+	public String adjective;
 	String replaces;
 	public HashMap<String,ConfigurationNode> effects;
 	
@@ -16,6 +17,7 @@ public class StructurePassive implements Comparable<StructurePassive> {
 		signature = uniqueName;
 		name = node.getString("name");
 		description = node.getString("description");
+		adjective = node.getString("adjective");
 		replaces = node.getString("replaces");
 		effects = new HashMap<String, ConfigurationNode>();
 		for (String effect : node.getKeys("effects")) {

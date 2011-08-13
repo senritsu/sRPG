@@ -57,6 +57,7 @@ snipers-eye:
 invincibility:
   name: Invincibility
   description: 
+  adjective: invincible
   effects: 
     set-combat-state:
       as-attacker: false
@@ -66,6 +67,7 @@ invincibility:
 rage:
   name: Rage
   description: 
+  adjective: enraged
   effects: 
     set-combat-state:
       crit: true
@@ -73,6 +75,7 @@ rage:
 poison:
   name: Poison
   description:
+  adjective: poisoned
   effects:
     direct-damage:
       value: 1
@@ -81,6 +84,7 @@ poison:
 weak-poison:
   name: Weak Poison
   description:
+  adjective: weakly poisoned
   effects:
     direct-damage:
       value: 1

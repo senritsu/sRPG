@@ -35,7 +35,7 @@ public class TimedEffectManager implements Runnable {
 					}
 					effectIterator.remove();
 					if (profile instanceof ProfilePlayer){
-						MessageParser.sendMessage(profile, "lost-buff",passive.name);
+						Messager.sendMessage(profile, "lost-buff",passive.signature);
 					}
 					profile.timedStatsDirty = true;
 				}

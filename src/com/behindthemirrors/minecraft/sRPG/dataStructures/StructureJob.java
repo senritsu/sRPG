@@ -29,11 +29,11 @@ public class StructureJob implements Comparable<StructureJob> {
 	public Integer maximumLevel;
 	public HashMap<StructureJob,Integer> prerequisites;
 	Integer tier;
-	HashMap<String,Double> defaults;
+	public HashMap<String,Double> defaults;
 	// TODO: convert bonuses to StructurePassive
-	HashMap<StructurePassive,EffectDescriptor> traits;
-	HashMap<Integer,HashMap<StructurePassive,EffectDescriptor>> passives;
-	HashMap<Integer,HashMap<StructureActive,EffectDescriptor>> actives;
+	public HashMap<StructurePassive,EffectDescriptor> traits;
+	public HashMap<Integer,HashMap<StructurePassive,EffectDescriptor>> passives;
+	public HashMap<Integer,HashMap<StructureActive,EffectDescriptor>> actives;
 	
 	public StructureJob (String uniqueName, ConfigurationNode root) {
 		signature = uniqueName;
@@ -95,7 +95,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		}
 	}
 	
-	HashMap<StructurePassive,EffectDescriptor> getPassives(Integer currentLevel) {
+	public HashMap<StructurePassive,EffectDescriptor> getPassives(Integer currentLevel) {
 		HashMap<StructurePassive,EffectDescriptor> available = new HashMap<StructurePassive,EffectDescriptor>();
 		ArrayList<String> replaced = new ArrayList<String>();
 		for (int i = 1; i <= 10; i++) {
@@ -118,7 +118,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		return available;
 	}
 	
-	HashMap<StructureActive,EffectDescriptor> getActives(Integer currentLevel) {
+	public HashMap<StructureActive,EffectDescriptor> getActives(Integer currentLevel) {
 		HashMap<StructureActive,EffectDescriptor> available = new HashMap<StructureActive,EffectDescriptor>();
 		ArrayList<String> replaced = new ArrayList<String>();
 		for (int i = 1; i <= 10; i++) {

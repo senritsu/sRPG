@@ -29,6 +29,9 @@ public class BlockEventListener extends BlockListener {
 	// check block rarity and award xp according to config
 	public void onBlockBreak(BlockBreakEvent event) {
 		ProfilePlayer profile = SRPG.profileManager.get(event.getPlayer());
+		if (SRPG.cascadeQueueScheduler.protectedBlocks.contains(event.getBlock())) {
+			event.setCancelled(true);
+		}
 		if (event.isCancelled() || profile == null) {
 			return;
 		}
@@ -61,6 +64,10 @@ public class BlockEventListener extends BlockListener {
 	
 	public void onBlockPlace(BlockPlaceEvent event) {
 		Block block = event.getBlock();
+		if (SRPG.cascadeQueueScheduler.protectedBlocks.contains(block)) {
+			event.setCancelled(true);
+			return;
+		}
 		if (trackingMaterials.contains(block.getType())) {
 			userPlacedBlocks.add(block);
 		}

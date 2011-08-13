@@ -67,8 +67,9 @@ messages:
   # JOBS #
   ########
   
-  job-list-entry: "<!job>: Level <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level><basic.xp>)"
+  job-list-entry: "<!job>: <#level> <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level><basic.xp>)"
   job-changed: "You changed your <#job> to <!job> (<#level> <!joblevel>)"
+  job-unlocked: "Unlocked new <#job>: <!job>"
   job-already-selected: "You already are a/an <!job>"
   job-prerequisite-missing:
     - "You are not cut out for being a/an <!job>"
@@ -76,9 +77,10 @@ messages:
     - "You? A/An <!job>? Come back when you're not wet behind the ears anymore."
   job-no-permissions: "You are not allowed to take that <#job>"
   job-not-available: "There is no <#job> of that name"
-  job-info: 
+  job-header: 
     - "[blue]<!job>"
-    - "<!description>"
+    - "    <!description>"
+  job-progress: "<#level> <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level> to next level)
   
   #############
   # MECHANICS #
@@ -88,7 +90,7 @@ messages:
   ability: 
     - "[blue]Take this! <!ability>!!"
     - "[blue]Go! <!ability>!!!"
-  ability-not-implemented: "[dark-gray]just kidding, most abilities are not implemented yet"
+  ability-not-implemented: "[dark-gray]this ability is not yet implemented"
   # COMBAT
   crit-attacker: "[red]Critical Hit!"
   crit-defender: "[red]You got critically hit!"
@@ -100,7 +102,8 @@ messages:
   evade-defender: "[gray]Successful evasion!"
   roll-manual: "[green]You rolled to avoid damage"
   roll-auto: "[green]You rolled by reflex to avoid damage"
-  acquired-buff: "You got afflicted with <!buff>"
+  acquired-buff: "You are now <!buffed>"
+  buffed-default: "affected by "
   lost-buff: "<!buff> has faded"
   
   ########

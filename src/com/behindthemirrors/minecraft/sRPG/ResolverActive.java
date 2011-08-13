@@ -48,6 +48,10 @@ public class ResolverActive {
 						ResolverEffects.directDamage(target,node, descriptor);
 					}
 					
+				} else if (effect.startsWith("block-change")) {
+					if (block != null) {
+						ResolverEffects.blockChange(source, block, node, descriptor);
+					}
 				}
 			}
 		}
