@@ -38,7 +38,7 @@ special fields:
   required nodes: name (string), duration (int)
   optional nodes: self (boolean, defaults to true), opponent (boolean, defaults to false), tools, versus
   
-'attack'
+'attack' # not yet implemented
   can be used for: passive, bonus
   required nodes: chance, min-damage (int)
   optional nodes: as-attacker, as-defender, max-damage (int), tools, versus, tool-damage (boolean, overrides min/max damage with the damage of the currently carried item), trigger (string, can refer to any chance-based effect)
@@ -48,16 +48,17 @@ special fields:
   required nodes: value (int)
   optional nodes: self (boolean, default false), opponent (boolean, default true), chance, attribute (string, see attributes list above)
 
-'damage-reduction'
+'damage-reduction' # not yet implemented
   can be used for: passive, bonus
   optional nodes: efficiency (float), causes (string list), tools, versus, chance
 
-'change-block'
+'change-blocks'
   can be used for: active
   required nodes: change-to (string, any material id or name, defaults to AIR / destroy block)
-  optional nodes: delay (int), temporary (boolean), duration (int, only for temporary), protect (boolean, only for temporary), drop (boolean, only for change-to == AIR), break-event (boolean, only for change-to == AIR)
+  optional nodes: delay (int), temporary (boolean), duration (int, only for temporary), protect (boolean, only for temporary), drop (boolean, only for change-to == AIR), event (boolean, break event for change-to == AIR, place event otherwise)
+  shape nodes: shape (String, one of: line, cross2D, cross3D), length (int), cascade-parts (boolean), cascade-blocks (boolean), part-delay (int), block-delay (int), relative (boolean), direction (String, one of: up,down,forward,back,left,right,east,west,north,south)
 
-'manipulate-item'
+'manipulate-item' # not yet implemented
   notes: when used on monsters, the hand location only works for skeletons (bow) and zombie pigmen (gold sword), and the inventory location corresponds to drops for that monster/animal
   can be used for: passive (triggered only), active
   required nodes: action (string, may be: drop, destroy, steal)
@@ -67,9 +68,10 @@ special fields:
   notes: changes (part of) the held item stack to something else, list allows multiple types of items to be set, if hand item is part of the from list, the corresponding from-amount will be used up and transformed into ALL entries of the to/to-amounts list. for different results make another effect entry
   can be used for: active
   required nodes: from (integer list), from-amounts (integer list), to (integer list), to-amounts (integer list)
+  optional nodes: consume-all (boolean, uses up all items in from list, not only the one held in hand or one chosen at random), random-result (boolean, creates only one of the results in the to list, not all of them)
   
-'impulse'
-  optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), force (float, rescales x,y,z)
+'impulse' # not yet implemented
+  optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), force (float, rescales x,y,z), add (boolean)
   
-'teleport'
+'teleport' # not yet implemented
   optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), max-range (float), max-range-horizontal (float), max-range-vertical (float), max-range-blocks (integer), trace-line (boolean), transparent (string list, see tools, by default only air is transparent, only has effect if trace-line is true), safe-teleport (boolean, default true, if false may land inside solid ground)

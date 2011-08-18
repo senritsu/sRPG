@@ -32,7 +32,6 @@ public class PlayerEventListener extends PlayerListener {
 	}
 	
 	public void onPlayerInteract(PlayerInteractEvent event) {
-		SRPG.output("got player interact event");
 		Action action = event.getAction();
 		Player player = event.getPlayer();
 		ProfilePlayer profile = SRPG.profileManager.get(player);
@@ -41,9 +40,11 @@ public class PlayerEventListener extends PlayerListener {
 			material = event.getClickedBlock().getType();
 		}
 		// block ability ready if interaction was with some interactable block
-		if (player.hasPermission("srpg.actives") && !event.isCancelled()) {
+		if (player.hasPermission("srpg.actives")) {
 			if (action == Action.RIGHT_CLICK_AIR || (action == Action.RIGHT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
-				profile.prepare();
+				if (!(event.isBlockInHand() && action == Action.RIGHT_CLICK_BLOCK)) {
+					profile.prepare();
+				}
 			} else if (action == Action.LEFT_CLICK_AIR || (action == Action.LEFT_CLICK_BLOCK && !Settings.BLOCK_CLICK_BLACKLIST.contains(material))) {
 				if (profile.activate()) {
 					event.setCancelled(true);

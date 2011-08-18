@@ -10,7 +10,7 @@ import org.bukkit.util.config.ConfigurationNode;
 
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
-import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
 
 
 public class ProfileNPC {
@@ -161,9 +161,9 @@ public class ProfileNPC {
 						value *= (double)(descriptor.level == null ? 0 : descriptor.level) / descriptor.maxlevel;
 					}
 					// parse tools node
-					ArrayList<Material> tools = Utility.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
+					ArrayList<Material> tools = MiscBukkit.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
 					// parse versus node
-					ArrayList<Material> versus = Utility.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
+					ArrayList<Material> versus = MiscBukkit.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
 					for (Material tool : tools) {
 						if (!statTarget.containsKey(tool)) {
 							statTarget.put(tool, new HashMap<Material, HashMap<String,Double>>());

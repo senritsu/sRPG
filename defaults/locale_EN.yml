@@ -80,7 +80,7 @@ messages:
   job-header: 
     - "[blue]<!job>"
     - "    <!description>"
-  job-progress: "<#level> <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level> to next level)
+  job-progress: "<#level> <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level> to next level)"
   
   #############
   # MECHANICS #
@@ -103,7 +103,7 @@ messages:
   roll-manual: "[green]You rolled to avoid damage"
   roll-auto: "[green]You rolled by reflex to avoid damage"
   acquired-buff: "You are now <!buffed>"
-  buffed-default: "affected by "
+  buffed-default: "affected by" # is postfixed with the buff name
   lost-buff: "<!buff> has faded"
   
   ########

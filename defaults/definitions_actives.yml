@@ -24,6 +24,52 @@ dummy3:
       self: false
       opponent: true
       duration: 5
+      
+dummy4:
+  name: Dummy Ability 4 (destroy)
+  tools: [shovels]
+  versus: [DIRT,GRASS]
+  effects:
+    change-blocks:
+      shape: line
+      length: 4
+      cascade-blocks: true
+      block-delay: 2
+      relative: true
+      direction: forward
+
+dummy5:
+  name: Dummy Ability 5 (create)
+  tools: [shovels]
+  effects:
+    change-blocks:
+      change-to: STONE
+      shape: cross2D
+      length: 3
+      #cascade-parts: true
+      cascade-blocks: true
+      part-delay: 5
+      block-delay: 2
+      direction: forward
+      relative: true
+      
+dummy6:
+  name: Dummy Ability 6 (phase)
+  tools: [shovels]
+  versus: []
+  effects:
+    change-blocks:
+      delay: 40
+      change-to: DIRT
+      shape: line
+      length: 10
+      #cascade-blocks: true
+      block-delay: 1
+      relative: true
+      direction: forward
+      temporary: true
+      duration: 60
+      protect: true
 
 improvised-arrows:
   name: Improvised Arrows
@@ -33,12 +79,13 @@ improvised-arrows:
   broadcast-range: 
   cost: 2
   cooldown: 0
+  tools: [17,5,280,262]
   effects: 
-    transmute-held-item:
+    transmute-item:
       from: [17,5,280]
       from-amounts: [4,16,32]
-      to: [262,262,262]
-      to-amounts: [8,8,8]
+      to: [262]
+      to-amounts: [8]
 
 apply-poison:
   name: Apply Poison

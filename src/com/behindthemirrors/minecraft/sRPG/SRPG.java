@@ -75,7 +75,7 @@ public class SRPG extends JavaPlugin {
 			pm.disablePlugin(this);
 		} else {
 			pm.registerEvent(Event.Type.ENTITY_DAMAGE, damageListener, Priority.Highest, this);
-			pm.registerEvent(Event.Type.ENTITY_REGAIN_HEALTH, damageListener, Priority.Normal, this);
+			pm.registerEvent(Event.Type.ENTITY_REGAIN_HEALTH, damageListener, Priority.Highest, this);
 			pm.registerEvent(Event.Type.ENTITY_DEATH, damageListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.CREATURE_SPAWN, spawnListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Monitor, this);
@@ -85,6 +85,8 @@ public class SRPG extends JavaPlugin {
 			pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Highest, this);
+			pm.registerEvent(Event.Type.BLOCK_CANBUILD, blockListener, Priority.Highest, this);
+			pm.registerEvent(Event.Type.BLOCK_PLACE, blockListener, Priority.Highest, this);
 			
 			pdfFile = this.getDescription();
 			output(pdfFile.getName() + " v" + pdfFile.getVersion() + " has been enabled." );

@@ -1,6 +1,7 @@
 package com.behindthemirrors.minecraft.sRPG.dataStructures;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,8 +29,8 @@ public class ProfilePlayer extends ProfileNPC {
 	public static Integer chargeMax;
 	public static Integer chargeTicks;
 	
-	public HashMap<StructureJob,Integer> jobXP;
-	public HashMap<StructureJob,Boolean> jobAvailability;
+	public HashMap<StructureJob,Integer> jobXP = new HashMap<StructureJob, Integer>();
+	public HashMap<StructureJob,Boolean> jobAvailability = new HashMap<StructureJob, Boolean>();
 	public HashMap<StructureActive,EffectDescriptor> actives = new HashMap<StructureActive, EffectDescriptor>();
 	public ArrayList<StructureActive> validActives = new ArrayList<StructureActive>();
 	public StructureActive currentActive;
@@ -73,7 +74,7 @@ public class ProfilePlayer extends ProfileNPC {
 		Integer amount = jobXP.get(job); 
 		// check for job levelup
 		boolean done = false;
-		boolean levelup = false;
+		boolean levelChanged = false;
 		while (!done) {
 			if (amount >= job.xpToNextLevel(currentLevel) && currentLevel < job.maximumLevel) {
 				if (currentLevel+1 >= job.maximumLevel) {
@@ -81,26 +82,30 @@ public class ProfilePlayer extends ProfileNPC {
 				}
 				currentLevel++;
 				jobLevels.put(job,currentLevel);
-				levelup = true;
+				levelChanged = true;
+			} else if (currentLevel > 0 && !(amount >= job.xpToNextLevel(currentLevel-1))) {
+				currentLevel--;
+				jobLevels.put(job,currentLevel);
+				levelChanged = true;
 			} else {
 				break;
 			}
 		}
-		for (StructureJob otherJob : Settings.jobs.values()) {
-			boolean previous = jobAvailability.containsKey(otherJob) ? jobAvailability.get(otherJob) : false;
-			boolean now = otherJob.prerequisitesMet(this);
-			if (!previous && now) {
-				Messager.sendMessage(player, "job-unlocked",otherJob.signature);
-			}
-			jobAvailability.put(otherJob, now);
-		}
-		if (levelup) {
+		if (levelChanged) {
 			if (!suppressMessages) {
 				Messager.sendMessage(player, "levelup",currentJob.signature);
 			}
 			recalculate();
 		}
-		return levelup;
+		for (StructureJob otherJob : Settings.jobs.values()) {
+			boolean previous = jobAvailability.containsKey(otherJob) ? jobAvailability.get(otherJob) : false;
+			boolean now = otherJob.prerequisitesMet(this);
+			if (!previous && now && !suppressMessages) {
+				Messager.sendMessage(player, "job-unlocked",otherJob.signature);
+			}
+			jobAvailability.put(otherJob, now);
+		}
+		return levelChanged;
 		
 	}
 	
@@ -138,29 +143,40 @@ public class ProfilePlayer extends ProfileNPC {
 		return false;
 	}
 	
-	public void prepare() {
+	public boolean prepare() {
 		SRPG.output("trying to prepare");
 		if (cycleActive()) {
 			abilityReadiedTimeStamp = System.currentTimeMillis();
 			prepared = true;
+			return true;
 		}
+		return false;
 	}
 	
 	// TODO: add cost deduction
-	public void activate(CombatInstance combat, Material target) {
+	public boolean activate(CombatInstance combat, Material target) {
+		if (currentActive == null) {
+			return false;
+		}
 		SRPG.output("trying to activate combat ability");
+		boolean result = false;
 		if (prepared && currentActive.combat && 
 				(currentActive.versusMaterials.contains(target) || currentActive.versusMaterials.isEmpty()) &&
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
 			ResolverActive.resolve(currentActive, combat, actives.get(currentActive));
+			result = true;
 		}
 		if (currentActive.combat) {
 			prepared = false;
 		}
+		return result;
 	}
 	
 	public boolean activate() {
+		if (currentActive == null) {
+			return false;
+		}
 		Block target = player.getTargetBlock(null, currentActive.range);
 		boolean result = false;
 		if (prepared && !currentActive.combat && 
@@ -218,6 +234,7 @@ public class ProfilePlayer extends ProfileNPC {
 				validActives.add(active);
 			}
 		}
+		Collections.sort(validActives);
 		SRPG.output(validActives.toString());
 	}
 	

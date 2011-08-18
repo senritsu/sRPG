@@ -1,5 +1,7 @@
 package com.behindthemirrors.minecraft.sRPG.listeners;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -12,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
 import com.behindthemirrors.minecraft.sRPG.Messager;
+import com.behindthemirrors.minecraft.sRPG.MiscGeneric;
 import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
@@ -56,13 +59,11 @@ public class CommandListener implements CommandExecutor {
 				// TODO find NPE
 				} else if (args.length >= 3 && (args[0]+" "+args[1]).equalsIgnoreCase("change to")) {
 					// TODO: accommodate for names with spaces
-					String name = Settings.JOB_ALIASES.get(profile.locale).get(args[2]);
-					if (name == null) {
-						name = Settings.jobs.containsKey(args[2].toLowerCase()) ? Settings.jobs.get(args[2].toLowerCase()).signature : null;
-					}
-					if (name != null) {
-						if (player.hasPermission("srpg.jobs") || player.hasPermission("srpg.jobs."+name)) {
-							StructureJob job = Settings.jobs.get(name);
+					String name = MiscGeneric.join(new ArrayList<String>(new ArrayList<String>(Arrays.asList(args)).subList(2, args.length)), " ");
+					StructureJob job = Settings.jobs.get(Settings.JOB_ALIASES.get(profile.locale).containsKey(name) ? 
+							Settings.JOB_ALIASES.get(profile.locale).get(name) : name.toLowerCase());
+					if (job != null) {
+						if (player.hasPermission("srpg.jobs") || player.hasPermission("srpg.jobs."+job.signature)) {
 							if (job == profile.currentJob) {
 								Messager.sendMessage(player,"job-already-selected",job.signature);
 							} else if (profile.jobAvailability.get(job)) {
@@ -174,33 +175,41 @@ public class CommandListener implements CommandExecutor {
 						return true;
 					}
 					
-				} else if (args.length >= 2 && args[0].equalsIgnoreCase("charge") && SRPG.profileManager.has(args[1])) {
+				} else if (args.length >= 2 && SRPG.profileManager.has(args[1])) {
 					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					profile.charges = 11;
-					SRPG.profileManager.save(profile, "chargedata");
-					SRPG.output("gave player "+args[1]+" maximum charges");
-					return true;
-				} else if (args.length >= 2 && args[0].equalsIgnoreCase("enrage") && SRPG.profileManager.has(args[1])) {
-					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					profile.addEffect(Settings.passives.get("rage"), new EffectDescriptor(10));
-					SRPG.output("enraged player "+args[1]);
-					return true;
-				} else if (args.length >= 2 && args[0].equalsIgnoreCase("poison") && SRPG.profileManager.has(args[1])) {
-					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					Integer potency;
-					try {
-						potency = Integer.parseInt(args[2]); 
-					} catch (NumberFormatException ex) {
-						potency = 1;
-					} catch (IndexOutOfBoundsException ex) {
-						potency = 1;
+					
+					if (args[0].equalsIgnoreCase("charge")) {
+						profile.charges = 11;
+						SRPG.profileManager.save(profile, "chargedata");
+						SRPG.output("gave player "+args[1]+" maximum charges");
+					} else if (args[0].equalsIgnoreCase("enrage")) {
+						StructurePassive buff = Settings.passives.get("rage");
+						profile.addEffect(buff, new EffectDescriptor(10));
+						SRPG.output("enraged player "+args[1]);
+						Messager.sendMessage(profile, "acquired-buff",buff.signature);
+					} else if (args[0].equalsIgnoreCase("protect")) {
+						StructurePassive buff = Settings.passives.get("invincibility");
+						profile.addEffect(buff, new EffectDescriptor(10));
+						SRPG.output("protected player "+args[1]);
+						Messager.sendMessage(profile, "acquired-buff",buff.signature);
+					} else if (args[0].equalsIgnoreCase("poison")) {
+						Integer potency;
+						try {
+							potency = Integer.parseInt(args[2]); 
+						} catch (NumberFormatException ex) {
+							potency = 1;
+						} catch (IndexOutOfBoundsException ex) {
+							potency = 1;
+						}
+						EffectDescriptor descriptor = new EffectDescriptor(5);
+						descriptor.potency = potency < 1 ? 1 : potency;
+						StructurePassive buff = Settings.passives.get(potency == 0 ? "weakpoison" : "poison");
+						profile.addEffect(buff, descriptor);
+						Messager.sendMessage(profile, "acquired-buff",buff.signature);
+						SRPG.output("poisoned player "+args[1]);
+					} else {
+						return false;
 					}
-					EffectDescriptor descriptor = new EffectDescriptor(5);
-					descriptor.potency = potency < 1 ? 1 : potency;
-					StructurePassive buff = Settings.passives.get(potency == 0 ? "weakpoison" : "poison");
-					profile.addEffect(buff, descriptor);
-					Messager.sendMessage(profile, "acquired-buff",buff.name);
-					SRPG.output("poisoned player "+args[1]);
 					return true;
 				// add xp to a player (handle with care, no removal atm)
 				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp") && SRPG.profileManager.has(args[1])) {

@@ -12,7 +12,7 @@ import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
-import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 
@@ -38,7 +38,7 @@ public class SpawnEventListener extends EntityListener {
 	}
 	
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
-		String creature = Utility.getEntityName(event.getEntity());
+		String creature = MiscBukkit.getEntityName(event.getEntity());
 		if (debug) {
 			SRPG.output("creature spawned: "+creature);
 		}

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import org.bukkit.Material;
 import org.bukkit.util.config.ConfigurationNode;
 
-import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
 
 public class StructureActive implements Comparable<StructureActive> {
 
@@ -44,11 +44,11 @@ public class StructureActive implements Comparable<StructureActive> {
 				effects.put(effect, node.getNode("effects."+effect));
 			}
 		}
-		validMaterials = Utility.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
+		validMaterials = MiscBukkit.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
 		if (validMaterials.size() == 1 && validMaterials.contains(null)) {
 			validMaterials.clear();
 		}
-		versusMaterials = Utility.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
+		versusMaterials = MiscBukkit.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
 		if (versusMaterials.size() == 1 && versusMaterials.contains(null)) {
 			versusMaterials.clear();
 		}
@@ -56,6 +56,21 @@ public class StructureActive implements Comparable<StructureActive> {
 		combat = node.getBoolean("combat", false);
 	}
 
+	public boolean validVs(ProfileNPC profile) {
+		if (versusMaterials.isEmpty() || 
+				(profile instanceof ProfilePlayer && versusMaterials.contains( ((ProfilePlayer)profile).player.getItemInHand().getType() ))) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean validVs(Material material) {
+		if (versusMaterials.isEmpty() || versusMaterials.contains(material)) {
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public int compareTo(StructureActive other) {
 		return name.compareTo(other.name);

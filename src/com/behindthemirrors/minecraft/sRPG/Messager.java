@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
 
 
 public class Messager {
@@ -27,15 +28,15 @@ public class Messager {
 		// check if the tool has an active ability
 		String text = "[";
 		if (charges >= cost) { // TODO find NPE
-			text += ChatColor.DARK_GREEN + Utility.repeat("o",cost);
-			text += ChatColor.WHITE + Utility.repeat("o",charges-cost);
+			text += ChatColor.DARK_GREEN + MiscGeneric.repeat("o",cost);
+			text += ChatColor.WHITE + MiscGeneric.repeat("o",charges-cost);
 			charges = ProfilePlayer.chargeMax - charges;
 		} else {
-			text += ChatColor.WHITE + Utility.repeat("o",charges);
-			text += ChatColor.DARK_RED + Utility.repeat("o",cost-charges);
+			text += ChatColor.WHITE + MiscGeneric.repeat("o",charges);
+			text += ChatColor.DARK_RED + MiscGeneric.repeat("o",cost-charges);
 			charges = ProfilePlayer.chargeMax - charges - 1;
 		}
-		text += ChatColor.DARK_GRAY+Utility.repeat("o",charges)+ChatColor.WHITE+"]";
+		text += ChatColor.DARK_GRAY+MiscGeneric.repeat("o",charges)+ChatColor.WHITE+"]";
 		// display of blocks to next charge disabled for now
 		//if (charges < PlayerData.chargeMax) {
 		//	text += " ("+(PlayerData.chargeTicks-data.chargeProgress.get(skillname))+" blocks to next charge)";
@@ -43,7 +44,7 @@ public class Messager {
 		if (changed) {
 			text += " >";
 		}
-		text += " (Current "+Utility.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology.active"),1)+": "+profile.currentActive.name+")";
+		text += " (Current "+MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology.active"),1)+": "+profile.currentActive.name+")";
 		player.sendMessage(text);
 	}
 	
@@ -106,8 +107,11 @@ public class Messager {
 		    		matcher.appendReplacement(sb, context);
 		    		
 		    	} else if (match.equalsIgnoreCase("<!buffed>")) {
+		    		StructurePassive buff = Settings.passives.get(context);
 		    		String localized = localize(context,"passives."+context+".adjective",profile);
-		    		matcher.appendReplacement(sb, localized != null ? localized : Settings.passives.get(context).adjective);
+		    		matcher.appendReplacement(sb, localized != null ? localized : 
+		    			(buff.adjective != null ? buff.adjective : 
+		    				Settings.localization.get(profile.locale).getString("messages.buffed-default") + " " + localizedPassive(context, profile)));
 		    		
 		    	} else if (match.equalsIgnoreCase("<!buff>") || match.equalsIgnoreCase("<!passive>")) {
 		    		matcher.appendReplacement(sb, localizedPassive(context, profile));
@@ -125,8 +129,8 @@ public class Messager {
 		    		// TODO: update
 		    		String term = match.substring(2,match.length()-1);
 		    		term = term.endsWith("+") ? 
-		    				Utility.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term.substring(0,term.length()-1)), 2) : 
-	    					Utility.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term), 1);
+		    				MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term.substring(0,term.length()-1)), 2) : 
+	    					MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term), 1);
 		    		matcher.appendReplacement(sb, term);
 		    		
 		    	} else {

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.bukkit.entity.Projectile;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
@@ -18,7 +19,7 @@ import com.behindthemirrors.minecraft.sRPG.CombatInstance;
 import com.behindthemirrors.minecraft.sRPG.PassiveAbility;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
-import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 
@@ -41,20 +42,36 @@ public class DamageEventListener extends EntityListener {
 			SRPG.output("player damaged by "+event.getCause().name()+" ("+event.getDamage()+" damage)");
 		}
 		
+//		if (event.getCause() != DamageCause.SUFFOCATION && event.getCause() != DamageCause.FIRE_TICK && event.getCause() != DamageCause.FIRE && event.getCause() != DamageCause.LAVA) {
+//			SRPG.output(event.toString());
+//			SRPG.output(event.getCause().toString());
+//			SRPG.output(event.getDamage()+"");
+//		}
+//		if (event instanceof EntityDamageByEntityEvent) {
+//			SRPG.output(((EntityDamageByEntityEvent)event).getDamager().toString());
+//		}
+		
 		if (event.getCause() == DamageCause.FALL) {
 			if (target instanceof Player) {
 				PassiveAbility.trigger(event);
 			}
-		} else if (event.getCause() == DamageCause.ENTITY_ATTACK) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
-			source = (LivingEntity)((EntityDamageByEntityEvent)event).getDamager();
-			CombatInstance combat = new CombatInstance(event);
+		} else if (event instanceof EntityDamageByEntityEvent) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+			EntityDamageByEntityEvent attackEvent = (EntityDamageByEntityEvent)event;
+			CombatInstance combat = new CombatInstance(attackEvent);
 			
 			// debug message
-			if (source instanceof Player && event instanceof EntityDamageByEntityEvent) {
+			if (source instanceof Player) {
 				// debug message, displays remaining health of target before damage from this attack is applied
 				if (debug) {
 					SRPG.output("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.");
 				}
+			}
+			if (attackEvent.getDamager() instanceof LivingEntity) {
+				source = (LivingEntity)attackEvent.getDamager();
+				SRPG.output("entity attack");
+			} else if (attackEvent.getDamager() instanceof Projectile) {
+				source = ((Projectile)attackEvent.getDamager()).getShooter();
+				SRPG.output("projectile attack");
 			}
 			
 			// check attack restrictions
@@ -66,7 +83,7 @@ public class DamageEventListener extends EntityListener {
 				for (String group : Settings.advanced.getKeys("combat.restrictions.groups")) {
 					if (((Player)source).hasPermission(prefix+group)) {
 						forbidden = true;
-						String targetname = Utility.getEntityName(target);
+						String targetname = MiscBukkit.getEntityName(target);
 						for (String otherGroup : Settings.advanced.getStringList("combat.restrictions.groups."+group,null)) {
 							if ((target instanceof Player && ((Player)target).hasPermission(prefix+otherGroup)) || 
 									(otherGroup.equalsIgnoreCase("animals") && DamageEventListener.ANIMALS.contains(targetname)) || 

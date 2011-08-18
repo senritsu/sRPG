@@ -5,8 +5,7 @@ import java.util.HashMap;
 import org.bukkit.Material;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByProjectileEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
@@ -15,7 +14,7 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 
 public class CombatInstance {
 	
-	private EntityDamageEvent event;
+	private EntityDamageByEntityEvent event;
 	public ProfileNPC attacker;
 	public ProfileNPC defender;
 	
@@ -38,7 +37,7 @@ public class CombatInstance {
 	private String cancelMessageDefender;
 	public static HashMap<String,Integer> damageTableTools;
 	
-	public CombatInstance(EntityDamageEvent event) {
+	public CombatInstance(EntityDamageByEntityEvent event) {
 		this.event = event;
 		modifier = 0;
 		critChance = 0.0;
@@ -69,15 +68,15 @@ public class CombatInstance {
 		
 		if (attackerHandItem != null) {
 			String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(attackerHandItem);
-			if (toolName != null) {
-				basedamage = damageTableTools.get(toolName);
-			} else if (event instanceof EntityDamageByProjectileEvent && ((EntityDamageByProjectileEvent)event).getProjectile() instanceof Arrow) {
+			if (event.getDamager() instanceof Arrow) {
 				basedamage = damageTableTools.get("bow");
+			} else if (toolName != null) {
+				basedamage = damageTableTools.get(toolName);
 			} else {
 				basedamage = attacker.getStat("damage-unknown-item", 1);
 			}
 		} else {
-			String entityName = Utility.getEntityName(attacker.entity);
+			String entityName = MiscBukkit.getEntityName(attacker.entity);
 			basedamage = attacker.getStat("damage-unarmed", 1);
 			if (entityName.equalsIgnoreCase("creeper")) {
 				basedamage = Math.round(new Double(event.getDamage()*basedamage)/14);
@@ -154,7 +153,7 @@ public class CombatInstance {
 		}
 		
 		SRPG.output("combat damage: "+damage);
-		damage *= Utility.getArmorFactor(defender);
+		damage *= MiscBukkit.getArmorFactor(defender);
 		SRPG.output("combat damage after armor mitigation: "+damage);
 		
 		if (damage > 0 && attacker instanceof ProfilePlayer) {

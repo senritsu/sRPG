@@ -34,24 +34,26 @@ public class ResolverActive {
 				ConfigurationNode node = active.effects.get(effect);
 				
 				if (effect.startsWith("apply-buff")) {
-					if (node.getBoolean("self", true)) {
+					if (node.getBoolean("self", true) && active.validVs(source)) {
 						ResolverEffects.applyBuff(source, node);
 					}
-					if (node.getBoolean("opponent", false)) {
+					if (node.getBoolean("opponent", false) && active.validVs(target)) {
 						ResolverEffects.applyBuff(target, node);
 					}
 				} else if (effect.startsWith("direct-damage")) {
-					if (node.getBoolean("self", false)) {
+					if (node.getBoolean("self", false) && active.validVs(source)) {
 						ResolverEffects.directDamage(source,node, descriptor);
 					}
-					if (node.getBoolean("opponent", false)) {
+					if (node.getBoolean("opponent", false) && active.validVs(target)) {
 						ResolverEffects.directDamage(target,node, descriptor);
 					}
 					
-				} else if (effect.startsWith("block-change")) {
+				} else if (effect.startsWith("change-blocks")) {
 					if (block != null) {
-						ResolverEffects.blockChange(source, block, node, descriptor);
+						ResolverEffects.blockChange(source, block, active.versusMaterials, node, descriptor);
 					}
+				} else if (effect.startsWith("transmute-item")) {
+					ResolverEffects.transmuteItem(source, node, descriptor);
 				}
 			}
 		}

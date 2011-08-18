@@ -1,6 +1,6 @@
 package com.behindthemirrors.minecraft.sRPG.dataStructures;
 
-import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
 
 
 public class EffectDescriptor {
@@ -17,7 +17,7 @@ public class EffectDescriptor {
 	
 	public EffectDescriptor (String signature) {
 		this();
-		this.potency = Utility.parsePotency(signature);
+		this.potency = MiscBukkit.parsePotency(signature);
 	}
 	
 	public EffectDescriptor (Integer duration) {
@@ -28,7 +28,7 @@ public class EffectDescriptor {
 	
 	public EffectDescriptor(String signature, Integer level, Integer maxlevel) {
 		this(level, maxlevel);
-		this.potency = Utility.parsePotency(signature);
+		this.potency = MiscBukkit.parsePotency(signature);
 	}
 	
 	public EffectDescriptor (Integer level, Integer maxlevel) {

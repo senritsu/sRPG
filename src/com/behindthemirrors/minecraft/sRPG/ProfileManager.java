@@ -110,8 +110,9 @@ public class ProfileManager {
 		jobs.addAll(Settings.jobs.keySet());
 		ArrayList<Integer> xp = SRPG.database.getSingleIntRow("jobxp", jobs, "user_id", profile.id);
 		SRPG.output("loaded player xp: "+xp.toString());
-		profile.jobXP = new HashMap<StructureJob, Integer>();
-		profile.jobLevels = new HashMap<StructureJob, Integer>();
+		profile.jobXP.clear();
+		profile.jobAvailability.clear();
+		profile.jobLevels.clear();
 		for (int i=0; i < jobs.size();i++) {
 			StructureJob job = Settings.jobs.get(jobs.get(i));
 			profile.jobXP.put(job, xp.get(i));

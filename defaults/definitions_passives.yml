@@ -57,7 +57,7 @@ snipers-eye:
 invincibility:
   name: Invincibility
   description: 
-  adjective: invincible
+  #adjective: invincible
   effects: 
     set-combat-state:
       as-attacker: false

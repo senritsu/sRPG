@@ -83,7 +83,7 @@ public class PassiveAbility {
 				SRPG.output("chances: "+(new Double(doubleDropChance).toString())+" for double, "+(new Double(tripleDropChance).toString())+" for triple");
 			}
 			
-			ItemStack item = Utility.getNaturalDrops(block);
+			ItemStack item = MiscBukkit.getNaturalDrops(block);
 			if (item != null) {
 				if (roll < tripleDropChance) {
 					item.setAmount(item.getAmount() * 2);

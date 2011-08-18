@@ -263,7 +263,7 @@ public class Database {
     	ArrayList<String> values = new ArrayList<String>();
     	columns.addAll(map.keySet());
     	values.addAll(map.values());
-    	String sql = "INSERT INTO "+tablePrefix+table+" ("+Utility.join(columns, ",")+") VALUES ("+Utility.join(values, ",")+");";
+    	String sql = "INSERT INTO "+tablePrefix+table+" ("+MiscGeneric.join(columns, ",")+") VALUES ("+MiscGeneric.join(values, ",")+");";
     	if (debug) {
     		SRPG.output("insertValues: "+sql);
     	}
@@ -299,7 +299,7 @@ public class Database {
     	for (String entry : columns) {
     		formatted.add(entry+" "+format);
     	}
-    	String sql = "ALTER TABLE "+tablePrefix+table+" ADD ("+Utility.join(formatted,",")+");";
+    	String sql = "ALTER TABLE "+tablePrefix+table+" ADD ("+MiscGeneric.join(formatted,",")+");";
     	return update(sql);
     }
     
@@ -403,7 +403,7 @@ public class Database {
     }
     // key types overloads end
     public ArrayList<String> getSingleRowRaw(String table, ArrayList<String> columns, String keyColumn, String key) {
-    	String sql = "SELECT "+Utility.join(columns, ",")+" FROM "+tablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
+    	String sql = "SELECT "+MiscGeneric.join(columns, ",")+" FROM "+tablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
     	if (debug) {
     		SRPG.output("getSingleRow: "+sql);
     	}

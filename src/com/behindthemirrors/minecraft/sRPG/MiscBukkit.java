@@ -1,14 +1,9 @@
 package com.behindthemirrors.minecraft.sRPG;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Material;
@@ -19,14 +14,12 @@ import org.bukkit.entity.Slime;
 import org.bukkit.entity.Wolf;
 import org.bukkit.inventory.ItemStack;
 
-import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
-import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
 
 
-public class Utility {
+public class MiscBukkit {
 	
 	static HashMap<String,List<Material>> materialAliases = new HashMap<String, List<Material>>();
 	static HashMap<Integer,String> SLIME_SIZES = new HashMap<Integer,String>();
@@ -46,56 +39,8 @@ public class Utility {
 		// initialize slime int size to string mapping
 		String[] sizes = {"small","normal","big","huge"};
 		for (int i=1; i<5;i++) {
-			Utility.SLIME_SIZES.put(i, sizes[i-1]);
+			MiscBukkit.SLIME_SIZES.put(i, sizes[i-1]);
 		}
-	}
-	
-	public static String join(ArrayList<String> list, String delimiter) {
-		StringBuilder str = new StringBuilder();
-		Boolean first = true;
-		for (String entry : list) {
-			if (!first) {
-				str.append(delimiter);
-			} else {
-				first = false;
-			}
-			str.append(entry);
-		}
-		return str.toString();
-	}
-	
-	public static File createDefaultFile(File file, String description, String defaultFileName) {
-        if (!file.exists()) {
-        	new File(file.getParent()).mkdirs();
-            InputStream input = SRPG.class.getResourceAsStream("/defaults/" + defaultFileName);
-            if (input != null) {
-                FileOutputStream output = null;
-                try {
-                    output = new FileOutputStream(file);
-                    byte[] buf = new byte[8192];
-                    int length = 0;
-                    while ((length = input.read(buf)) > 0) {
-                        output.write(buf, 0, length);
-                    }
-                    
-                    SRPG.output("Created " + description);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    SRPG.output("Error creating " + description);
-                } finally {
-                    try {
-                        if (input != null)
-                            input.close();
-                    } catch (IOException e) {}
-
-                    try {
-                        if (output != null)
-                            output.close();
-                    } catch (IOException e) {}
-                }
-            } 
-        }
-        return file;
 	}
 	
 	public static String getEntityName(Entity entity) {
@@ -163,14 +108,6 @@ public class Utility {
 		return item;
 	}
 	
-	public static String repeat(String string, int n) {
-        final StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < n; i++) {
-            sb.append(string);
-        }
-        return sb.toString();
-    }
-	
 	public static ArrayList<String> getChildren(HashMap<String,StructureJob> map, String parent) {
 		ArrayList<String> children = new ArrayList<String>();
 		for (String job : map.keySet()) {
@@ -182,21 +119,6 @@ public class Utility {
 			children.addAll(getChildren(map, child));
 		}
 		return children;
-	}
-	
-	public static void putAll(HashMap<StructurePassive, EffectDescriptor> current, ArrayList<StructurePassive> arrayList, EffectDescriptor value) {
-		for (StructurePassive key : arrayList) {
-			current.put(key, value);
-		}
-	}
-	
-	public static void removeAll(ArrayList<String> list,String item) {
-		Iterator<String> iterator = list.iterator();
-		while (iterator.hasNext()) {
-			if (iterator.next().equals(item)) {
-				iterator.remove();
-			}
-		}
 	}
 	
 	public static String stripPotency(String input) {
@@ -312,5 +234,4 @@ public class Utility {
 		
 		return (1.0 - reworked) / (1.0 - original);
 	}
-	
 }

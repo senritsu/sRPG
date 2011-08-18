@@ -133,7 +133,7 @@ public class Settings {
 	static HashMap<String, HashMap<String, String>> nameReplacements;
 
 	Configuration openConfig(File folder, String name, String description, String defaultFileName) {
-		File file = Utility.createDefaultFile(new File(folder, name+".yml"),description,defaultFileName+".yml");
+		File file = MiscGeneric.createDefaultFile(new File(folder, name+".yml"),description,defaultFileName+".yml");
 		if (file.exists()){
 			Configuration configuration = new Configuration(file);
 			// TODO: add try/catch for .yml parsing errors
@@ -168,12 +168,12 @@ public class Settings {
 			
 			// create plugin default locale file
 			for (String name : new String[] {"EN"}) {
-				Utility.createDefaultFile(new File(new File(dataFolder,"locales"),name+".yml"), "'"+name+"' locale settings", "locale"+name+".yml");
+				MiscGeneric.createDefaultFile(new File(new File(dataFolder,"locales"),name+".yml"), "'"+name+"' locale settings", "locale"+name+".yml");
 			}
 			// create plugin default difficulties
 			for (String name : new String[] {"default","original"}) {
-				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+".yml"), "'"+name+"' difficulty settings", "difficulty_"+name+".yml");
-				Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+"_mobs.yml"), "'"+name+"' mob settings", "definitions_mobs_"+name+".yml");
+				MiscGeneric.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+".yml"), "'"+name+"' difficulty settings", "difficulty_"+name+".yml");
+				MiscGeneric.createDefaultFile(new File(new File(dataFolder,"difficulties"),name+"_mobs.yml"), "'"+name+"' mob settings", "definitions_mobs_"+name+".yml");
 			}
 			
 			for (String locale : availableLocales) {
@@ -182,7 +182,7 @@ public class Settings {
 				if (!file.exists()){
 					SRPG.output("Error loading locale '"+locale+"', initializing from EN");
 					// create copy of EN for specified locale if no file is present
-					file = Utility.createDefaultFile(new File(new File(dataFolder,"locales"),locale+".yml"), "'"+locale+"' locale settings", "locale_EN.yml");
+					file = MiscGeneric.createDefaultFile(new File(new File(dataFolder,"locales"),locale+".yml"), "'"+locale+"' locale settings", "locale_EN.yml");
 				}
 				// disable plugin if file could not be created or opened
 				if (!file.exists()) {
@@ -240,7 +240,7 @@ public class Settings {
 			if (!file.exists()){
 				SRPG.output("Error loading settings for difficulty '"+difficulty+"', initializing from default");
 				// create copy of default settings for specified difficulty name if no file is present
-				file = Utility.createDefaultFile(new File(new File(dataFolder,"difficulties"),difficulty+".yml"), "'"+difficulty+"' difficulty settings", "difficulty_default.yml");
+				file = MiscGeneric.createDefaultFile(new File(new File(dataFolder,"difficulties"),difficulty+".yml"), "'"+difficulty+"' difficulty settings", "difficulty_default.yml");
 			}
 			// disable plugin if file could not be created or opened
 			if (!file.exists()) {
@@ -309,14 +309,14 @@ public class Settings {
 				for (String name : passiveDefinitions.getKeys()) {
 					passives.put(name, new StructurePassive(name,passiveDefinitions.getNode(name)));
 				}
-				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.passive"),passives.size()));
+				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.passive"),passives.size()));
 				
 				// load ability definitions
 				actives = new HashMap<String, StructureActive>();
 				for (String name : activeDefinitions.getKeys()) {
 					actives.put(name, new StructureActive(name,activeDefinitions.getNode(name)));
 				}
-				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.active"),actives.size()));
+				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.active"),actives.size()));
 				
 				// load job definitions
 				jobs = new HashMap<String, StructureJob>();
@@ -339,7 +339,7 @@ public class Settings {
 					for (StructureJob job : jobs.get(name).prerequisites.keySet()) {
 						if (!jobs.containsKey(job.signature)) {
 							deactivate.add(name);
-							deactivate.addAll(Utility.getChildren(jobs, name));
+							deactivate.addAll(MiscBukkit.getChildren(jobs, name));
 							break;
 						}
 					}
@@ -363,15 +363,15 @@ public class Settings {
 				}
 				
 				// status report
-				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),jobs.size()));
+				SRPG.output("loaded "+(new Integer(jobs.size())).toString()+" "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),jobs.size()));
 				if (deactivate.size() > 0) {
-					SRPG.output((new Integer(deactivate.size())).toString()+" "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
+					SRPG.output((new Integer(deactivate.size())).toString()+" "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"),deactivate.size())+" could not be loaded due to missing prerequisites");
 				}
 				if (jobs.isEmpty()) {
-					SRPG.output(Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"), 1)+" tree is empty!");
+					SRPG.output(MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"), 1)+" tree is empty!");
 					disable = true;
 				} else if (initialJobs.isEmpty()) {
-					SRPG.output("No "+Utility.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"), 1)+" without prerequisites available in the job tree!");
+					SRPG.output("No "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.job"), 1)+" without prerequisites available in the job tree!");
 					disable = true;
 				}
 			}

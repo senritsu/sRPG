@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockCanBuildEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
 
@@ -36,27 +37,31 @@ public class CascadeQueue implements Runnable {
 					} 
 					// drop items
 					if (!canceled && descriptor.drop) { 
-						ItemStack item = Utility.getNaturalDrops(block);
+						ItemStack item = MiscBukkit.getNaturalDrops(block);
 						if (item != null) {
 							block.getWorld().dropItemNaturally(block.getLocation(),item);
 						}
 					}
+				} else if (block.getType() == Material.AIR && descriptor.targetState.getType() != Material.AIR) {
+					BlockCanBuildEvent event = new BlockCanBuildEvent(block,descriptor.targetState.getTypeId(),true);
+					SRPG.pm.callEvent(event);
+					canceled = !event.isBuildable();
 				}
 				// change block
 				if (!canceled) {
-					descriptor.targetState.update(descriptor.force);
-				
 					if (descriptor.revert) {
 						// add reverse change state
 						BlockChangeDescriptor revertDescriptor = new BlockChangeDescriptor(block.getState(),descriptor.ticksToRevert);
-						revertDescriptor.force = false;
+						revertDescriptor.force = true;
 						additions.add(revertDescriptor);
 						if (descriptor.protect) {
 							protectedBlocks.add(block);
 						}
 					}
+					
+					descriptor.targetState.update(descriptor.force);
 				}
-				if (protectedBlocks.contains(block)) {
+				if (!descriptor.revert && protectedBlocks.contains(block)) {
 					protectedBlocks.remove(block);
 				}
 				iterator.remove();

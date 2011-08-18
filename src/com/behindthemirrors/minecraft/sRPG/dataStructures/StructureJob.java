@@ -8,8 +8,9 @@ import java.util.Map;
 
 import org.bukkit.util.config.ConfigurationNode;
 
+import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
-import com.behindthemirrors.minecraft.sRPG.Utility;
+import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
 
 
 public class StructureJob implements Comparable<StructureJob> {
@@ -65,7 +66,7 @@ public class StructureJob implements Comparable<StructureJob> {
 		for (String trait : root.getStringList("traits",new ArrayList<String>())) {
 			// TODO: make NPE safe
 			EffectDescriptor descriptor = new EffectDescriptor(trait,0,maximumLevel);
-			traits.put(Settings.passives.get(Utility.stripPotency(trait)),descriptor);
+			traits.put(Settings.passives.get(MiscBukkit.stripPotency(trait)),descriptor);
 		}
 		
 		passives = new HashMap<Integer, HashMap<StructurePassive,EffectDescriptor>>();
@@ -76,7 +77,11 @@ public class StructureJob implements Comparable<StructureJob> {
 				for (String passive : root.getStringList("passives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
 					EffectDescriptor descriptor = new EffectDescriptor(passive,0,maximumLevel);
-					passives.get(level).put(Settings.passives.get(Utility.stripPotency(passive)), descriptor);
+					if (Settings.passives.containsKey(MiscBukkit.stripPotency(passive))) {
+						passives.get(level).put(Settings.passives.get(MiscBukkit.stripPotency(passive)), descriptor);
+					} else {
+						SRPG.output("Job "+name+" tried to load passive "+passive+" which is not available");
+					}
 				}
 			}
 		}
@@ -89,7 +94,7 @@ public class StructureJob implements Comparable<StructureJob> {
 				for (String active : root.getStringList("actives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
 					EffectDescriptor descriptor = new EffectDescriptor(active,0,maximumLevel);
-					actives.get(level).put(Settings.actives.get(Utility.stripPotency(active)),descriptor);
+					actives.get(level).put(Settings.actives.get(MiscBukkit.stripPotency(active)),descriptor);
 				}
 			}
 		}
