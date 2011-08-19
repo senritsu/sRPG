@@ -20,6 +20,7 @@ public class CascadeQueue implements Runnable {
 	public ArrayList<Block> protectedBlocks = new ArrayList<Block>();
 	
 	public void run() {
+		
 		ArrayList<BlockChangeDescriptor> additions = new ArrayList<BlockChangeDescriptor>();
 		Iterator<BlockChangeDescriptor> iterator = queue.iterator();
 		while (iterator.hasNext()) {

@@ -227,7 +227,6 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public void validateActives(Material material) {
-		SRPG.output("recalculating actives for "+material.toString());
 		validActives.clear();
 		for (StructureActive active : actives.keySet()) {
 			if (active.validMaterials.isEmpty() || active.validMaterials.contains(material)) {
@@ -235,7 +234,6 @@ public class ProfilePlayer extends ProfileNPC {
 			}
 		}
 		Collections.sort(validActives);
-		SRPG.output(validActives.toString());
 	}
 	
 	public void validateActives() {

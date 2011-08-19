@@ -52,33 +52,53 @@ public class MiscGeometric {
 			return MiscGeometric.angleToCardinalFace(entity.getLocation());
 		}
 	}
-
+	
 	public static BlockFace angleToCardinalFace(Location location) {
-		double pitch = -location.getPitch();
+		double pitch = location.getPitch();
 		BlockFace facing = null;
 		SRPG.output("pitch: "+pitch);
-		if (false && pitch <= -45) {
-			facing = BlockFace.DOWN;
-		} else if (false && pitch >= 45) {
+		if (pitch <= -30) {
 			facing = BlockFace.UP;
+		} else if (pitch >= 60) {
+			facing = BlockFace.DOWN;
 		} else {
-			double yaw = (location.getYaw() - 90) % 360;
+			double yaw = location.getYaw() % 360;
 			if (yaw < 0) {
 				yaw += 360.0;
-			}
-			if (yaw <= 45) {
-				facing = BlockFace.NORTH;
-			} else if (yaw <= 135) {
-				facing = BlockFace.EAST;
-			} else if (yaw <= 225) {
-				facing = BlockFace.SOUTH;
-			} else if (yaw <= 315) {
-				facing = BlockFace.WEST;
-			} else {
-				facing = BlockFace.NORTH;
 			} 
+			if (yaw <= 45) {
+				facing = BlockFace.WEST;
+			} else if (yaw <= 135) {
+				facing = BlockFace.NORTH;
+			} else if (yaw <= 225) {
+				facing = BlockFace.EAST;
+			} else if (yaw <= 315) {
+				facing = BlockFace.SOUTH;
+			} else {
+				facing = BlockFace.WEST;
+			}
 		}
 		return facing;
+	}
+	
+	public static ArrayList<Integer> relativeOffset (ArrayList<Integer> offset, BlockFace facing) {
+		ArrayList<Integer> newOffset = new ArrayList<Integer>();
+		if (facing == BlockFace.SOUTH) {
+			newOffset.add(-offset.get(2));
+			newOffset.add(offset.get(1));
+			newOffset.add(offset.get(0));
+		} else if (facing == BlockFace.WEST) {
+			newOffset.add(-offset.get(0));
+			newOffset.add(offset.get(1));
+			newOffset.add(-offset.get(2));
+		} else if (facing == BlockFace.NORTH) {
+			newOffset.add(offset.get(2));
+			newOffset.add(offset.get(1));
+			newOffset.add(-offset.get(0));
+		} else {
+			newOffset = offset;
+		}
+		return newOffset;
 	}
 	
 	public static BlockFace relativeFacing(String direction, LivingEntity entity) {
@@ -87,7 +107,9 @@ public class MiscGeometric {
 	
 	public static BlockFace relativeFacing(BlockFace facing, BlockFace relativeTo) {
 		SRPG.output("trying to get relative facing: "+facing.toString()+" > "+relativeTo.toString());
-		if (!orderedFaces.contains(facing) || !orderedFaces.contains(relativeTo)) {
+		if (relativeTo == BlockFace.UP || relativeTo == BlockFace.DOWN) {
+			return relativeTo;
+		} else if (!orderedFaces.contains(facing) || !orderedFaces.contains(relativeTo)) {
 			return facing;
 		}
 		return orderedFaces.get((orderedFaces.indexOf(facing)+orderedFaces.indexOf(relativeTo))%orderedFaces.size());

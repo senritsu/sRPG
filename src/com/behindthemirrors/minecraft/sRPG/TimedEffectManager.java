@@ -28,7 +28,7 @@ public class TimedEffectManager implements Runnable {
 				EffectDescriptor descriptor = entry.getValue();
 				if (descriptor.duration > 0) {
 					descriptor.duration--;
-					ResolverPassive.tick(profile,passive,descriptor);
+					ResolverPassive.resolve(profile,passive,descriptor);
 				} else {
 					if (debug) {
 						SRPG.output("effect "+passive.name+" expired");

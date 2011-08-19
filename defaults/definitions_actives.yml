@@ -1,21 +1,21 @@
 # broadcast-ranges can be any positive float to specify a distance in blocks, empty or 0 to not broadcast anything, -1 for worldwide broadcast, and -2 for serverwide broadcast
 
 dummy1:
-  name: Dummy Ability 1
+  name: Dummy Ability 1 (buff)
   effects:
     apply-buff:
       name: invincibility
       duration: 5
   
 dummy2:
-  name: Dummy Ability 2
+  name: Dummy Ability 2 (buff)
   effects:
     apply-buff:
       name: rage
       duration: 5
   
 dummy3:
-  name: Dummy Ability 3 (sword only)
+  name: Dummy Ability 3 (sword attack)
   tools: [swords]
   combat: true
   effects:
@@ -28,7 +28,6 @@ dummy3:
 dummy4:
   name: Dummy Ability 4 (destroy)
   tools: [shovels]
-  versus: [DIRT,GRASS]
   effects:
     change-blocks:
       shape: line
@@ -37,18 +36,20 @@ dummy4:
       block-delay: 2
       relative: true
       direction: forward
+      whitelist: [DIRT,GRASS]
 
 dummy5:
-  name: Dummy Ability 5 (create)
+  name: Dummy Ability 5 (growth)
   tools: [shovels]
+  versus: [STONE]
   effects:
     change-blocks:
       change-to: STONE
       shape: cross2D
-      length: 3
+      length: 2
       #cascade-parts: true
       cascade-blocks: true
-      part-delay: 5
+      #part-delay: 5
       block-delay: 2
       direction: forward
       relative: true
@@ -63,12 +64,105 @@ dummy6:
       change-to: DIRT
       shape: line
       length: 10
-      #cascade-blocks: true
+      cascade-blocks: true
+      revert-as: lifo
       block-delay: 1
       relative: true
       direction: forward
       temporary: true
       duration: 60
+      protect: true
+    change-blocks1:
+      offset: [-1,0,0]
+      delay: 40
+      change-to: DIRT
+      shape: line
+      length: 10
+      cascade-blocks: true
+      revert-as: lifo
+      block-delay: 1
+      relative: true
+      direction: forward
+      temporary: true
+      duration: 60
+      protect: true
+
+dummy7:
+  name: Dummy Ability 7 (impulse)
+  tools: [AIR]
+  effects:
+    impulse:
+      y: 1
+      z: 5
+      self: true
+
+dummy8:
+  name: Dummy Ability 8 (impulse)
+  tools: [AIR]
+  effects:
+    impulse:
+      #yaw: -90
+      pitch: 11
+      force: 5
+      use-y-p-f: true
+      self: true
+
+dummy9:
+  name: Dummy Ability 9 (ritual)
+  tools: [pickaxes]
+  versus: []
+  effects:
+    change-blocks:
+      offset: [2,0,2]
+      delay: 40
+      change-to: OBSIDIAN
+      shape: line
+      length: 5
+      cascade-blocks: true
+      revert-as: lifo+
+      block-delay: 3
+      direction: up
+      temporary: true
+      duration: 100
+      protect: true
+    change-blocks1:
+      offset: [2,0,-2]
+      delay: 40
+      change-to: OBSIDIAN
+      shape: line
+      length: 5
+      cascade-blocks: true
+      revert-as: lifo
+      block-delay: 3
+      direction: up
+      temporary: true
+      duration: 100
+      protect: true
+    change-blocks2:
+      offset: [-2,0,-2]
+      delay: 40
+      change-to: OBSIDIAN
+      shape: line
+      length: 5
+      cascade-blocks: true
+      revert-as: lifo+
+      block-delay: 3
+      direction: up
+      temporary: true
+      duration: 100
+      protect: true
+    change-blocks3:
+      offset: [-2,0,2]
+      delay: 40
+      change-to: OBSIDIAN
+      shape: line
+      length: 5
+      cascade-blocks: true
+      revert-as: lifo
+      block-delay: 3
+      direction: up
+      temporary: true
+      duration: 100
       protect: true
 
 improvised-arrows:

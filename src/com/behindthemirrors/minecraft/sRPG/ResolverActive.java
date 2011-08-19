@@ -50,10 +50,17 @@ public class ResolverActive {
 					
 				} else if (effect.startsWith("change-blocks")) {
 					if (block != null) {
-						ResolverEffects.blockChange(source, block, active.versusMaterials, node, descriptor);
+						ResolverEffects.blockChange(source, block, node, descriptor);
 					}
 				} else if (effect.startsWith("transmute-item")) {
 					ResolverEffects.transmuteItem(source, node, descriptor);
+				} else if (effect.startsWith("impulse")) {
+					if (node.getBoolean("self", false) && active.validVs(source)) {
+						ResolverEffects.impulse(source,node, descriptor);
+					}
+					if (node.getBoolean("opponent", false) && active.validVs(target)) {
+						ResolverEffects.impulse(target,node, descriptor);
+					}
 				}
 			}
 		}

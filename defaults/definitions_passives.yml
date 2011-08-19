@@ -25,6 +25,13 @@
 # 
 #################################################################################
 
+passive1:
+  name: Passive Dummy 1 (backstab)
+  effects:
+    set-combat-state:
+      conditions: [backstab-offensive]
+      crit: true
+
 ###############
 # JOB BONUSES #
 ###############
@@ -108,7 +115,7 @@ poisoned-arrows:
   name: Poisoned Arrows
   description: 
   effects:
-    trigger:
+    trigger-active:
       chance: 0.5
       action: apply-poison
       conditions: [combat-offensive]

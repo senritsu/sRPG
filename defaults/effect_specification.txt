@@ -10,6 +10,7 @@ special fields:
   'versus' (same as tools) specifies the tools or blocks onto which the effect works, either as a environmental block (for drop chances for example) or the opponents hand item (for combat-related effects)
   'level-based' (string list) can reference other (numerical) nodes of the effect to only use the percentage of the given value corresponding to currentlevel divided by maxlevel
   'inherited' (boolean, defaults to false) specifies if the effect is inheritable 
+  'conditions' (string list, can have: attacking, defending, backstab-offensive, backstab-defensive, highground-offensive, highground-defensive)
   'as-attacker' (boolean, defaults to true) makes the effect available in combat as the attacker
   'as-defender' (boolean, defaults to false) makes the effect available in combat as the defender
   'self' (boolean, defaults vary) makes the effect act on the user
@@ -24,12 +25,12 @@ special fields:
   notes: names can be preceeded by 'anti-' to be inversely applied to the opponent if possible (for example anti-evasion to reduce an opponents chance of evasion), in case of extradrop-chance the rarity can be anything specified in the advanced configuration
   
 'set-combat-state'
-  can be used for: passive, bonus
+  can be used for: active, passive, bonus
   optional nodes: as-attacker, as-defender, tools, versus, chance, crit (boolean), evaded (boolean), parried (boolean), canceled (boolean)
   
-'trigger'
+'trigger-active'
   can be used for: passive, bonus
-  required nodes: action (string, refers to any active), conditions (string list, can have: combat-offensive, combat-defensive)
+  required nodes: action (string, refers to any active)
   optional nodes: chance, tools, versus
 
 'apply-buff'
@@ -55,7 +56,7 @@ special fields:
 'change-blocks'
   can be used for: active
   required nodes: change-to (string, any material id or name, defaults to AIR / destroy block)
-  optional nodes: delay (int), temporary (boolean), duration (int, only for temporary), protect (boolean, only for temporary), drop (boolean, only for change-to == AIR), event (boolean, break event for change-to == AIR, place event otherwise)
+  optional nodes: delay (int), temporary (boolean), duration (int, only for temporary), revert-as (String, only for temporary, can be: lifo, lifo+, instant, random), protect (boolean, only for temporary), drop (boolean, only for change-to == AIR), event (boolean, break event for change-to == AIR, place event otherwise), whitelist (string list, see tools), blacklist (string list, see tools)
   shape nodes: shape (String, one of: line, cross2D, cross3D), length (int), cascade-parts (boolean), cascade-blocks (boolean), part-delay (int), block-delay (int), relative (boolean), direction (String, one of: up,down,forward,back,left,right,east,west,north,south)
 
 'manipulate-item' # not yet implemented
@@ -71,7 +72,7 @@ special fields:
   optional nodes: consume-all (boolean, uses up all items in from list, not only the one held in hand or one chosen at random), random-result (boolean, creates only one of the results in the to list, not all of them)
   
 'impulse' # not yet implemented
-  optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), force (float, rescales x,y,z), add (boolean)
+  optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), use-y-p-f (boolean), yaw (float), pitch (float), force (float), add (boolean, add to current vector)
   
 'teleport' # not yet implemented
   optional nodes: x (float), y (float), z (float), relative (boolean), self (boolean, defaults to false), opponent (boolean, defaults to true), max-range (float), max-range-horizontal (float), max-range-vertical (float), max-range-blocks (integer), trace-line (boolean), transparent (string list, see tools, by default only air is transparent, only has effect if trace-line is true), safe-teleport (boolean, default true, if false may land inside solid ground)

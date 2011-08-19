@@ -31,6 +31,8 @@ public class CombatInstance {
 	boolean miss = false;
 	boolean evade = false;
 	boolean parry = false;
+	boolean backstab = false;
+	ProfileNPC highground = null;
 	private boolean canceled = false;
 	
 	private String cancelMessageAttacker;
@@ -57,7 +59,15 @@ public class CombatInstance {
 	}
 	
 	public void resolve() {
-		PassiveAbility.trigger(this);
+		if (Math.abs(attacker.entity.getLocation().getYaw() - defender.entity.getLocation().getYaw()) < 30) {
+			backstab = true;
+		}
+		double heightdifference = attacker.entity.getLocation().getY() - defender.entity.getLocation().getY();
+		if (heightdifference >= 3) {
+			highground = attacker;
+		} else if (heightdifference <= -3) {
+			highground = defender;
+		}
 		Material attackerHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
 		Material defenderHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
 		
@@ -105,7 +115,7 @@ public class CombatInstance {
 		
 		SRPG.output("triggering resolver");
 		SRPG.output(attacker.passives.toString());
-		ResolverPassive.trigger(this);
+		ResolverPassive.resolve(this);
 		if (attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).activate(this, defenderHandItem);
 		}
