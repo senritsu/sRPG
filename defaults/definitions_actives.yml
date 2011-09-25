@@ -30,27 +30,30 @@ dummy4:
   tools: [shovels]
   effects:
     change-blocks:
-      shape: line
-      length: 4
+      shape: sphere
+      ignore: [up]
+      length: 3
       cascade-blocks: true
       block-delay: 2
       relative: true
-      direction: forward
+      direction: up
       whitelist: [DIRT,GRASS]
 
 dummy5:
   name: Dummy Ability 5 (growth)
   tools: [shovels]
   versus: [STONE]
+  range: 50
   effects:
     change-blocks:
       change-to: STONE
-      shape: cross2D
-      length: 2
-      #cascade-parts: true
-      cascade-blocks: true
-      #part-delay: 5
-      block-delay: 2
+      shape: sphere
+      length: 4
+      ignore: [right,forward,down]
+      cascade-parts: true
+      #cascade-blocks: true
+      part-delay: 5
+      #block-delay: 2
       direction: forward
       relative: true
       
@@ -65,7 +68,7 @@ dummy6:
       shape: line
       length: 10
       cascade-blocks: true
-      revert-as: lifo
+      revert-mode: lifo
       block-delay: 1
       relative: true
       direction: forward
@@ -79,7 +82,7 @@ dummy6:
       shape: line
       length: 10
       cascade-blocks: true
-      revert-as: lifo
+      revert-mode: lifo
       block-delay: 1
       relative: true
       direction: forward
@@ -119,7 +122,7 @@ dummy9:
       shape: line
       length: 5
       cascade-blocks: true
-      revert-as: lifo+
+      revert-mode: lifo+
       block-delay: 3
       direction: up
       temporary: true
@@ -132,7 +135,7 @@ dummy9:
       shape: line
       length: 5
       cascade-blocks: true
-      revert-as: lifo
+      revert-mode: lifo
       block-delay: 3
       direction: up
       temporary: true
@@ -145,7 +148,7 @@ dummy9:
       shape: line
       length: 5
       cascade-blocks: true
-      revert-as: lifo+
+      revert-mode: lifo+
       block-delay: 3
       direction: up
       temporary: true
@@ -158,12 +161,33 @@ dummy9:
       shape: line
       length: 5
       cascade-blocks: true
-      revert-as: lifo
+      revert-mode: lifo
       block-delay: 3
       direction: up
       temporary: true
       duration: 100
       protect: true
+
+dummy10:
+  name: Dummy Ability 10 (lightning barrage)
+  tools: [swords]
+  effects:
+    lightning:
+      relative: true
+      offset: [0,0,-2]
+      delay: 10
+    lightning1:
+      relative: true
+      offset: [0,0,-4]
+      delay: 20
+    lightning2:
+      relative: true
+      offset: [0,0,-6]
+      delay: 30
+    lightning3:
+      relative: true
+      offset: [0,0,-8]
+      delay: 40
 
 improvised-arrows:
   name: Improvised Arrows

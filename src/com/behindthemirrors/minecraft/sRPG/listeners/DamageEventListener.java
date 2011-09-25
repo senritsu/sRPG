@@ -26,8 +26,6 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 
 public class DamageEventListener extends EntityListener {
 	
-	static boolean debug = false;
-	
 	private HashMap<Integer,Player> damageTracking = new HashMap<Integer,Player>();
 
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
@@ -35,11 +33,14 @@ public class DamageEventListener extends EntityListener {
 	
 	@Override
 	public void onEntityDamage(EntityDamageEvent event) {
+		if (!(event.getEntity() instanceof LivingEntity || Settings.worldBlacklist.contains(event.getEntity().getWorld()))) {
+			return;
+		}
 		LivingEntity source = null;
 		LivingEntity target = (LivingEntity)event.getEntity();
 		
-		if (debug && target instanceof Player && event.getCause() != DamageCause.FIRE_TICK&& event.getCause() != DamageCause.FIRE) {
-			SRPG.output("player damaged by "+event.getCause().name()+" ("+event.getDamage()+" damage)");
+		if (target instanceof Player && event.getCause() != DamageCause.FIRE_TICK&& event.getCause() != DamageCause.FIRE) {
+			SRPG.dout("player damaged by "+event.getCause().name()+" ("+event.getDamage()+" damage)", "combat");
 		}
 		
 //		if (event.getCause() != DamageCause.SUFFOCATION && event.getCause() != DamageCause.FIRE_TICK && event.getCause() != DamageCause.FIRE && event.getCause() != DamageCause.LAVA) {
@@ -53,25 +54,23 @@ public class DamageEventListener extends EntityListener {
 		
 		if (event.getCause() == DamageCause.FALL) {
 			if (target instanceof Player) {
-				PassiveAbility.trigger(event);
+				PassiveAbility.trigger(event); //TODO: change to new system
 			}
-		} else if (event instanceof EntityDamageByEntityEvent) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+		} else if (event instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent)event).getDamager() instanceof LivingEntity) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
 			EntityDamageByEntityEvent attackEvent = (EntityDamageByEntityEvent)event;
 			CombatInstance combat = new CombatInstance(attackEvent);
 			
 			// debug message
 			if (source instanceof Player) {
 				// debug message, displays remaining health of target before damage from this attack is applied
-				if (debug) {
-					SRPG.output("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.");
-				}
+				SRPG.dout("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.","combat");
 			}
 			if (attackEvent.getDamager() instanceof LivingEntity) {
 				source = (LivingEntity)attackEvent.getDamager();
-				SRPG.output("entity attack");
+				SRPG.dout("entity attack","combat");
 			} else if (attackEvent.getDamager() instanceof Projectile) {
 				source = ((Projectile)attackEvent.getDamager()).getShooter();
-				SRPG.output("projectile attack");
+				SRPG.dout("projectile attack","combat");
 			}
 			
 			// check attack restrictions
@@ -95,26 +94,20 @@ public class DamageEventListener extends EntityListener {
 					}
 				}
 				if (forbidden) {
-					if (debug) {
-						SRPG.output("combat canceled because of combat restrictions");
-					}
+					SRPG.dout("combat canceled because of combat restrictions","combat");
 					combat.cancel();
 				}
 			}
 			
 			// resolve combat
 			combat.resolve();
-			if (debug) {
-				SRPG.output("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString());
-			}
+			SRPG.dout("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString(),"combat");
 			
 			// track entity if damage source was player, for xp gain on kill
 			if (!(target instanceof Player) && !event.isCancelled() && event.getDamage() > 0) {
 				int id = target.getEntityId();
 				if (source instanceof Player) {
-					if (debug) {
-						SRPG.output("id of damaged entity: "+event.getEntity().getEntityId());
-					}
+					SRPG.dout("id of damaged entity: "+event.getEntity().getEntityId(),"combat");
 					damageTracking.put(id, (Player)source);
 				} else if (damageTracking.containsKey(id)) {
 					damageTracking.remove(id);
@@ -125,10 +118,10 @@ public class DamageEventListener extends EntityListener {
 		// override standard health change for players to enable variable maximum hp
 		boolean deactivated = true; // not production ready yet
 		if (!deactivated && !event.isCancelled() && target instanceof Player && SRPG.profileManager.profiles.containsKey((Player)target)) {
-			SRPG.output("overriding damage routine");
+			SRPG.dout("overriding damage routine","combat");
 			Player player = (Player)target;
 			ProfilePlayer profile = SRPG.profileManager.get(player);
-			SRPG.output(profile.hp.toString());
+			SRPG.dout(profile.hp.toString(),"combat");
 			profile.hp -= event.getDamage();
 			if (profile.hp < 0) {
 				profile.hp = 0;
@@ -137,14 +130,15 @@ public class DamageEventListener extends EntityListener {
 			if (normalized == 0 && profile.hp != 0) {
 				normalized = 1;
 			}
-			if (debug) {
-				SRPG.output("player health changed to "+profile.hp+"/"+profile.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
-			}
+			SRPG.dout("player health changed to "+profile.hp+"/"+profile.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized","combat");
 			event.setDamage(player.getHealth() - normalized);
 		}
 	}
 	
 	public void onEntityRegainHealth(EntityRegainHealthEvent event) {
+		if (Settings.worldBlacklist.contains(event.getEntity().getWorld())) {
+			return;
+		}
 		// override standard health change for players to enable variable maximum hp
 		boolean deactivated = true; // not production ready yet
 		if (!deactivated && !event.isCancelled() && event.getEntity() instanceof Player && SRPG.profileManager.profiles.containsKey((Player)event.getEntity())) {
@@ -156,28 +150,25 @@ public class DamageEventListener extends EntityListener {
 			if (normalized == 0 && profile.hp != 0) {
 				normalized = 1;
 			}
-			if (debug) {
-				SRPG.output("player health changed to "+profile.hp+"/"+profile.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized");
-			}
+			SRPG.dout("player health changed to "+profile.hp+"/"+profile.hp_max+" ("+player.getHealth()+" to "+normalized+" normalized","combat");
 			event.setAmount(normalized - player.getHealth());
 		}
 	}
 	
 	// check if entity was tracked, and if yes give the player who killed it xp
 	public void onEntityDeath (EntityDeathEvent event) {
+		if (Settings.worldBlacklist.contains(event.getEntity().getWorld())) {
+			return;
+		}
 		if (!(event.getEntity() instanceof LivingEntity)) {
 			return;
 		}
 		LivingEntity entity = (LivingEntity)event.getEntity();
 		int id = entity.getEntityId();
-		if (debug) {
-			SRPG.output("entity with id "+id+" died");
-		}
+		SRPG.dout("entity with id "+id+" died","death");
 		if (damageTracking.containsKey(id)) {
 			ProfileNPC profile = SRPG.profileManager.get(entity);
-			if (debug) {
-				SRPG.output("giving player"+damageTracking.get(id)+" xp");
-			}
+			SRPG.dout("giving player"+damageTracking.get(id)+" xp","death");
 			try {
 				SRPG.profileManager.get(damageTracking.get(id)).addXP((int) profile.getStat("xp"));
 			} catch (NullPointerException ex) {

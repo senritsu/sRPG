@@ -15,10 +15,8 @@ import org.bukkit.entity.Player;
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
 import com.behindthemirrors.minecraft.sRPG.Messager;
 import com.behindthemirrors.minecraft.sRPG.MiscGeneric;
-import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
-import com.behindthemirrors.minecraft.sRPG.TimedEffectManager;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
@@ -58,6 +56,9 @@ public class CommandListener implements CommandExecutor {
 				// get info about a skill or increase it
 				// TODO find NPE
 				} else if (args.length >= 3 && (args[0]+" "+args[1]).equalsIgnoreCase("change to")) {
+					if (Settings.worldBlacklist.contains(player.getWorld())) {
+						Messager.sendMessage(player,"disabled-world");
+					}
 					// TODO: accommodate for names with spaces
 					String name = MiscGeneric.join(new ArrayList<String>(new ArrayList<String>(Arrays.asList(args)).subList(2, args.length)), " ");
 					StructureJob job = Settings.jobs.get(Settings.JOB_ALIASES.get(profile.locale).containsKey(name) ? 
@@ -82,6 +83,21 @@ public class CommandListener implements CommandExecutor {
 						Messager.sendMessage(player,"job-not-available");
 					}
 					return true;
+				} else if (args[0].equalsIgnoreCase("stats")) {
+					ArrayList<String> words = new ArrayList<String>();
+					words.add("bla");
+					words.add("very long word");
+					words.add("foobar = 42");
+					ArrayList<Integer> tabpoints = new ArrayList<Integer>();
+					tabpoints.add(90);
+					tabpoints.add(90);
+					tabpoints.add(90);
+					ArrayList<String> words2 = new ArrayList<String>();
+					words2.add("laaawl");
+					words2.add("some other word");
+					words2.add("rage");
+					player.sendMessage(Messager.columnize(words, tabpoints));
+					player.sendMessage(Messager.columnize(words2, tabpoints));
 				} else if (args[0].equalsIgnoreCase("info")) {
 					String name = null;
 					if (args.length >= 2) {
@@ -125,30 +141,6 @@ public class CommandListener implements CommandExecutor {
 			if (command.getName().equals("srpg")) {
 				// toggle debug messages
 				if (args.length >= 2 && args[0].equalsIgnoreCase("debug")) {
-					// display debug messages from spawn listener
-					if (args[1].equalsIgnoreCase("spawn")) {
-						SpawnEventListener.debug = !SpawnEventListener.debug;
-						SRPG.output("spawn debugging set to "+SpawnEventListener.debug);
-						return true;
-					}
-					// display debug messages from combat listener 
-					if (args[1].equalsIgnoreCase("combat")) {
-						DamageEventListener.debug = !DamageEventListener.debug;
-						SRPG.output("combat debugging set to "+DamageEventListener.debug);
-						return true;
-					}
-					if (args[1].equalsIgnoreCase("effects")) {
-						TimedEffectManager.debug = !TimedEffectManager.debug;
-						ResolverPassive.debug = !ResolverPassive.debug;
-						SRPG.output("effect debugging set to "+ResolverPassive.debug);
-						return true;
-					}
-					// display debug messages from combat listener 
-					if (args[1].equalsIgnoreCase("player")) {
-						ProfilePlayer.debug = !ProfilePlayer.debug;
-						SRPG.output("player debugging set to "+ProfilePlayer.debug);
-						return true;
-					}
 					// remove item stacks if something was incorrectly dropped
 					if (args[1].equalsIgnoreCase("removeitems")) {
 						for (Entity entity : SRPG.plugin.getServer().getWorlds().get(0).getEntities()) {
@@ -158,10 +150,18 @@ public class CommandListener implements CommandExecutor {
 						}
 						SRPG.output("removed all items");
 						return true;
-					}
-					if (args[1].equalsIgnoreCase("spawninvincible")) {
+					} else if (args[1].equalsIgnoreCase("spawninvincible")) {
 						SpawnEventListener.spawnInvincible = !SpawnEventListener.spawnInvincible;
 						SRPG.output("spawn invincibility set to "+(new Boolean(SpawnEventListener.spawnInvincible).toString()));
+						return true;
+					} else {
+						if (!SRPG.debugmodes.contains(args[1])) {
+							SRPG.debugmodes.add(args[1]);
+							SRPG.output("added "+args[1]+" to debugmodes");
+						} else {
+							SRPG.debugmodes.remove(args[1]);
+							SRPG.output("removed '"+args[1]+"' from debugmodes");
+						}
 						return true;
 					}
 				} else if (args.length >= 2 && args[0].equalsIgnoreCase("list")) {
@@ -170,7 +170,7 @@ public class CommandListener implements CommandExecutor {
 						Iterator<Map.Entry<String,Integer>> pairs = CombatInstance.damageTableTools.entrySet().iterator();
 						while (pairs.hasNext()) {
 							Map.Entry<String,Integer>pair = pairs.next();
-							SRPG.output(pair.getKey()+": "+pair.getValue());
+							SRPG.dout(pair.getKey()+": "+pair.getValue());
 						}
 						return true;
 					}
@@ -178,8 +178,15 @@ public class CommandListener implements CommandExecutor {
 				} else if (args.length >= 2 && SRPG.profileManager.has(args[1])) {
 					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
 					
-					if (args[0].equalsIgnoreCase("charge")) {
-						profile.charges = 11;
+					if (Settings.worldBlacklist.contains(profile.player.getWorld())) {
+						SRPG.output("the targeted player is in a world that is set as disabled");
+					} else if (args[0].endsWith("charge")) {
+						if (args[0].startsWith("un")) {
+							profile.charges = 0;
+						} else {
+							profile.charges = 11;
+						}
+						profile.updateChargeDisplay();
 						SRPG.profileManager.save(profile, "chargedata");
 						SRPG.output("gave player "+args[1]+" maximum charges");
 					} else if (args[0].equalsIgnoreCase("enrage")) {
@@ -207,45 +214,35 @@ public class CommandListener implements CommandExecutor {
 						profile.addEffect(buff, descriptor);
 						Messager.sendMessage(profile, "acquired-buff",buff.signature);
 						SRPG.output("poisoned player "+args[1]);
+					} else if (args[0].equalsIgnoreCase("xp") && args.length >= 3) {
+						Integer amount;
+						try {
+							amount = Integer.parseInt(args[2]);
+						} catch (NumberFormatException e) {
+							SRPG.output("Not a valid number");
+							return false;
+						}
+						
+						profile.addXP(amount);
+						SRPG.profileManager.save(profile, "xp");
+						SRPG.output("gave "+amount.toString()+" xp to player "+args[1]);
+						return true;
+					} else if (args[0].equalsIgnoreCase("setboost") && args.length >= 4) {
+						Double value;
+						try {
+							value = Double.parseDouble(args[3]);
+						} catch (NumberFormatException e) {
+							SRPG.output("Not a valid number");
+							return false;
+						}
+						
+						profile.stats.get(0).get(null).get(null).put(args[2], value);
+						SRPG.output("Set boost "+args[2]+" to "+value);
+						SRPG.output(profile.stats.toString());
+						return true;
 					} else {
 						return false;
 					}
-					return true;
-				// add xp to a player (handle with care, no removal atm)
-				} else if (args.length >= 3 && args[0].equalsIgnoreCase("xp") && SRPG.profileManager.has(args[1])) {
-					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					if (profile == null) {
-						return false;
-					}
-					Integer amount;
-					try {
-						amount = Integer.parseInt(args[2]);
-					} catch (NumberFormatException e) {
-						SRPG.output("Not a valid number");
-						return false;
-					}
-					
-					profile.addXP(amount);
-					SRPG.profileManager.save(profile, "xp");
-					SRPG.output("gave "+amount.toString()+" xp to player "+args[1]);
-					return true;
-				} else if (args.length >= 4 && args[0].equalsIgnoreCase("setboost") && SRPG.profileManager.has(args[1])) {
-					ProfilePlayer profile = SRPG.profileManager.get(args[1]);
-					if (profile == null) {
-						SRPG.output("No player by that name");
-						return false;
-					}
-					Double value;
-					try {
-						value = Double.parseDouble(args[3]);
-					} catch (NumberFormatException e) {
-						SRPG.output("Not a valid number");
-						return false;
-					}
-					
-					profile.stats.get(0).get(null).get(null).put(args[2], value);
-					SRPG.output("Set boost "+args[2]+" to "+value);
-					SRPG.output(profile.stats.toString());
 					return true;
 				}
 			}

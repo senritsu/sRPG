@@ -46,6 +46,13 @@ public class ProfileNPC {
 		effects.put(effect, descriptor);
 	}
 
+	public HashMap<StructurePassive,EffectDescriptor> getCurrentPassives() {
+		HashMap<StructurePassive,EffectDescriptor> map = new HashMap<StructurePassive, EffectDescriptor>();
+		map.putAll(effects);
+		map.putAll(passives);
+		return map;
+	}
+	
 	public int getStat(String name, Integer def) {
 		return (int)getStat(name, (double)def);
 	}

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.bukkit.Material;
 import org.bukkit.util.config.ConfigurationNode;
 
 import com.behindthemirrors.minecraft.sRPG.SRPG;
@@ -35,6 +36,8 @@ public class StructureJob implements Comparable<StructureJob> {
 	public HashMap<StructurePassive,EffectDescriptor> traits;
 	public HashMap<Integer,HashMap<StructurePassive,EffectDescriptor>> passives;
 	public HashMap<Integer,HashMap<StructureActive,EffectDescriptor>> actives;
+	
+	public HashMap<Material,Integer> drops;
 	
 	public StructureJob (String uniqueName, ConfigurationNode root) {
 		signature = uniqueName;

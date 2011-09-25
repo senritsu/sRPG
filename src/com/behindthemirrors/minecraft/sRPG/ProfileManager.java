@@ -32,7 +32,13 @@ public class ProfileManager {
 			enterIntoDatabase(player);
 			SRPG.output("created player data");
 		}
+		profile.initializeHUD();
 		load(player);
+		profile.updateChargeDisplay();
+		if (!SRPG.debug && Settings.config.getStringList("debuggers", new ArrayList<String>()).contains(profile.name)) {
+			SRPG.debug = true;
+			SRPG.dout("Debug mode enabled ("+profile.name+" has joined)");
+		}
 	}
 	
 	public void add(LivingEntity entity) {
@@ -109,7 +115,6 @@ public class ProfileManager {
 		ArrayList<String> jobs = new ArrayList<String>();
 		jobs.addAll(Settings.jobs.keySet());
 		ArrayList<Integer> xp = SRPG.database.getSingleIntRow("jobxp", jobs, "user_id", profile.id);
-		SRPG.output("loaded player xp: "+xp.toString());
 		profile.jobXP.clear();
 		profile.jobAvailability.clear();
 		profile.jobLevels.clear();
@@ -131,14 +136,14 @@ public class ProfileManager {
 	public void enterIntoDatabase(Player player) { 
 		String name = player.getName();
 		ProfilePlayer profile = (ProfilePlayer)profiles.get(player);
-		SRPG.output("trying to enter "+name+" into the database");
+		SRPG.dout("trying to enter "+name+" into the database","db");
 		HashMap<String,String> map = new HashMap<String, String>();
 		map.put("user", name);
 		map.put("hp", ""+player.getHealth());
 		map.put("locale", profile.locale);
 		SRPG.database.insertStringValues("users", map);
 		
-		SRPG.output("users table written, proceeding to fetch id");
+		SRPG.dout("users table written, proceeding to fetch id","db");
 		profile.id = SRPG.database.getSingleIntValue("users", "user_id", "user", name);
 		SRPG.database.insertSingleIntValue("jobxp", "user_id", profile.id);
 	}

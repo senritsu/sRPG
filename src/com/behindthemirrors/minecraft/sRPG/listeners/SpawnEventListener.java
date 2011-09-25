@@ -20,7 +20,6 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 
 public class SpawnEventListener extends EntityListener {
 	
-	static boolean debug = false;
 	// for testing
 	static boolean spawnInvincible = false;
 	
@@ -38,10 +37,11 @@ public class SpawnEventListener extends EntityListener {
 	}
 	
 	public void onCreatureSpawn(CreatureSpawnEvent event) {
-		String creature = MiscBukkit.getEntityName(event.getEntity());
-		if (debug) {
-			SRPG.output("creature spawned: "+creature);
+		if (Settings.worldBlacklist.contains(event.getLocation().getWorld())) {
+			return;
 		}
+		String creature = MiscBukkit.getEntityName(event.getEntity());
+		SRPG.dout("creature spawned: "+creature,"spawn");
 		LivingEntity entity = (LivingEntity)event.getEntity();
 		// for testing
 		if (Settings.mobs.containsKey(creature)) {

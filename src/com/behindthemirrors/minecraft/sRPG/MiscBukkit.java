@@ -5,10 +5,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Wolf;
@@ -27,6 +29,7 @@ public class MiscBukkit {
 	static {
 		materialAliases.put("swords", Arrays.asList(new Material[] {Material.WOOD_SWORD,Material.STONE_SWORD,Material.IRON_SWORD,Material.DIAMOND_SWORD}));
 		materialAliases.put("axes", Arrays.asList(new Material[] {Material.WOOD_AXE,Material.STONE_AXE,Material.IRON_AXE,Material.DIAMOND_AXE}));
+		materialAliases.put("hoes", Arrays.asList(new Material[] {Material.WOOD_HOE,Material.STONE_HOE,Material.IRON_HOE,Material.DIAMOND_HOE}));
 		for (String string : new String[] {"pickaxes","picks"}) {
 			materialAliases.put(string, Arrays.asList(new Material[] {Material.WOOD_PICKAXE,Material.STONE_PICKAXE,Material.IRON_PICKAXE,Material.DIAMOND_PICKAXE}));
 		}
@@ -55,6 +58,24 @@ public class MiscBukkit {
 			name += "-" + SLIME_SIZES.get(((Slime)entity).getSize());
 		}
 		return name;
+	}
+	
+	public static ArrayList<ItemStack> getNaturalDrops(LivingEntity entity) {
+		ArrayList<ItemStack> items = new ArrayList<ItemStack>();
+		String name = getEntityName(entity);
+		StructureJob job = Settings.mobs.get(name);
+		if (job != null && job.drops != null) {
+			for (Entry<Material,Integer> entry : job.drops.entrySet()) {
+				items.add(new ItemStack(entry.getKey(),entry.getValue()));
+			}
+		} else {
+			if (name.equalsIgnoreCase("")) {
+				
+			} else if (name.equalsIgnoreCase("")) {
+				
+			}
+		}
+		return items;
 	}
 	
 	public static ItemStack getNaturalDrops(Block block) {
@@ -229,8 +250,8 @@ public class MiscBukkit {
 		}
 		reworked *= 0.1;
 		double original = 0.08 * basesum * durability / (maxdurability > 0 ? maxdurability : 1.0);
-		SRPG.output("original armor mitigation: "+original);
-		SRPG.output("reworked armor mitigation: "+reworked);
+		SRPG.dout("original armor mitigation: "+original,"combat");
+		SRPG.dout("reworked armor mitigation: "+reworked,"combat");
 		
 		return (1.0 - reworked) / (1.0 - original);
 	}

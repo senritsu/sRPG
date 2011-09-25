@@ -5,8 +5,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.util.config.ConfigurationNode;
 
 public class MiscGeometric {
 
@@ -33,30 +34,41 @@ public class MiscGeometric {
 	static HashMap<String,BlockFace> directionToFacing = new HashMap<String, BlockFace>();
 	
 	static {
-		directionToFacing.put("forward", BlockFace.EAST);
-		directionToFacing.put("right", BlockFace.SOUTH);
-		directionToFacing.put("back", BlockFace.WEST);
-		directionToFacing.put("left", BlockFace.NORTH);
-		directionToFacing.put("up", BlockFace.UP);
-		directionToFacing.put("down", BlockFace.DOWN);
+		directionToFacing.put("forward", BlockFace.EAST); // +z
+		directionToFacing.put("right", BlockFace.SOUTH); // -x
+		directionToFacing.put("back", BlockFace.WEST); // -z
+		directionToFacing.put("left", BlockFace.NORTH); // +x
+		directionToFacing.put("up", BlockFace.UP); // +y
+		directionToFacing.put("down", BlockFace.DOWN); // -y
 	}
 	
-	public static BlockFace getEntityFacing(LivingEntity entity) {
-		return MiscGeometric.getEntityFacing(entity, false);
+	public static Block offset(Location location, Block block, ConfigurationNode node) {
+		try {
+			ArrayList<Integer> offset = (ArrayList<Integer>)node.getIntList("offset", new ArrayList<Integer>());
+			if (location != null && node.getBoolean("relative", false)) {
+				offset = relativeOffset(offset, getFacing(location));
+			}
+			return block.getRelative(offset.get(0),offset.get(1) , offset.get(2));
+		} catch (IndexOutOfBoundsException ex) {
+		}
+		return block;
+	}
+	
+	public static BlockFace getFacing(Location location) {
+		return MiscGeometric.getFacing(location, false);
 	}
 
-	public static BlockFace getEntityFacing(LivingEntity entity, boolean diagonals) {
+	public static BlockFace getFacing(Location location, boolean diagonals) {
 		if (diagonals) {
 			return null;
 		} else {
-			return MiscGeometric.angleToCardinalFace(entity.getLocation());
+			return MiscGeometric.angleToCardinalFace(location);
 		}
 	}
 	
 	public static BlockFace angleToCardinalFace(Location location) {
 		double pitch = location.getPitch();
 		BlockFace facing = null;
-		SRPG.output("pitch: "+pitch);
 		if (pitch <= -30) {
 			facing = BlockFace.UP;
 		} else if (pitch >= 60) {
@@ -101,12 +113,13 @@ public class MiscGeometric {
 		return newOffset;
 	}
 	
-	public static BlockFace relativeFacing(String direction, LivingEntity entity) {
-		return relativeFacing(directionToFacing.get(direction), getEntityFacing(entity));
+	// TODO: add proper handling for looking up/down with 3d structures
+	
+	public static BlockFace relativeFacing(String direction, Location location) {
+		return relativeFacing(directionToFacing.get(direction), getFacing(location));
 	}
 	
 	public static BlockFace relativeFacing(BlockFace facing, BlockFace relativeTo) {
-		SRPG.output("trying to get relative facing: "+facing.toString()+" > "+relativeTo.toString());
 		if (relativeTo == BlockFace.UP || relativeTo == BlockFace.DOWN) {
 			return relativeTo;
 		} else if (!orderedFaces.contains(facing) || !orderedFaces.contains(relativeTo)) {

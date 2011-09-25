@@ -2,6 +2,7 @@ package com.behindthemirrors.minecraft.sRPG;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.config.Configuration;
@@ -39,6 +40,8 @@ public class Settings {
 	public static HashMap<String,StructureJob> jobs;
 	public static HashMap<String,StructureJob> mobs;
 	static ArrayList<StructureJob> initialJobs;
+	
+	public static ArrayList<World> worldBlacklist = new ArrayList<World>();
 	
 	public static HashMap<String,Configuration> localization;
 	static String defaultLocale;
@@ -154,7 +157,19 @@ public class Settings {
 		if (config == null || advanced == null) {
 			disable = true;
 		} else {
+			// default debug modes
+			SRPG.debugmodes = (ArrayList<String>) config.getStringList("debugmodes", new ArrayList<String>());
+			
 			ConfigurationNode node;
+			// read world data
+			SRPG.output("loading world data");
+			worldBlacklist.clear();
+			for (String worldname : config.getStringList("settings.disabled-worlds", new ArrayList<String>())) {
+				World world = SRPG.plugin.getServer().getWorld(worldname);
+				if (world != null) {
+					worldBlacklist.add(world);
+				}
+			}
 			
 			// read locale data
 			ArrayList<String> availableLocales = (ArrayList<String>)config.getStringList("settings.locales.available",new ArrayList<String>());

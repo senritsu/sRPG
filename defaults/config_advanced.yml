@@ -13,8 +13,8 @@ xp:
     # default group therefore does not need a listing of block ids
     groups:
       common: 
-        xp: 1
-        chance: 0.05
+        xp: 5
+        chance: 1
       uncommon:
         ids: [16,73,74,82,89,49]
         xp: 1

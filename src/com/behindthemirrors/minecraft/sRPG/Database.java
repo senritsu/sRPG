@@ -19,8 +19,6 @@ import com.avaje.ebeaninternal.server.lib.sql.DataSourceException;
 
 public class Database {
 	
-	public static boolean debug = false;
-	
     private Connection connection;
 	String tablePrefix;
 	String pass;
@@ -202,9 +200,7 @@ public class Database {
     
     public boolean setSingleValueRaw(String table, String column, String value, String keyColumn, String key) {
     	String sql = "UPDATE "+tablePrefix+table+" SET "+column+" = "+value+" WHERE "+keyColumn+" = "+key+";";
-    	if (debug) {
-    		SRPG.output("setSingleValue: "+sql);
-    	}
+		SRPG.dout("setSingleValue: "+sql,"db");
     	return update(sql);
     }
     
@@ -219,9 +215,7 @@ public class Database {
     		sql += entry.getKey() + " = " + entry.getValue();
     	}
     	sql += "WHERE "+keyColumn+" = "+key+";";
-    	if (debug) {
-    		SRPG.output("setValues: "+sql);
-    	}
+		SRPG.dout("setValues: "+sql,"db");
     	return update(sql);
     }
     
@@ -235,9 +229,7 @@ public class Database {
     // value type overloads end
     public boolean insertSingleValueRaw(String table, String column, String value) {
     	String sql = "INSERT INTO "+tablePrefix+table+" ("+column+") VALUES ("+value+");";
-    	if (debug) {
-    		SRPG.output("insertSingleValue: "+sql);
-    	}
+		SRPG.dout("insertSingleValue: "+sql,"db");
     	return update(sql);
     }
     
@@ -264,9 +256,7 @@ public class Database {
     	columns.addAll(map.keySet());
     	values.addAll(map.values());
     	String sql = "INSERT INTO "+tablePrefix+table+" ("+MiscGeneric.join(columns, ",")+") VALUES ("+MiscGeneric.join(values, ",")+");";
-    	if (debug) {
-    		SRPG.output("insertValues: "+sql);
-    	}
+		SRPG.dout("insertValues: "+sql,"db");
     	return update(sql);
     }
     
@@ -362,9 +352,7 @@ public class Database {
     public String getSingleValueRaw(String table, String column, String keyColumn, String key) {
     	String sql = "SELECT "+column+" FROM "+tablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
     	try {
-    		if (debug) {
-        		SRPG.output("getSingleValue: "+sql);
-        	}
+    		SRPG.dout("getSingleValue: "+sql,"db");
     		return query(sql).get(0).get(0);
     	} catch (IndexOutOfBoundsException ex) {
     		return null;
@@ -404,9 +392,7 @@ public class Database {
     // key types overloads end
     public ArrayList<String> getSingleRowRaw(String table, ArrayList<String> columns, String keyColumn, String key) {
     	String sql = "SELECT "+MiscGeneric.join(columns, ",")+" FROM "+tablePrefix+table+" WHERE "+keyColumn+" = "+key+";";
-    	if (debug) {
-    		SRPG.output("getSingleRow: "+sql);
-    	}
+		SRPG.dout("getSingleRow: "+sql,"db");
     	try { 
     		return query(sql).get(0);
     	} catch (IndexOutOfBoundsException ex) {

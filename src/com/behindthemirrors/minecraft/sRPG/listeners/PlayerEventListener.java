@@ -3,6 +3,7 @@ package com.behindthemirrors.minecraft.sRPG.listeners;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -27,11 +28,22 @@ public class PlayerEventListener extends PlayerListener {
 	}
 	
 	public void onItemHeldChange (PlayerItemHeldEvent event) {
+		if (Settings.worldBlacklist.contains(event.getPlayer().getWorld())) {
+			return;
+		}
 		ProfilePlayer profile = SRPG.profileManager.get(event.getPlayer());
 		profile.validateActives(profile.player.getInventory().getItem(event.getNewSlot()).getType());
 	}
 	
+	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
+		SRPG.dout("player interact entity event"+event.getRightClicked().toString(),"actives");
+	}
+	
 	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (Settings.worldBlacklist.contains(event.getPlayer().getWorld())) {
+			return;
+		}
+		SRPG.dout("player interact event"+event.getAction(),"actives");
 		Action action = event.getAction();
 		Player player = event.getPlayer();
 		ProfilePlayer profile = SRPG.profileManager.get(player);
@@ -54,6 +66,9 @@ public class PlayerEventListener extends PlayerListener {
 	}
 	
 	public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
+		if (Settings.worldBlacklist.contains(event.getPlayer().getWorld())) {
+			return;
+		}
 		Player player = event.getPlayer();
 		if (!player.isSneaking()) {
 			SRPG.profileManager.get(player).sneakTimeStamp = System.currentTimeMillis();
@@ -61,6 +76,9 @@ public class PlayerEventListener extends PlayerListener {
 	}
 	
 	public void onPlayerRespawn(PlayerRespawnEvent event) {
+		if (Settings.worldBlacklist.contains(event.getPlayer().getWorld())) {
+			return;
+		}
 		ProfilePlayer data = SRPG.profileManager.get(event.getPlayer());
 		data.hp = data.hp_max;
 	}

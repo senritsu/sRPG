@@ -67,8 +67,8 @@ invincibility:
   #adjective: invincible
   effects: 
     set-combat-state:
-      as-attacker: false
-      as-defender: true
+      self: false
+      target: true
       canceled: true
 
 rage:

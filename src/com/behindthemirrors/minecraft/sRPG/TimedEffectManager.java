@@ -12,7 +12,6 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
 
 public class TimedEffectManager implements Runnable {
 	
-	public static boolean debug = false;
 	ArrayList<ProfileNPC> relevantPlayers = new ArrayList<ProfileNPC>();
 	
 	public void run() {
@@ -30,9 +29,7 @@ public class TimedEffectManager implements Runnable {
 					descriptor.duration--;
 					ResolverPassive.resolve(profile,passive,descriptor);
 				} else {
-					if (debug) {
-						SRPG.output("effect "+passive.name+" expired");
-					}
+					SRPG.dout("effect "+passive.name+" expired","effects");
 					effectIterator.remove();
 					if (profile instanceof ProfilePlayer){
 						Messager.sendMessage(profile, "lost-buff",passive.signature);

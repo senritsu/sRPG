@@ -20,6 +20,7 @@ adventurer:
       - dummy7
       - dummy8
       - dummy9
+      - dummy10
 
 archer:
   enabled: true

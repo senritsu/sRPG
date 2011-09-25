@@ -1,6 +1,7 @@
 package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.logging.Logger;
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.bukkit.World;
@@ -30,6 +31,10 @@ import com.behindthemirrors.minecraft.sRPG.listeners.SpawnEventListener;
 public class SRPG extends JavaPlugin {
 	static final String LOG_PREFIX = "[sRPG] ";
 	static final String CHAT_PREFIX = "[sRPG] ";
+	static final String DEBUG_PREFIX = "[sDEBUG]";
+	
+	public static boolean debug = false;
+	public static ArrayList<String> debugmodes = new ArrayList<String>();
 	
 	public static Plugin plugin;
 	static PluginManager pm;
@@ -82,6 +87,7 @@ public class SRPG extends JavaPlugin {
 			pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_INTERACT_ENTITY, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Highest, this);
@@ -108,5 +114,15 @@ public class SRPG extends JavaPlugin {
 	
     public static void output(String text) {
     	log.info(LOG_PREFIX + text);
+    }
+    
+    public static void dout(String text, String mode) {
+    	if (mode == null || debugmodes.contains(mode)) {
+    		log.info(DEBUG_PREFIX + text + (mode == null?"":" [from '"+mode+"']"));
+    	}
+    }
+    
+    public static void dout(String text) {
+    	dout(text,null);
     }
 }

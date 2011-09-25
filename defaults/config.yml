@@ -1,5 +1,5 @@
 mySQL:
-  enabled: true
+  enabled: false
   server: localhost
   port: 3306
   dbName: name
@@ -7,11 +7,12 @@ mySQL:
   dbPass: pass
   table_prefix: srpg_
 settings:
+  disabled-worlds: [] # plugin won't do anything on worlds listed in here
   features:
     remove-skillpoints: false
   combat:
-    difficulty: default # make sure a corresponding .yml is in pluginfolder/difficulties/
+    difficulty: default # creates a new .yml from default if the named difficulty is unavailable
     dangerous-depths: true # increases damage by monsters lower certain depths
   locales: # add all localized localization_XX.ymls you want to make available here
-    default: EN # make sure that the selected locale is available
-    available: [EN] # make sure that for every available locale there is a corresponding .yml inside pluginfolder/locales
+    default: EN # creates a new .yml from default if the named locale is unavailable
+    available: [EN] # players will be able to choose from the locales listed in here

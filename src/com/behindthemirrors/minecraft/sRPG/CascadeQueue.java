@@ -13,18 +13,20 @@ import org.bukkit.material.MaterialData;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.BlockChangeDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ScheduledEffect;
 
 public class CascadeQueue implements Runnable {
 
 	ArrayList<BlockChangeDescriptor> queue = new ArrayList<BlockChangeDescriptor>();
+	ArrayList<ScheduledEffect> effectQueue = new ArrayList<ScheduledEffect>();
 	public ArrayList<Block> protectedBlocks = new ArrayList<Block>();
 	
 	public void run() {
 		
 		ArrayList<BlockChangeDescriptor> additions = new ArrayList<BlockChangeDescriptor>();
-		Iterator<BlockChangeDescriptor> iterator = queue.iterator();
-		while (iterator.hasNext()) {
-			BlockChangeDescriptor descriptor = iterator.next();  
+		Iterator<BlockChangeDescriptor> blockIterator = queue.iterator();
+		while (blockIterator.hasNext()) {
+			BlockChangeDescriptor descriptor = blockIterator.next();  
 			descriptor.ticksToChange--;
 			if (descriptor.ticksToChange <= 0) {
 				boolean canceled = false;
@@ -65,10 +67,20 @@ public class CascadeQueue implements Runnable {
 				if (!descriptor.revert && protectedBlocks.contains(block)) {
 					protectedBlocks.remove(block);
 				}
-				iterator.remove();
+				blockIterator.remove();
 			}
 		}
 		queue.addAll(additions);
+		
+		Iterator<ScheduledEffect> effectIterator = effectQueue.iterator();
+		while (effectIterator.hasNext()) {
+			ScheduledEffect scheduledEffect = effectIterator.next();
+			scheduledEffect.ticksToActivation--;
+			if (scheduledEffect.ticksToActivation <= 0) {
+				scheduledEffect.activate();
+				effectIterator.remove();
+			}
+		}
 	}
 
 	public void scheduleBlockBreak(Block block, int delay) {
@@ -107,6 +119,10 @@ public class CascadeQueue implements Runnable {
 		state.setData(new MaterialData(replacement));
 		BlockChangeDescriptor descriptor = new BlockChangeDescriptor(state, delay);
 		queue.add(descriptor);
+	}
+	
+	public void scheduleEffect(ScheduledEffect effect) {
+		effectQueue.add(effect);
 	}
 	
 }

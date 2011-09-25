@@ -156,6 +156,32 @@ giant:
   traits:
   passives:
 
+enderman:
+  enabled: true
+  name: Enderman
+  description: 
+  details: 
+  tier: 0
+  defaults:
+    health: 16
+    damage-unarmed: 7
+    xp: 15
+  traits:
+  passives:
+
+silverfish:
+  enabled: true
+  name: Silverfish
+  description: 
+  details: 
+  tier: 0
+  defaults:
+    health: 8
+    damage-unarmed: 2
+    xp: 5
+  traits:
+  passives:
+
 slime-huge:
   enabled: true
   name: Huge Slime

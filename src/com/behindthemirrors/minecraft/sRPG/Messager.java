@@ -2,6 +2,7 @@ package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,8 +18,48 @@ public class Messager {
 	
 	static ArrayList<String> vowels = new ArrayList<String>();
 	
-	{
+	static {
 		vowels.addAll(Arrays.asList(new String[] {"a","i","u","e","o"}));
+	}
+	
+	static HashMap<Character,Integer> characterSizes = new HashMap<Character, Integer>();
+	
+	static {
+		String chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#%&'()*+,-./:;<=>?@[\\]^_{|}~ ";
+		Integer[] sizes = new Integer[] {5,5,5,5,5,5,5,5,5,5,
+				5,5,5,5,5,4,5,5,1,5,4,2,5,5,5,5,5,5,5,3,5,5,5,5,5,5,
+				5,5,5,5,5,5,5,5,3,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,
+				1,4,5,5,5,2,4,4,4,5,1,5,1,5,1,1,4,5,4,5,5,3,5,3,5,5,4,1,4,6,3};
+		for (int i=0;i<chars.length();i++) {
+			characterSizes.put(chars.charAt(i), sizes[i]+1);
+		}
+	}
+	
+	public static int length(String string) {
+		int length = 0;
+		for (int i=0;i<string.length();i++) {
+			length += characterSizes.get(string.charAt(i));
+		}
+		return length;
+	}
+	
+	public static String columnize(ArrayList<String> strings,ArrayList<Integer> distances) {
+		String string = "";
+		int spillover = 0;
+		for (int i = 0;i<strings.size();i++) {
+			String addition = strings.get(i);
+			int distance = distances.get(i);
+			int length = length(addition);
+			while (length > distance) {
+				addition = addition.substring(0, addition.length()-1);
+				length = length(addition);
+			}
+			string += addition;
+			int spaceToFill = (distance - length + 2) + spillover;
+			string += MiscGeneric.repeat(" ", spaceToFill / 4);
+			spillover += spaceToFill%4;
+		}
+		return string.trim();
 	}
 	
 	public static void chargeDisplay(Player player, boolean changed) {
@@ -49,20 +90,27 @@ public class Messager {
 	}
 	
 	public static void sendMessage(ProfileNPC profile, String message) {
-		sendMessage(profile, message, null);
+		if (profile instanceof ProfilePlayer) {
+			sendMessage(((ProfilePlayer)profile).player, message, null, false);
+		}
 	}
 	
 	public static void sendMessage(ProfileNPC profile, String message, String context) {
 		if (profile instanceof ProfilePlayer) {
-			sendMessage(((ProfilePlayer)profile).player,message, context);
+			sendMessage(((ProfilePlayer)profile).player,message, context, false);
 		}
 	}
 	
 	public static void sendMessage(Player player, String message) {
-		sendMessage(player, message, null);
+		sendMessage(player, message, null, false);
 	}
 	
 	public static void sendMessage(Player player, String message, String context) {
+		sendMessage(player, message, context, false);
+	}
+	
+	public static void sendMessage(Player player, String message, String context, boolean columns) {
+		
 		ProfilePlayer profile = SRPG.profileManager.get(player);
 		ArrayList<String> messageList = (ArrayList<String>)Settings.localization.get(SRPG.profileManager.get(player).locale).getStringList("messages."+message,new ArrayList<String>());
 		if (messageList.isEmpty()) {
@@ -74,118 +122,141 @@ public class Messager {
 			messageList.clear();
 			messageList.add(choice);
 		}
-		
-		for (String line : messageList) {
-			// parse variables and localization references
-			Pattern pattern = Pattern.compile("<[!%#\\w\\.-]+>");
-		    Matcher matcher = pattern.matcher(line);
-		    StringBuffer sb = new StringBuffer();
-		    while (matcher.find()) {
-		    	// check for supported variables first
-		    	String match = matcher.group();
-		    	if (match.equalsIgnoreCase("<!level>")) {
-		    		// TODO: update
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!xp>")) {
-		    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
-		    		matcher.appendReplacement(sb, Integer.toString(profile.jobXP.get(profile.currentJob)-profile.currentJob.xpToNextLevel(currentLevel-1)));
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!xp2level>")) {
-		    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
-		    		matcher.appendReplacement(sb, Integer.toString(currentLevel < profile.currentJob.maximumLevel ? profile.currentJob.xpToNextLevel(currentLevel) : profile.currentJob.xpToNextLevel(currentLevel-1)));
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!job>")) {
-		    		matcher.appendReplacement(sb, localizedJob(context, profile));
-		    		
-		    	} else if (match.equalsIgnoreCase("<!joblevel>")) {
-		    		matcher.appendReplacement(sb, Integer.toString(profile.jobLevels.get(Settings.jobs.get(context))));
-		    		
-		    	} else if (match.equalsIgnoreCase("<!jobmaxlevel>")) {
-		    		matcher.appendReplacement(sb, Integer.toString(Settings.jobs.get(context).maximumLevel));
-		    		
-		    	} else if (match.equalsIgnoreCase("<!cost>")) {
-		    		matcher.appendReplacement(sb, context);
-		    		
-		    	} else if (match.equalsIgnoreCase("<!buffed>")) {
-		    		StructurePassive buff = Settings.passives.get(context);
-		    		String localized = localize(context,"passives."+context+".adjective",profile);
-		    		matcher.appendReplacement(sb, localized != null ? localized : 
-		    			(buff.adjective != null ? buff.adjective : 
-		    				Settings.localization.get(profile.locale).getString("messages.buffed-default") + " " + localizedPassive(context, profile)));
-		    		
-		    	} else if (match.equalsIgnoreCase("<!buff>") || match.equalsIgnoreCase("<!passive>")) {
-		    		matcher.appendReplacement(sb, localizedPassive(context, profile));
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!active>")) {
-		    		matcher.appendReplacement(sb, localizedActive(context,profile));
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!charges>")) {
-		    		matcher.appendReplacement(sb, profile.charges.toString());
-		    		
-		    	} else if  (match.equalsIgnoreCase("<!chargeprogress>")) {
-		    		matcher.appendReplacement(sb, profile.chargeProgress.toString());
-		    		
-		    	} else if (match.startsWith("<#")) { 
-		    		// TODO: update
-		    		String term = match.substring(2,match.length()-1);
-		    		term = term.endsWith("+") ? 
-		    				MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term.substring(0,term.length()-1)), 2) : 
-	    					MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term), 1);
-		    		matcher.appendReplacement(sb, term);
-		    		
-		    	} else {
-		    		// TODO: update for descriptions for passives and the sort, maybe move parsing to separate function
-		    		String replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
-		    		if (match.contains(":")) {
-			    		// TODO: use proper java string formatting
-			    		double value = Settings.advanced.getDouble(replacement.substring(0,match.indexOf(":")),0.0);
-			    		String conversion = replacement.substring(match.indexOf(":")+1);
-			    		if (conversion.equals("percent")) {
-				    		if (value < 0.01) {
-				    			replacement = "0."+Integer.toString((int)(value*1000));
-				    		} else {
-				    			replacement = Integer.toString((int)(value*100));
-				    		}
-			    		} else if (conversion.equalsIgnoreCase("hearts")) {
-			    			Integer hearts = new Integer((int)(value/2));
-			    			replacement = (hearts == 0 && value%2 != 0 ? "" : hearts.toString()) + (value%2 != 0 ? (hearts > 0 ? " " : "")+"1/2" : "");
-			    		}
-			    		
-			    	}
-	    			matcher.appendReplacement(sb, replacement);
-		    	}
-		    }
-	    	matcher.appendTail(sb);
-	    	
-	    	// parse a/an replacement
-	    	pattern = Pattern.compile("[Aa]/[Aa]n .");
-		    matcher = pattern.matcher(sb.toString());
-		    sb = new StringBuffer();
-		    while (matcher.find()) {
-		    	String match = matcher.group();
-	    		String followingLetter = match.substring(match.length()-1).toLowerCase();
-	    		String replacement = match.substring(0,1);
-	    		if (vowels.contains(followingLetter)) {
-	    			replacement += "n";
-	    		} 
-	    		replacement += " "+match.substring(match.length()-1,match.length());
-	    		matcher.appendReplacement(sb, replacement);
-		    }
-		    matcher.appendTail(sb);
-	    	
-	    	// parse color codes
-	    	pattern = Pattern.compile("\\[\\w+]");
-		    matcher = pattern.matcher(sb.toString());
-		    sb = new StringBuffer();
-		    while (matcher.find()) {
-		    	if (Settings.colorMap.containsKey(matcher.group())) {
-		    		matcher.appendReplacement(sb, Settings.colorMap.get(matcher.group()));
-		    	}
-		    }
-		    matcher.appendTail(sb);
-		    
-		    player.sendMessage(sb.toString());
+		if (columns) {
+			ArrayList<Integer> spacing = (ArrayList<Integer>)Arrays.asList(new Integer[]{160,160});
+			ArrayList<ArrayList<String>> buffer = new ArrayList<ArrayList<String>>();
+			buffer.add(new ArrayList<String>());
+			int index = 0;
+			for (String line : messageList) {
+				if (buffer.get(index).size() >= 2) {
+					buffer.add(new ArrayList<String>());
+					index++;
+				}
+				buffer.get(index).add(parseLine(profile, line, context));
+			}
+			if (buffer.get(index).size() < 2) {
+				buffer.get(index).add("");
+			}
+			for (ArrayList<String> row : buffer) {
+				player.sendMessage(columnize(row, spacing));
+			}
+			
+		} else {
+			for (String line : messageList) {
+				// parse variables and localization references
+			    player.sendMessage(parseLine(profile,line,context));
+			}
 		}
+	}
+	
+	public static String parseLine(ProfilePlayer profile, String line, String context) {
+		Pattern pattern = Pattern.compile("<[!%#\\w\\.-]+>");
+	    Matcher matcher = pattern.matcher(line);
+	    StringBuffer sb = new StringBuffer();
+	    while (matcher.find()) {
+	    	// check for supported variables first
+	    	String match = matcher.group();
+	    	if (match.equalsIgnoreCase("<!level>")) {
+	    		// TODO: update
+	    		
+	    	} else if  (match.equalsIgnoreCase("<!xp>")) {
+	    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
+	    		matcher.appendReplacement(sb, Integer.toString(profile.jobXP.get(profile.currentJob)-profile.currentJob.xpToNextLevel(currentLevel-1)));
+	    		
+	    	} else if  (match.equalsIgnoreCase("<!xp2level>")) {
+	    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
+	    		matcher.appendReplacement(sb, Integer.toString(currentLevel < profile.currentJob.maximumLevel ? profile.currentJob.xpToNextLevel(currentLevel) : profile.currentJob.xpToNextLevel(currentLevel-1)));
+	    		
+	    	} else if  (match.equalsIgnoreCase("<!job>")) {
+	    		matcher.appendReplacement(sb, localizedJob(context, profile));
+	    		
+	    	} else if (match.equalsIgnoreCase("<!joblevel>")) {
+	    		matcher.appendReplacement(sb, Integer.toString(profile.jobLevels.get(Settings.jobs.get(context))));
+	    		
+	    	} else if (match.equalsIgnoreCase("<!jobmaxlevel>")) {
+	    		matcher.appendReplacement(sb, Integer.toString(Settings.jobs.get(context).maximumLevel));
+	    		
+	    	} else if (match.equalsIgnoreCase("<!cost>")) {
+	    		matcher.appendReplacement(sb, context);
+	    		
+	    	} else if (match.equalsIgnoreCase("<!buffed>")) {
+	    		StructurePassive buff = Settings.passives.get(context);
+	    		String localized = localize(context,"passives."+context+".adjective",profile);
+	    		matcher.appendReplacement(sb, localized != null ? localized : 
+	    			(buff.adjective != null ? buff.adjective : 
+	    				Settings.localization.get(profile.locale).getString("messages.buffed-default") + " " + localizedPassive(context, profile)));
+	    		
+	    	} else if (match.equalsIgnoreCase("<!buff>") || match.equalsIgnoreCase("<!passive>")) {
+	    		matcher.appendReplacement(sb, localizedPassive(context, profile));
+	    		
+	    	} else if  (match.equalsIgnoreCase("<!active>")) {
+	    		matcher.appendReplacement(sb, localizedActive(context,profile));
+	    		
+	    	} else if  (match.equalsIgnoreCase("<!charges>")) {
+	    		matcher.appendReplacement(sb, profile.charges.toString());
+	    		
+	    	} else if  (match.equalsIgnoreCase("<!chargeprogress>")) {
+	    		matcher.appendReplacement(sb, profile.chargeProgress.toString());
+	    		
+	    	} else if (match.startsWith("<#")) { 
+	    		// TODO: update
+	    		String term = match.substring(2,match.length()-1);
+	    		term = term.endsWith("+") ? 
+	    				MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term.substring(0,term.length()-1)), 2) : 
+    					MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term), 1);
+	    		matcher.appendReplacement(sb, term);
+	    		
+	    	} else {
+	    		// TODO: update for descriptions for passives and the sort, maybe move parsing to separate function
+	    		String replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
+	    		if (match.contains(":")) {
+		    		// TODO: use proper java string formatting
+		    		double value = Settings.advanced.getDouble(replacement.substring(0,match.indexOf(":")),0.0);
+		    		String conversion = replacement.substring(match.indexOf(":")+1);
+		    		if (conversion.equals("percent")) {
+			    		if (value < 0.01) {
+			    			replacement = "0."+Integer.toString((int)(value*1000));
+			    		} else {
+			    			replacement = Integer.toString((int)(value*100));
+			    		}
+		    		} else if (conversion.equalsIgnoreCase("hearts")) {
+		    			Integer hearts = new Integer((int)(value/2));
+		    			replacement = (hearts == 0 && value%2 != 0 ? "" : hearts.toString()) + (value%2 != 0 ? (hearts > 0 ? " " : "")+"1/2" : "");
+		    		}
+		    		
+		    	}
+    			matcher.appendReplacement(sb, replacement);
+	    	}
+	    }
+    	matcher.appendTail(sb);
+    	
+    	// parse a/an replacement
+    	pattern = Pattern.compile("[Aa]/[Aa]n .");
+	    matcher = pattern.matcher(sb.toString());
+	    sb = new StringBuffer();
+	    while (matcher.find()) {
+	    	String match = matcher.group();
+    		String followingLetter = match.substring(match.length()-1).toLowerCase();
+    		String replacement = match.substring(0,1);
+    		if (vowels.contains(followingLetter)) {
+    			replacement += "n";
+    		} 
+    		replacement += " "+match.substring(match.length()-1,match.length());
+    		matcher.appendReplacement(sb, replacement);
+	    }
+	    matcher.appendTail(sb);
+    	
+    	// parse color codes
+    	pattern = Pattern.compile("\\[\\w+]");
+	    matcher = pattern.matcher(sb.toString());
+	    sb = new StringBuffer();
+	    while (matcher.find()) {
+	    	if (Settings.colorMap.containsKey(matcher.group())) {
+	    		matcher.appendReplacement(sb, Settings.colorMap.get(matcher.group()));
+	    	}
+	    }
+	    matcher.appendTail(sb);
+	    return sb.toString();
 	}
 	
 	public static String localize(String string, String path) {

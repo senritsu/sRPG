@@ -113,8 +113,9 @@ public class CombatInstance {
 			parry = true;
 		}
 		
-		SRPG.output("triggering resolver");
-		SRPG.output(attacker.passives.toString());
+		SRPG.dout("triggering resolver","combat");
+		SRPG.dout(attacker.passives.toString(),"combat");
+		
 		ResolverPassive.resolve(this);
 		if (attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).activate(this, defenderHandItem);
@@ -162,13 +163,17 @@ public class CombatInstance {
 			damage *= critMultiplier;
 		}
 		
-		SRPG.output("combat damage: "+damage);
+		SRPG.dout("combat damage: "+damage,"combat");
+		
 		damage *= MiscBukkit.getArmorFactor(defender);
-		SRPG.output("combat damage after armor mitigation: "+damage);
+		
+		SRPG.dout("combat damage after armor mitigation: "+damage,"combat");
 		
 		if (damage > 0 && attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).addChargeTick();
 		}
 		event.setDamage(damage > 0 ? (int)Math.round(damage) : 0);
+		
+		ResolverPassive.recoverDurability(attacker);
 	}
 }

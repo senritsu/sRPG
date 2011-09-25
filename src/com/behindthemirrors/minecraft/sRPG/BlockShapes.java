@@ -8,7 +8,6 @@ import org.bukkit.block.BlockFace;
 public class BlockShapes {
 	
 	public static ArrayList<ArrayList<Block>> line(Block block, BlockFace direction, int length) {
-		SRPG.output("line: "+block.toString()+" > "+direction.toString()+ " > "+length);
 		ArrayList<ArrayList<Block>> blocks = new ArrayList<ArrayList<Block>>();
 		blocks.add(new ArrayList<Block>());
 		for (int i=0;i<length;i++) {
@@ -44,4 +43,38 @@ public class BlockShapes {
 		}
 		return blocks;
 	}
+	
+	public static ArrayList<ArrayList<Block>> circle(Block block, BlockFace normal, int radius) {
+		ArrayList<BlockFace> ignore = new ArrayList<BlockFace>();
+		ignore.add(normal);
+		ignore.add(MiscGeometric.invert(normal));
+		return sphere(block, ignore, radius);
+	}
+	
+	public static ArrayList<ArrayList<Block>> sphere(Block block, ArrayList<BlockFace> ignore, int radius) {
+		ArrayList<ArrayList<Block>> blocks = new ArrayList<ArrayList<Block>>();
+		radius += 1;
+		for (int i=0;i<= radius;i++) {
+			blocks.add(new ArrayList<Block>());
+		}
+		for (int x=-radius;x<=radius;x++) {
+			for (int y=-radius;y<=radius;y++) {
+				for (int z=-radius;z<=radius;z++) {
+					Block currentBlock = block.getRelative(x, y, z);
+					double distance = block.getLocation().distance(currentBlock.getLocation());
+					if (distance <= radius-0.5 && !(
+							x < 0 && ignore.contains(BlockFace.NORTH) ||
+							x > 0 && ignore.contains(BlockFace.SOUTH) ||
+							y < 0 && ignore.contains(BlockFace.DOWN) ||
+							y > 0 && ignore.contains(BlockFace.UP) ||
+							z < 0 && ignore.contains(BlockFace.EAST) ||
+							z > 0 && ignore.contains(BlockFace.WEST))) {
+						blocks.get((int)Math.round(distance)).add(currentBlock);
+					}
+				}
+			}
+		}
+		return blocks;
+	}
+	
 }

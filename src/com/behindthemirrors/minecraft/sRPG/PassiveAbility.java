@@ -78,10 +78,8 @@ public class PassiveAbility {
 		
 		// check active tool and permissions
 		if (!(BlockEventListener.userPlacedBlocks.contains(block) && Settings.MULTIDROP_VALID_BLOCKS.containsKey(handmaterial) && Settings.MULTIDROP_VALID_BLOCKS.get(handmaterial).contains(material))) {
-			if (debug) {
-				SRPG.output("roll: "+(new Double(roll).toString()));
-				SRPG.output("chances: "+(new Double(doubleDropChance).toString())+" for double, "+(new Double(tripleDropChance).toString())+" for triple");
-			}
+			SRPG.dout("roll: "+(new Double(roll).toString()),"passives");
+			SRPG.dout("chances: "+(new Double(doubleDropChance).toString())+" for double, "+(new Double(tripleDropChance).toString())+" for triple","passives");
 			
 			ItemStack item = MiscBukkit.getNaturalDrops(block);
 			if (item != null) {
