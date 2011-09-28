@@ -54,6 +54,7 @@ public class ProfilePlayer extends ProfileNPC {
 	public Integer charges;
 	public Integer chargeProgress;
 	
+	public boolean locked = false;
 	public boolean prepared = false;
 	private long abilityReadiedTimeStamp;
 	public long abilityActivatedTimeStamp;
@@ -201,7 +202,7 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public boolean prepare() {
-		if (cycleActive()) {
+		if (!locked && cycleActive()) {
 			abilityReadiedTimeStamp = System.currentTimeMillis();
 			prepared = true;
 			return true;
@@ -220,6 +221,7 @@ public class ProfilePlayer extends ProfileNPC {
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
 			ResolverActive.resolve(currentActive, combat, actives.get(currentActive));
+			Messager.sendMessage(player, "active",currentActive.signature);
 			result = true;
 		}
 		if (currentActive.combat) {
@@ -239,6 +241,7 @@ public class ProfilePlayer extends ProfileNPC {
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
 			ResolverActive.resolve(currentActive, this, target, actives.get(currentActive));
+			Messager.sendMessage(player, "active",currentActive.signature);
 			result = true;
 			// hack
 			charges -= currentActive.cost;

@@ -28,6 +28,9 @@ public class SpawnEventListener extends EntityListener {
 	
 	public void addExistingCreatures() {
 		for (World world : SRPG.plugin.getServer().getWorlds()) {
+			if (Settings.worldBlacklist.contains(world)) {
+				continue;
+			}
 			for (Entity entity : world.getEntities()) {
 				if (entity instanceof LivingEntity) {
 					onCreatureSpawn(new CreatureSpawnEvent(entity,CreatureType.CHICKEN,entity.getLocation(), SpawnReason.NATURAL));

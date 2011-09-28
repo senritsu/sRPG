@@ -22,6 +22,9 @@ public class TimedEffectManager implements Runnable {
 		Iterator<ProfileNPC> playerIterator = relevantPlayers.iterator();
 		while (playerIterator.hasNext()) {
 			ProfileNPC profile = playerIterator.next();
+			if (Settings.worldBlacklist.contains(profile.entity.getWorld())) {
+				continue;
+			}
 			Iterator<Map.Entry<StructurePassive,EffectDescriptor>> effectIterator = profile.effects.entrySet().iterator();
 			while (effectIterator.hasNext()) {
 				Map.Entry<StructurePassive,EffectDescriptor> entry = effectIterator.next();

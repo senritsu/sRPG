@@ -38,6 +38,7 @@ public class PlayerEventListener extends PlayerListener {
 			return;
 		}
 		ProfilePlayer profile = SRPG.profileManager.get(event.getPlayer());
+		profile.prepared = false;
 		profile.validateActives(profile.player.getInventory().getItem(event.getNewSlot()).getType());
 	}
 	
@@ -46,11 +47,17 @@ public class PlayerEventListener extends PlayerListener {
 	}
 	
 	public void onPlayerPickupItem(PlayerPickupItemEvent event) {
+		if (Settings.worldBlacklist.contains(event.getPlayer().getWorld())) {
+			return;
+		}
 		if (Watcher.isProtected(event.getItem())) {
 			event.setCancelled(true);
 		}
 	}
 	public void onPlayerMove(PlayerMoveEvent event) {
+		if (Settings.worldBlacklist.contains(event.getPlayer().getWorld())) {
+			return;
+		}
 		Block from = event.getFrom().getBlock();
 		Block to = event.getTo().getBlock();
 		if (from != to) {

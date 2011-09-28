@@ -87,9 +87,11 @@ messages:
   #############
   
   charge-acquired: "Acquired a <#charge>"
-  ability: 
-    - "[blue]Take this! <!ability>!!"
-    - "[blue]Go! <!ability>!!!"
+  active-locked: "Active abilities are now deactivated"
+  active-unlocked: "Active abilities reactivated"
+  active: 
+    - "[blue]You have used <!active>"
+    - "[blue]<!active> has been activated"
   ability-not-implemented: "[dark-gray]this ability is not yet implemented"
   # COMBAT
   crit-attacker: "[red]Critical Hit!"

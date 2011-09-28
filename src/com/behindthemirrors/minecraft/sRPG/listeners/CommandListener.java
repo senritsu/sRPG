@@ -84,6 +84,9 @@ public class CommandListener implements CommandExecutor {
 						Messager.sendMessage(player,"job-not-available");
 					}
 					return true;
+				} else if (args[0].equalsIgnoreCase("lock")) {
+					profile.locked = !profile.locked;
+					Messager.sendMessage(player, "actives-"+(profile.locked?"":"un")+"locked");
 				} else if (args[0].equalsIgnoreCase("stats")) {
 					ArrayList<String> words = new ArrayList<String>();
 					words.add("bla");
