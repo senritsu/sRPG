@@ -22,6 +22,26 @@ adventurer:
       - dummy9
       - dummy10
 
+rogue:
+  enabled: true
+  name: Rogue
+  description: 
+  details: 
+  tier: 1
+  defaults: 
+  traits: 
+    - backstab
+    - dropnight
+    - dropday
+    - losearmor
+  passives: 
+  actives: 
+    level 1:
+      - droparmor
+      - steal
+      - disarm
+      - supersteal
+
 archer:
   enabled: true
   name: Archer
@@ -32,6 +52,8 @@ archer:
   traits:
     - sword-incompetence!1
   passives:
+    level 1:
+      - heightshot
     level 3: 
       - steady-aim
     level 5: 

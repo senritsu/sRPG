@@ -3,11 +3,17 @@ package com.behindthemirrors.minecraft.sRPG;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.util.config.ConfigurationNode;
+import org.getspout.spoutapi.SpoutManager;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
@@ -32,6 +38,28 @@ public class Messager {
 				1,4,5,5,5,2,4,4,4,5,1,5,1,5,1,1,4,5,4,5,5,3,5,3,5,5,4,1,4,6,3};
 		for (int i=0;i<chars.length();i++) {
 			characterSizes.put(chars.charAt(i), sizes[i]+1);
+		}
+	}
+	
+	static HashMap<String,String> colorMap = new HashMap<String, String>();
+	static {
+		// initialize color tag replacement map
+		String[] colorStrings = new String[] {
+				"[aqua]","[black]","[blue]","[dark aqua]",
+				"[dark blue]","[dark gray]","[dark green]","[dark purple]",
+				"[dark red]","[gold]","[gray]","[green]",
+				"[light purple]","[red]","[white]","[yellow]",
+				"[]"
+				};
+		ChatColor[] chatColors = new ChatColor[] {
+				ChatColor.AQUA,ChatColor.BLACK,ChatColor.BLUE,ChatColor.DARK_AQUA,
+				ChatColor.DARK_BLUE,ChatColor.DARK_GRAY,ChatColor.DARK_GREEN,ChatColor.DARK_PURPLE,
+				ChatColor.DARK_RED,ChatColor.GOLD,ChatColor.GRAY,ChatColor.GREEN,
+				ChatColor.LIGHT_PURPLE,ChatColor.RED,ChatColor.WHITE,ChatColor.YELLOW,
+				ChatColor.WHITE
+				};
+		for (int i=0;i<colorStrings.length;i++) {
+			colorMap.put(colorStrings[i], chatColors[i].toString());
 		}
 	}
 	
@@ -78,15 +106,76 @@ public class Messager {
 			charges = ProfilePlayer.chargeMax - charges - 1;
 		}
 		text += ChatColor.DARK_GRAY+MiscGeneric.repeat("o",charges)+ChatColor.WHITE+"]";
-		// display of blocks to next charge disabled for now
-		//if (charges < PlayerData.chargeMax) {
-		//	text += " ("+(PlayerData.chargeTicks-data.chargeProgress.get(skillname))+" blocks to next charge)";
-		//}
 		if (changed) {
 			text += " >";
 		}
 		text += " (Current "+MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology.active"),1)+": "+profile.currentActive.name+")";
 		player.sendMessage(text);
+	}
+	
+	public static void notify(ProfilePlayer profile, String message) {
+		notify(profile,message,null, Material.AIR);
+	}
+	
+	public static void notify(ProfilePlayer profile, String message, String context, Material material) {
+		Player player = ((ProfilePlayer)profile).player;
+		ArrayList<String> notificationList = (ArrayList<String>)Settings.localization.get(profile.locale).getStringList("notifications."+message,new ArrayList<String>());
+		if (notificationList.isEmpty()) {
+			notificationList.add(Settings.localization.get(profile.locale).getString("notifications."+message,"Error in localization file, contact your admin about notification '"+message+"'"));
+		}
+		// TODO: change to properly use both parts of the notification
+		SpoutManager.getPlayer(player).sendNotification(parseLine(profile,notificationList.get(SRPG.generator.nextInt(notificationList.size())),context), context, material);
+	}
+	
+	public static ArrayList<String> documentPassive(ProfilePlayer profile, StructurePassive passive) {
+		ArrayList<String> lines = new ArrayList<String>();
+		lines.add(parseLine(profile,localize(passive.signature,"autodoc.special.passive-header",profile),passive.signature));
+		for (Entry<String,ConfigurationNode> entry : passive.effects.entrySet()) {
+			ConfigurationNode node = entry.getValue();
+			lines.addAll(documentEffect(profile, entry.getKey(), node));
+		}
+		return lines;
+	}
+	
+	public static ArrayList<String> documentEffect(ProfilePlayer profile, String name, ConfigurationNode node) {
+		SRPG.dout("getting documentation for effect: "+name);
+		ArrayList<String> description = new ArrayList<String>();
+		if (name.startsWith("boost")) {
+			String stat = node.getString("name");
+			String value = node.getString("value");
+			String line = parseLine(profile,localize("","autodoc.effects.boost."+stat,profile),value);
+			if (!line.isEmpty()){
+				description.add(line);
+			}
+		}
+		
+		if (!description.isEmpty()) {
+			for (String string : new String[] {"tools","versus"}) {
+				List<String> tools = node.getStringList(string,new ArrayList<String>());
+				ArrayList<String> names = new ArrayList<String>();
+				for (String material : tools) {
+					String tool = "";
+					try {
+						material = Material.getMaterial(Integer.parseInt(material)).toString();
+					} catch (NumberFormatException ex) {
+						if (Material.getMaterial(material.toUpperCase()) != null) {
+							material = Material.getMaterial(material.toUpperCase()).toString();
+						}
+					}
+					material = material.replaceAll("_"," ");
+					for (String token : material.split(" ")) {
+						token = token.toLowerCase();
+						tool += token.substring(0, 1).toUpperCase() + token.substring(1);
+					}
+					names.add(tool);
+				}
+				if (!tools.isEmpty()) {
+					description.add(parseLine(profile, localize("","autodoc.special."+string,profile),MiscGeneric.join(names, ", ")));
+				}
+			}
+		}
+			
+		return description;
 	}
 	
 	public static void sendMessage(ProfileNPC profile, String message) {
@@ -150,53 +239,67 @@ public class Messager {
 	}
 	
 	public static String parseLine(ProfilePlayer profile, String line, String context) {
-		Pattern pattern = Pattern.compile("<[!%#\\w\\.-]+>");
+		Pattern pattern = Pattern.compile("<[!%#\\w\\.-:\\+]+>");
 	    Matcher matcher = pattern.matcher(line);
 	    StringBuffer sb = new StringBuffer();
 	    while (matcher.find()) {
 	    	// check for supported variables first
 	    	String match = matcher.group();
-	    	if (match.equalsIgnoreCase("<!level>")) {
-	    		// TODO: update
-	    		
+	    	SRPG.dout(match);
+	    	String replacement = "";
+	    	String format = "";
+	    	if (match.contains(":")) {
+	    		format = match.substring(match.indexOf(":")+1,match.length()-1);
+	    		match = match.substring(0,match.indexOf(":"))+match.charAt(match.length()-1);
+	    	}
+	    	SRPG.dout(match);
+	    	SRPG.dout(format);
+	    	if (match.equalsIgnoreCase("<!value>")) {
+	    		replacement = context;
+	    	} else if (match.equalsIgnoreCase("<!list>")) {
+	    		ArrayList<String> names = new ArrayList<String>();
+	    		for (String item : context.split(",")) {
+	    			names.add("[light purple]"+item+"[]");
+	    		}
+	    		replacement += MiscGeneric.join(names, ", ");
 	    	} else if  (match.equalsIgnoreCase("<!xp>")) {
 	    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
-	    		matcher.appendReplacement(sb, Integer.toString(profile.jobXP.get(profile.currentJob)-profile.currentJob.xpToNextLevel(currentLevel-1)));
+	    		replacement = Integer.toString(profile.jobXP.get(profile.currentJob)-profile.currentJob.xpToNextLevel(currentLevel-1));
 	    		
 	    	} else if  (match.equalsIgnoreCase("<!xp2level>")) {
 	    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
-	    		matcher.appendReplacement(sb, Integer.toString(currentLevel < profile.currentJob.maximumLevel ? profile.currentJob.xpToNextLevel(currentLevel) : profile.currentJob.xpToNextLevel(currentLevel-1)));
+	    		replacement = Integer.toString(currentLevel < profile.currentJob.maximumLevel ? profile.currentJob.xpToNextLevel(currentLevel) : profile.currentJob.xpToNextLevel(currentLevel-1));
 	    		
 	    	} else if  (match.equalsIgnoreCase("<!job>")) {
-	    		matcher.appendReplacement(sb, localizedJob(context, profile));
+	    		replacement = localizedJob(context, profile);
 	    		
 	    	} else if (match.equalsIgnoreCase("<!joblevel>")) {
-	    		matcher.appendReplacement(sb, Integer.toString(profile.jobLevels.get(Settings.jobs.get(context))));
+	    		replacement = Integer.toString(profile.jobLevels.get(Settings.jobs.get(context)));
 	    		
 	    	} else if (match.equalsIgnoreCase("<!jobmaxlevel>")) {
-	    		matcher.appendReplacement(sb, Integer.toString(Settings.jobs.get(context).maximumLevel));
+	    		replacement = Integer.toString(Settings.jobs.get(context).maximumLevel);
 	    		
 	    	} else if (match.equalsIgnoreCase("<!cost>")) {
-	    		matcher.appendReplacement(sb, context);
+	    		replacement = Integer.toString(Settings.actives.get(context).cost);
 	    		
 	    	} else if (match.equalsIgnoreCase("<!buffed>")) {
 	    		StructurePassive buff = Settings.passives.get(context);
 	    		String localized = localize(context,"passives."+context+".adjective",profile);
-	    		matcher.appendReplacement(sb, localized != null ? localized : 
+	    		replacement = localized != null ? localized : 
 	    			(buff.adjective != null ? buff.adjective : 
-	    				Settings.localization.get(profile.locale).getString("messages.buffed-default") + " " + localizedPassive(context, profile)));
+	    				Settings.localization.get(profile.locale).getString("messages.buffed-default") + " " + localizedPassive(context, profile));
 	    		
 	    	} else if (match.equalsIgnoreCase("<!buff>") || match.equalsIgnoreCase("<!passive>")) {
-	    		matcher.appendReplacement(sb, localizedPassive(context, profile));
+	    		replacement = localizedPassive(context, profile);
 	    		
 	    	} else if  (match.equalsIgnoreCase("<!active>")) {
-	    		matcher.appendReplacement(sb, localizedActive(context,profile));
+	    		replacement = localizedActive(context,profile);
 	    		
 	    	} else if  (match.equalsIgnoreCase("<!charges>")) {
 	    		matcher.appendReplacement(sb, profile.charges.toString());
 	    		
 	    	} else if  (match.equalsIgnoreCase("<!chargeprogress>")) {
-	    		matcher.appendReplacement(sb, profile.chargeProgress.toString());
+	    		replacement = profile.chargeProgress.toString();
 	    		
 	    	} else if (match.startsWith("<#")) { 
 	    		// TODO: update
@@ -204,29 +307,40 @@ public class Messager {
 	    		term = term.endsWith("+") ? 
 	    				MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term.substring(0,term.length()-1)), 2) : 
     					MiscBukkit.parseSingularPlural(Settings.localization.get(profile.locale).getString("terminology."+term), 1);
-	    		matcher.appendReplacement(sb, term);
+	    		replacement = term;
 	    		
 	    	} else {
 	    		// TODO: update for descriptions for passives and the sort, maybe move parsing to separate function
-	    		String replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
-	    		if (match.contains(":")) {
-		    		// TODO: use proper java string formatting
-		    		double value = Settings.advanced.getDouble(replacement.substring(0,match.indexOf(":")),0.0);
-		    		String conversion = replacement.substring(match.indexOf(":")+1);
-		    		if (conversion.equals("percent")) {
-			    		if (value < 0.01) {
-			    			replacement = "0."+Integer.toString((int)(value*1000));
-			    		} else {
-			    			replacement = Integer.toString((int)(value*100));
-			    		}
-		    		} else if (conversion.equalsIgnoreCase("hearts")) {
-		    			Integer hearts = new Integer((int)(value/2));
-		    			replacement = (hearts == 0 && value%2 != 0 ? "" : hearts.toString()) + (value%2 != 0 ? (hearts > 0 ? " " : "")+"1/2" : "");
-		    		}
-		    		
-		    	}
-    			matcher.appendReplacement(sb, replacement);
+	    		replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
 	    	}
+	    	if (!format.isEmpty()) {
+	    		// TODO: use proper java string formatting
+	    		try {
+	    			double value = Double.parseDouble(replacement);
+	    			boolean signed = format.endsWith("+");
+	    			format = signed?format.substring(0, format.length()-1):format;
+	    			replacement = "[light purple]"+ (signed?(value >= 0 ? "+":""):"");
+		    		if (format.startsWith("percent")) {
+			    		if (Math.abs(value) < 0.01) {
+			    			replacement += "0."+Integer.toString((int)(value*1000)); //borked for negatives, switch to proper formatting already!
+			    		} else {
+			    			replacement += Integer.toString((int)(value*100));
+			    		}
+			    		replacement += "%";
+		    		} else if (format.startsWith("hearts")) {
+		    			Integer hearts = new Integer((int)(value/2));
+		    			//replacement += (hearts == 0 && value%2 != 0 ? "" : hearts.toString()) + (value%2 != 0 ? (hearts != 0 ? " " : (value < 0 && hearts == 0?"-":""))+"1/2" : "");
+		    			replacement += hearts.toString()+(value%2 != 0?".5":"");
+		    			replacement += " heart"+(value >= 2 || value <= -2 ? "s":""); //TODO: maybe localize or remove it
+		    		} else {
+		    			replacement += value+format;
+		    		}
+		    		replacement += "[]";
+	    		} catch (NumberFormatException ex) {
+	    			// fiddle thumbs
+	    		}
+	    	}
+	    	matcher.appendReplacement(sb, replacement);
 	    }
     	matcher.appendTail(sb);
     	
@@ -247,12 +361,12 @@ public class Messager {
 	    matcher.appendTail(sb);
     	
     	// parse color codes
-    	pattern = Pattern.compile("\\[\\w+]");
+    	pattern = Pattern.compile("\\[[\\w ]*\\]");
 	    matcher = pattern.matcher(sb.toString());
 	    sb = new StringBuffer();
 	    while (matcher.find()) {
-	    	if (Settings.colorMap.containsKey(matcher.group())) {
-	    		matcher.appendReplacement(sb, Settings.colorMap.get(matcher.group()));
+	    	if (colorMap.containsKey(matcher.group())) {
+	    		matcher.appendReplacement(sb, colorMap.get(matcher.group()));
 	    	}
 	    }
 	    matcher.appendTail(sb);
@@ -271,33 +385,33 @@ public class Messager {
 			}
 		}
 		String localized = Settings.localization.get(locale).getString(path);
-		return localized;
+		return localized != null?localized:string;
 	}
 	
-	public String localizedPassive(String name) {
-		return localizedPassive(name, null);
+	public String localizedPassive(String signature) {
+		return localizedPassive(signature, null);
 	}
 	
-	public static String localizedPassive(String name, ProfilePlayer profile) {
-		String localized = localize(name,"passives."+name+".name",profile);
-		return localized != null ? localized : (Settings.passives.containsKey(name) ? Settings.passives.get(name).name : "");
+	public static String localizedPassive(String signature, ProfilePlayer profile) {
+		String localized = localize(signature,"passives."+signature+".name",profile);
+		return localized != null ? localized : (Settings.passives.containsKey(signature) ? Settings.passives.get(signature).name : signature);
 	}
 	
-	public String localizedActive(String name) {
-		return localizedActive(name, null);
+	public String localizedActive(String signature) {
+		return localizedActive(signature, null);
 	}
 	
-	public static String localizedActive(String name, ProfilePlayer profile) {
-		String localized = localize(name,"actives."+name+".name",profile);
-		return localized != null ? localized : (Settings.actives.containsKey(name) ? Settings.actives.get(name).name : "");
+	public static String localizedActive(String signature, ProfilePlayer profile) {
+		String localized = localize(signature,"actives."+signature+".name",profile);
+		return localized != null ? localized : (Settings.actives.containsKey(signature) ? Settings.actives.get(signature).name : "");
 	}
 	
-	public String localizedJob(String name) {
-		return localizedJob(name, null);
+	public String localizedJob(String signature) {
+		return localizedJob(signature, null);
 	}
 	
-	public static String localizedJob(String name, ProfilePlayer profile) {
-		String localized = localize(name,"jobs."+name+".name",profile);
-		return localized != null ? localized : (Settings.jobs.containsKey(name) ? Settings.jobs.get(name).name : "");
+	public static String localizedJob(String signature, ProfilePlayer profile) {
+		String localized = localize(signature,"jobs."+signature+".name",profile);
+		return localized != null ? localized : (Settings.jobs.containsKey(signature) ? Settings.jobs.get(signature).name : "");
 	}
 }

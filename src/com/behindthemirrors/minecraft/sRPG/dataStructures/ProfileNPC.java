@@ -169,8 +169,14 @@ public class ProfileNPC {
 					}
 					// parse tools node
 					ArrayList<Material> tools = MiscBukkit.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
+					if (tools.isEmpty()) {
+						tools.add(null);
+					}
 					// parse versus node
 					ArrayList<Material> versus = MiscBukkit.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
+					if (versus.isEmpty()) {
+						versus.add(null);
+					}
 					for (Material tool : tools) {
 						if (!statTarget.containsKey(tool)) {
 							statTarget.put(tool, new HashMap<Material, HashMap<String,Double>>());

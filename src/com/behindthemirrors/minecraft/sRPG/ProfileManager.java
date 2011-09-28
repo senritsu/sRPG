@@ -37,6 +37,7 @@ public class ProfileManager {
 		profile.updateChargeDisplay();
 		if (!SRPG.debug && Settings.config.getStringList("debuggers", new ArrayList<String>()).contains(profile.name)) {
 			SRPG.debug = true;
+			player.getWorld().setTime(0);
 			SRPG.dout("Debug mode enabled ("+profile.name+" has joined)");
 		}
 	}
@@ -165,6 +166,7 @@ public class ProfileManager {
 	public void save(ProfilePlayer profile, String partial) {
 		// write xp
 		if (partial.isEmpty() || partial.equalsIgnoreCase("xp")) {
+			//TODO: FIND NPE !!
 			SRPG.database.setSingleIntValue("jobxp", profile.currentJob.signature, profile.jobXP.get(profile.currentJob), "user_id", profile.id);
 		}
 		// write job

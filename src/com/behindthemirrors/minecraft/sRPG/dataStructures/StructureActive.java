@@ -45,13 +45,7 @@ public class StructureActive implements Comparable<StructureActive> {
 			}
 		}
 		validMaterials = MiscBukkit.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
-		if (validMaterials.size() == 1 && validMaterials.contains(null)) {
-			validMaterials.clear();
-		}
 		versusMaterials = MiscBukkit.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
-		if (versusMaterials.size() == 1 && versusMaterials.contains(null)) {
-			versusMaterials.clear();
-		}
 		
 		combat = node.getBoolean("combat", false);
 	}

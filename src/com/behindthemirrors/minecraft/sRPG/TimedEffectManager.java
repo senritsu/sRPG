@@ -8,6 +8,7 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 
 public class TimedEffectManager implements Runnable {
@@ -15,6 +16,7 @@ public class TimedEffectManager implements Runnable {
 	ArrayList<ProfileNPC> relevantPlayers = new ArrayList<ProfileNPC>();
 	
 	public void run() {
+		Watcher.tick();
 		// check all currently active effects
 		//SRPG.output("tick");
 		Iterator<ProfileNPC> playerIterator = relevantPlayers.iterator();

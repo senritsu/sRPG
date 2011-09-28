@@ -1,10 +1,14 @@
 package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerListener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -12,9 +16,11 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
+import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 
 public class PlayerEventListener extends PlayerListener {
@@ -37,6 +43,26 @@ public class PlayerEventListener extends PlayerListener {
 	
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
 		SRPG.dout("player interact entity event"+event.getRightClicked().toString(),"actives");
+	}
+	
+	public void onPlayerPickupItem(PlayerPickupItemEvent event) {
+		if (Watcher.isProtected(event.getItem())) {
+			event.setCancelled(true);
+		}
+	}
+	public void onPlayerMove(PlayerMoveEvent event) {
+		Block from = event.getFrom().getBlock();
+		Block to = event.getTo().getBlock();
+		if (from != to) {
+			if (from.getType() == Material.AIR) {
+				from = from.getRelative(BlockFace.DOWN);
+			}
+			if (to.getType() == Material.AIR) {
+				to = to.getRelative(BlockFace.DOWN);
+			}
+			SRPG.dout("player moved from "+from.getType()+" to "+to.getType());
+			ResolverPassive.resolve(SRPG.profileManager.get(event.getPlayer()),from,to);
+		}
 	}
 	
 	public void onPlayerInteract(PlayerInteractEvent event) {

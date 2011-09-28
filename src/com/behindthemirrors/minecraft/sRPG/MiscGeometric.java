@@ -66,6 +66,18 @@ public class MiscGeometric {
 		}
 	}
 	
+	public static double angleBetweenFacings(Location location1,Location location2) {
+		double yaw1 = location1.getYaw()%360;
+		if (yaw1 < 0) {
+			yaw1 += 360;
+		}
+		double yaw2 = location2.getYaw()%360;
+		if (yaw2 < 0) {
+			yaw2 += 360;
+		}
+		return Math.min(Math.abs(yaw1-yaw2),360-Math.abs(yaw1-yaw2));
+	}
+	
 	public static BlockFace angleToCardinalFace(Location location) {
 		double pitch = location.getPitch();
 		BlockFace facing = null;

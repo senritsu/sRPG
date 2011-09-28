@@ -16,7 +16,9 @@ public class CombatInstance {
 	
 	private EntityDamageByEntityEvent event;
 	public ProfileNPC attacker;
+	public Material attackerHandItem;
 	public ProfileNPC defender;
+	public Material defenderHandItem;
 	
 	public double basedamage;
 	public double modifier;
@@ -26,6 +28,7 @@ public class CombatInstance {
 	public double missMultiplier;
 	public double evadeChance;
 	public double parryChance;
+	public double bowcharge;
 	
 	boolean crit = false;
 	boolean miss = false;
@@ -33,6 +36,7 @@ public class CombatInstance {
 	boolean parry = false;
 	boolean backstab = false;
 	ProfileNPC highground = null;
+	
 	private boolean canceled = false;
 	
 	private String cancelMessageAttacker;
@@ -59,7 +63,11 @@ public class CombatInstance {
 	}
 	
 	public void resolve() {
-		if (Math.abs(attacker.entity.getLocation().getYaw() - defender.entity.getLocation().getYaw()) < 30) {
+		//SRPG.dout("yaw attacker: "+attacker.entity.getLocation().getYaw()%360);
+		//SRPG.dout("yaw defender: "+defender.entity.getLocation().getYaw()%360);
+		double angle = MiscGeometric.angleBetweenFacings(attacker.entity.getLocation(),defender.entity.getLocation());
+		//SRPG.dout("difference angle: "+angle);
+		if (angle < 30) {
 			backstab = true;
 		}
 		double heightdifference = attacker.entity.getLocation().getY() - defender.entity.getLocation().getY();
@@ -68,8 +76,14 @@ public class CombatInstance {
 		} else if (heightdifference <= -3) {
 			highground = defender;
 		}
-		Material attackerHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
-		Material defenderHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
+		attackerHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
+		defenderHandItem = defender instanceof ProfilePlayer ? ((ProfilePlayer)defender).player.getItemInHand().getType() : null;
+		if (event.getDamager() instanceof Arrow) {
+			attackerHandItem = Material.BOW;
+		}
+		
+		SRPG.dout("attack launched with "+attackerHandItem+" versus "+defenderHandItem,"combat");
+		SRPG.dout("backstab = "+backstab+ " highground = "+(highground == null?"nobody":(highground == attacker? "attacker" : "defender")),"combat");
 		
 		evadeChance += defender.getStat("evade-chance", defenderHandItem, attackerHandItem) - attacker.getStat("anti-evade-chance", attackerHandItem, defenderHandItem);
 		parryChance += defender.getStat("parry-chance", defenderHandItem, attackerHandItem) - attacker.getStat("anti-parry-chance", attackerHandItem, defenderHandItem);
@@ -78,10 +92,12 @@ public class CombatInstance {
 		
 		if (attackerHandItem != null) {
 			String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(attackerHandItem);
-			if (event.getDamager() instanceof Arrow) {
-				basedamage = damageTableTools.get("bow");
-			} else if (toolName != null) {
-				basedamage = damageTableTools.get(toolName);
+			if (toolName != null) {
+				if (attackerHandItem == Material.BOW) {
+					basedamage = (int)(damageTableTools.get("bow.uncharged")+bowcharge*(damageTableTools.get("bow.charged")-damageTableTools.get("bow.uncharged")));
+				} else {
+					basedamage = damageTableTools.get(toolName);
+				}
 			} else {
 				basedamage = attacker.getStat("damage-unknown-item", 1);
 			}
@@ -157,10 +173,12 @@ public class CombatInstance {
 		
 		damage *= factor <= 1.0 ? factor : 1.0;
 		
+		SRPG.dout("basedamage: "+damage,"combat");
 		if (crit && damage > 0) {
 			Messager.sendMessage(attacker, "crit-attacker");
 			Messager.sendMessage(defender, "crit-defender");
 			damage *= critMultiplier;
+			SRPG.dout("critdamage: "+damage,"combat");
 		}
 		
 		SRPG.dout("combat damage: "+damage,"combat");

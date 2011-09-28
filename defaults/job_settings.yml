@@ -40,3 +40,5 @@ tree:
   sniper:
     prerequisites:
       archer: 3
+  rogue:
+    prerequisites: 

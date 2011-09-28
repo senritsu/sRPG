@@ -25,12 +25,51 @@
 # 
 #################################################################################
 
-passive1:
-  name: Passive Dummy 1 (backstab)
+backstab:
+  name: Backstab (dummy)
   effects:
     set-combat-state:
       conditions: [backstab-offensive]
       crit: true
+
+heightshot:
+  name: Higher Ground (dummy)
+  effects:
+    set-combat-state:
+      tools: [bow]
+      conditions: [highground-offensive]
+      crit: true
+      
+dropnight:
+  name: Drop Gold (dummy)
+  effects:
+    drop-change:
+      conditions: [night]
+      versus: [stone]
+      mode: replace
+      items: [gold_ingot]
+      amounts: [5]
+  
+dropday:
+  name: Drop Iron (dummy)
+  effects:
+    drop-change:
+      conditions: [day]
+      versus: [stone]
+      mode: replace
+      items: [iron_ingot,coal]
+      amounts: [3,5]
+      all: false
+
+losearmor:
+  name: Lose Armor (dummy)
+  effects:
+    trigger-active:
+      on-movement: true
+      from: [SNOW]
+      versus: [stone,dirt]
+      tools: [swords]
+      action: droparmor
 
 ###############
 # JOB BONUSES #
@@ -38,16 +77,20 @@ passive1:
 
 # TODO: think of a way of generalizing passives by adding a number behind them
 sword-incompetence:
-  name: 
+  name: Sword Incompetence
   description: 
   effects:
     boost:
       name: damage-modifier
       tools: [swords]
-      value: -1
+      value: -3
+    boost1:
+      name: crit-chance
+      tools: [swords]
+      value: -0.05
       
 snipers-eye:
-  name:
+  name: Sniper's eye
   description:
   effects:
     boost:

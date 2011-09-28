@@ -16,3 +16,4 @@ settings:
   locales: # add all localized localization_XX.ymls you want to make available here
     default: EN # creates a new .yml from default if the named locale is unavailable
     available: [EN] # players will be able to choose from the locales listed in here
+debuggers: [zaph34r]

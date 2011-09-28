@@ -16,13 +16,12 @@ import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 
 
 public class BlockEventListener extends BlockListener {
 	
-	public static ArrayList<Material> trackingMaterials = new ArrayList<Material>();
-	public static ArrayList<Block> userPlacedBlocks = new ArrayList<Block>();
 	public static HashMap<String,ArrayList<Integer>> groupBlockMapping;
 	public static HashMap<String,Double> xpChances;
 	public static HashMap<String,Integer> xpValues;
@@ -30,7 +29,7 @@ public class BlockEventListener extends BlockListener {
 	// check block rarity and award xp according to config
 	public void onBlockBreak(BlockBreakEvent event) {
 		ProfilePlayer profile = SRPG.profileManager.get(event.getPlayer());
-		if (SRPG.cascadeQueueScheduler.protectedBlocks.contains(event.getBlock())) {
+		if (Watcher.protectedBlocks.contains(event.getBlock())) {
 			event.setCancelled(true);
 		}
 		if (event.isCancelled() || profile == null || Settings.worldBlacklist.contains(event.getBlock().getWorld())) {
@@ -69,14 +68,14 @@ public class BlockEventListener extends BlockListener {
 		if (Settings.worldBlacklist.contains(block.getWorld())) {
 			return;
 		}
-		if (trackingMaterials.contains(block.getType())) {
-			userPlacedBlocks.add(block);
+		if (Watcher.trackingMaterials.contains(block.getType())) {
+			Watcher.userPlacedBlocks.add(block);
 		}
 		ResolverPassive.resolve(SRPG.profileManager.get(event.getPlayer()), event);
 	}
 	
 	public void onBlockCanBuild(BlockCanBuildEvent event) {
-		if (!Settings.worldBlacklist.contains(event.getBlock().getWorld()) && SRPG.cascadeQueueScheduler.protectedBlocks.contains(event.getBlock())) {
+		if (!Settings.worldBlacklist.contains(event.getBlock().getWorld()) && Watcher.protectedBlocks.contains(event.getBlock())) {
 			event.setBuildable(false);
 			return;
 		}

@@ -36,7 +36,7 @@ public class MiscBukkit {
 		for (String string : new String[] {"shovels","spades"}) {
 			materialAliases.put(string, Arrays.asList(new Material[] {Material.WOOD_SPADE,Material.STONE_SPADE,Material.IRON_SPADE,Material.DIAMOND_SPADE}));
 		}
-		for (String string : new String[] {"empty","fists","unarmed","barehanded"}) {
+		for (String string : new String[] {"nothing","empty","fists","unarmed","barehanded"}) {
 			materialAliases.put(string, Arrays.asList(new Material[] {Material.AIR}));
 		}
 		// initialize slime int size to string mapping
@@ -181,19 +181,12 @@ public class MiscBukkit {
 			try {
 				materials.add(Material.getMaterial(Integer.parseInt(entry)));
 			} catch (NumberFormatException ex) {
-				// hack
-				if (entry.equalsIgnoreCase("bow")) {
-					materials.add(Material.BOW);
-				// hack end
-				} else if (materialAliases.containsKey(entry.toLowerCase())) {
+				if (materialAliases.containsKey(entry.toLowerCase())) {
 					materials.addAll(materialAliases.get(entry.toLowerCase()));
 				} else if (Material.getMaterial(entry.toUpperCase()) != null) {
 					materials.add(Material.getMaterial(entry.toUpperCase()));
 				}
 			}
-		}
-		if (list.isEmpty()) {
-			materials.add(null);
 		}
 		return new ArrayList<Material>(materials);
 	}

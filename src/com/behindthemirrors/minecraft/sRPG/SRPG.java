@@ -86,8 +86,10 @@ public class SRPG extends JavaPlugin {
 			pm.registerEvent(Event.Type.PLAYER_JOIN, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_QUIT, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_ITEM_HELD, playerListener, Priority.Monitor, this);
-			pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Monitor, this);
-			pm.registerEvent(Event.Type.PLAYER_INTERACT_ENTITY, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_PICKUP_ITEM, playerListener, Priority.Highest, this);
+			pm.registerEvent(Event.Type.PLAYER_MOVE, playerListener, Priority.Monitor, this);
+			pm.registerEvent(Event.Type.PLAYER_INTERACT, playerListener, Priority.Highest, this);
+			pm.registerEvent(Event.Type.PLAYER_INTERACT_ENTITY, playerListener, Priority.Highest, this);
 			pm.registerEvent(Event.Type.PLAYER_TOGGLE_SNEAK, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.PLAYER_RESPAWN, playerListener, Priority.Monitor, this);
 			pm.registerEvent(Event.Type.BLOCK_BREAK, blockListener, Priority.Highest, this);
@@ -117,7 +119,7 @@ public class SRPG extends JavaPlugin {
     }
     
     public static void dout(String text, String mode) {
-    	if (mode == null || debugmodes.contains(mode)) {
+    	if (debug && (mode == null || debugmodes.contains(mode))) {
     		log.info(DEBUG_PREFIX + text + (mode == null?"":" [from '"+mode+"']"));
     	}
     }

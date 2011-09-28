@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
@@ -47,7 +48,7 @@ public class MiscGeneric {
 	    return file;
 	}
 
-	public static String join(ArrayList<String> list, String delimiter) {
+	public static String join(List<String> list, String delimiter) {
 		StringBuilder str = new StringBuilder();
 		Boolean first = true;
 		for (String entry : list) {

@@ -1,15 +1,20 @@
 package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map.Entry;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.util.Vector;
@@ -19,6 +24,7 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 
 public class ResolverEffects {
@@ -67,26 +73,62 @@ public class ResolverEffects {
 			return;
 		}
 		
+		ArrayList<Material> whitelist = MiscBukkit.parseMaterialList(node.getStringList("whitelist", new ArrayList<String>()));
+		ArrayList<Material> blacklist = MiscBukkit.parseMaterialList(node.getStringList("blacklist", new ArrayList<String>()));
+		
 		ArrayList<ItemStack> stacks = new ArrayList<ItemStack>();
 		for (String location : locations) {
 			if (target instanceof ProfilePlayer) {
+				ArrayList<Integer> slots = new ArrayList<Integer>();
 				PlayerInventory inventory = ((Player)target.entity).getInventory();
 				if (location.equalsIgnoreCase("hand")) {
-					stacks.add(inventory.getItemInHand());
+					slots.add(inventory.getHeldItemSlot());
 				} else if (location.equalsIgnoreCase("quickbar")) {
-					//stacks.addAll(inventory.)
+					for (int i=0;i<=8;i++) {
+						slots.add(i);
+					}
 				} else if (location.equalsIgnoreCase("inventory")) {
-					
+					for (int i=9;i<=35;i++) {
+						slots.add(i);
+					}
 				} else if (location.equalsIgnoreCase("armor")) {
-					
-				} else if (location.equalsIgnoreCase("helmet")) {
-					
-				} else if (location.equalsIgnoreCase("leggings")) {
-					
+					slots.addAll(Arrays.asList(new Integer[] {36,37,38,39}));
 				} else if (location.equalsIgnoreCase("boots")) {
-					
+					slots.add(36);
+				} else if (location.equalsIgnoreCase("leggings")) {
+					slots.add(37);
 				} else if (location.equalsIgnoreCase("chestplate")) {
+					slots.add(38);
+				} else if (location.equalsIgnoreCase("helmet")) {
+					slots.add(39);
+				}
+				Iterator<Integer> iterator = slots.iterator();
+				while (iterator.hasNext()) {
+					Material type = inventory.getItem(iterator.next()).getType();
+					if ((whitelist.isEmpty() && blacklist.contains(type)) || 
+						(!whitelist.isEmpty() && !whitelist.contains(type)) ||
+						type == Material.AIR) {
+						iterator.remove();
+					}
+				}
+				if (!node.getBoolean("all", false)) {
+					int choice = slots.get(SRPG.generator.nextInt(slots.size()));
+					slots.clear();
+					slots.add(choice);
+				}
+				for (int i : slots) {
+					ItemStack stack = inventory.getItem(i);
+					int amount = Math.min(node.getInt("amount",stack.getAmount()),stack.getAmount());
+					ItemStack copy = new ItemStack(stack.getType(),amount);
+					stack.setAmount(stack.getAmount() - amount);
 					
+					copy.setDurability(stack.getDurability());
+					copy.setData(stack.getData());
+					stacks.add(copy);
+					
+					if (!(stack.getAmount() > 0)) {
+						inventory.clear(i);
+					}
 				}
 			} else {
 				String creature = MiscBukkit.getEntityName(target.entity);
@@ -99,13 +141,23 @@ public class ResolverEffects {
 				} else if (location.equalsIgnoreCase("inventory")) {
 					stacks.addAll(MiscBukkit.getNaturalDrops(target.entity));
 				}
+				Iterator<ItemStack> iterator = stacks.iterator();
+				while (iterator.hasNext()) {
+					Material type = iterator.next().getType();
+					if ((whitelist.isEmpty() && blacklist.contains(type)) || 
+						(!whitelist.isEmpty() && !whitelist.contains(type)) ||
+						type == Material.AIR) {
+						iterator.remove();
+					}
+				}
+				if (!node.getBoolean("all", false)) {
+					ItemStack choice = stacks.get(SRPG.generator.nextInt(stacks.size()));
+					stacks.clear();
+					stacks.add(choice);
+				}
 			}
 		}
-		if (!node.getBoolean("all", false)) {
-			ItemStack choice = stacks.get(SRPG.generator.nextInt(stacks.size()));
-			stacks.clear();
-			stacks.add(choice);
-		}
+		
 		for (ItemStack stack : stacks) {
 			if (action.equalsIgnoreCase("steal")) {
 				if (source instanceof ProfilePlayer) {
@@ -113,11 +165,9 @@ public class ResolverEffects {
 				}
 			} else if (action.equalsIgnoreCase("drop")) {
 				if (stack.getAmount() > 0) {
-					target.entity.getWorld().dropItemNaturally(target.entity.getLocation(), stack);
+					Item item = target.entity.getWorld().dropItemNaturally(target.entity.getLocation(), stack);
+					Watcher.protect(item,node.getInt("protected-for",0));
 				}
-			}
-			if (target instanceof ProfilePlayer) {
-				((Player)source.entity).getInventory().removeItem(stack);
 			}
 		}
 	}
@@ -268,8 +318,6 @@ public class ResolverEffects {
 		int combinedDelay = 0;
 		
 		ArrayList<Material> whitelist = MiscBukkit.parseMaterialList(node.getStringList("whitelist", new ArrayList<String>()));
-		// TODO: think of a way to remove the null from the parsed material list while still having everything work properly
-		whitelist.remove(null);
 		
 		ArrayList<Block> blocks = new ArrayList<Block>();
 		ArrayList<Integer> delays = new ArrayList<Integer>();
@@ -383,19 +431,24 @@ public class ResolverEffects {
 		}
 	}
 
-	public static void changeBlockDrops(Block block, ConfigurationNode node) {
+	public static void changeBlockDrops(BlockBreakEvent event, Block block, ConfigurationNode node) {
 		ArrayList<ItemStack> defaults = new ArrayList<ItemStack>();
 		defaults.add(MiscBukkit.getNaturalDrops(block));
-		changeDrops(node,defaults,block.getLocation());
+		if (changeDrops(node,defaults,block.getLocation())) {
+			event.setCancelled(true);
+			block.setType(Material.AIR);
+		}
 	}
 	
-	public static void changeEntityDrops(LivingEntity entity, ConfigurationNode node) {
+	public static void changeEntityDrops(EntityDeathEvent event, LivingEntity entity, ConfigurationNode node) {
 		ArrayList<ItemStack> defaults = new ArrayList<ItemStack>();
 		defaults.addAll(MiscBukkit.getNaturalDrops(entity));
-		changeDrops(node,defaults,entity.getLocation());
+		if (changeDrops(node,defaults,entity.getLocation())) {
+			event.getDrops().clear();
+		}
 	}
 	
-	public static void changeDrops(ConfigurationNode node, ArrayList<ItemStack> defaults, Location location) {
+	public static boolean changeDrops(ConfigurationNode node, ArrayList<ItemStack> defaults, Location location) {
 		ArrayList<ItemStack> drops = new ArrayList<ItemStack>();
 		
 		String mode = node.getString("mode");
@@ -414,7 +467,8 @@ public class ResolverEffects {
 					drops.add(drop);
 				}
 			} else {
-				SRPG.output("Error during drop change effect handling (different sizes for items/amounts), check your skill config");
+				SRPG.output("Error during drop change effect handling (different sizes for items/amounts), check your skill config for incorrect material names or wrong lists");
+				return false;
 			}
 		}
 		
@@ -429,5 +483,11 @@ public class ResolverEffects {
 				location.getWorld().dropItemNaturally(location, item);
 			}
 		}
+		
+		if (mode.equalsIgnoreCase("replace")) {
+			return true;
+		}
+		return false;
+		
 	}
 }

@@ -73,7 +73,7 @@ stats:
       diamond:
         damage: 2
     bow:
-      damage: 4
-      delay: 20 # 20 = 1 second
-    fists:
-      damage: 2
+      uncharged:
+        damage: 2
+      charged:
+        damage: 10

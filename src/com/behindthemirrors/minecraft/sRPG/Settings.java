@@ -47,6 +47,8 @@ public class Settings {
 	static String defaultLocale;
 	
 	public static HashMap<String, HashMap<String, String>> JOB_ALIASES;
+	public static HashMap<String, HashMap<String, String>> PASSIVE_ALIASES;
+	public static HashMap<String, HashMap<String, String>> ACTIVE_ALIASES;
 	public static ArrayList<String> SKILLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","axes","pickaxes","shovels","hoes","bow","ukemi","evasion", "focus"}));
 	static ArrayList<String> TOOLS = new ArrayList<String>(Arrays.asList(new String[] {"swords","pickaxes","axes","shovels","hoes"}));
 	static ArrayList<String> GRADES =  new ArrayList<String>(Arrays.asList(new String[] {"wood","stone","iron","gold","diamond"}));
@@ -68,70 +70,16 @@ public class Settings {
 			}
 		}
 		TOOL_MATERIAL_TO_TOOL_GROUP.put(Material.BOW,"bow");
+		TOOL_MATERIAL_TO_STRING.put(Material.BOW,"bow");
 	}
 	static ArrayList<Double> ARMOR_FACTORS;
-	static HashMap<Material,ArrayList<Material>> MULTIDROP_VALID_BLOCKS = new HashMap<Material, ArrayList<Material>>();
-	static {
-		// TODO: rework the multidrop implementation because it sucks
-		// initialize tool mining multidrop whitelist
-		ArrayList<Material> arraylist = new ArrayList<Material>();
-		arraylist.add(Material.STONE);
-		arraylist.add(Material.COBBLESTONE);
-		arraylist.add(Material.MOSSY_COBBLESTONE);
-		arraylist.add(Material.SANDSTONE);
-		arraylist.add(Material.COAL_ORE);
-		MULTIDROP_VALID_BLOCKS.put(Material.WOOD_PICKAXE,arraylist);
-		
-		arraylist = new ArrayList<Material>();
-		arraylist.addAll(MULTIDROP_VALID_BLOCKS.get(Material.WOOD_PICKAXE));
-		arraylist.add(Material.LAPIS_ORE);
-		arraylist.add(Material.IRON_ORE);
-		MULTIDROP_VALID_BLOCKS.put(Material.STONE_PICKAXE,arraylist);
-		
-		arraylist = new ArrayList<Material>();
-		arraylist.addAll(MULTIDROP_VALID_BLOCKS.get(Material.STONE_PICKAXE));
-		arraylist.add(Material.DIAMOND_ORE);
-		arraylist.add(Material.GOLD_ORE);
-		arraylist.add(Material.REDSTONE_ORE);
-		MULTIDROP_VALID_BLOCKS.put(Material.IRON_PICKAXE,arraylist);
-		
-		arraylist = new ArrayList<Material>();
-		arraylist.addAll(MULTIDROP_VALID_BLOCKS.get(Material.IRON_PICKAXE));
-		arraylist.add(Material.OBSIDIAN);
-		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_PICKAXE,arraylist);
-		
-		ArrayList<Material> log = new ArrayList<Material>();
-		log.add(Material.LOG);
-		MULTIDROP_VALID_BLOCKS.put(Material.WOOD_AXE,log);
-		MULTIDROP_VALID_BLOCKS.put(Material.STONE_AXE,log);
-		MULTIDROP_VALID_BLOCKS.put(Material.IRON_AXE,log);
-		MULTIDROP_VALID_BLOCKS.put(Material.DIAMOND_AXE,log);
-	}
+	
 	public static ArrayList<Material> BLOCK_CLICK_BLACKLIST = new ArrayList<Material>(Arrays.asList(new Material[] {Material.BED,
 															Material.BED_BLOCK,Material.DISPENSER,Material.FURNACE,Material.BURNING_FURNACE,Material.JUKEBOX,
 															Material.NOTE_BLOCK,Material.STORAGE_MINECART,Material.WOOD_DOOR,
 															Material.WOODEN_DOOR,Material.CHEST,Material.WORKBENCH,Material.TNT,
 															Material.MINECART,Material.BOAT,Material.DIODE_BLOCK_OFF, Material.DIODE_BLOCK_ON, Material.TRAP_DOOR}));
 	
-	static HashMap<String,String> colorMap = new HashMap<String, String>();
-	static {
-		// initialize color tag replacement map
-		String[] colorStrings = new String[] {
-				"[aqua]","[black]","[blue]","[dark_aqua]",
-				"[dark_blue]","[dark_gray]","[dark_green]","[dark_purple]",
-				"[dark_red]","[gold]","[gray]","[green]",
-				"[light_purple]","[red]","[white]","[yellow]"
-				};
-		ChatColor[] chatColors = new ChatColor[] {
-				ChatColor.AQUA,ChatColor.BLACK,ChatColor.BLUE,ChatColor.DARK_AQUA,
-				ChatColor.DARK_BLUE,ChatColor.DARK_GRAY,ChatColor.DARK_GREEN,ChatColor.DARK_PURPLE,
-				ChatColor.DARK_RED,ChatColor.GOLD,ChatColor.GRAY,ChatColor.GREEN,
-				ChatColor.LIGHT_PURPLE,ChatColor.RED,ChatColor.WHITE,ChatColor.YELLOW,
-				};
-		for (int i=0;i<colorStrings.length;i++) {
-			colorMap.put(colorStrings[i], chatColors[i].toString());
-		}
-	}
 	
 	static HashMap<String, HashMap<String, String>> nameReplacements;
 
@@ -180,6 +128,8 @@ public class Settings {
 			localization = new HashMap<String,Configuration>();
 			nameReplacements = new HashMap<String, HashMap<String,String>>();
 			JOB_ALIASES = new HashMap<String, HashMap<String,String>>();
+			PASSIVE_ALIASES = new HashMap<String, HashMap<String,String>>();
+			ACTIVE_ALIASES = new HashMap<String, HashMap<String,String>>();
 			
 			// create plugin default locale file
 			for (String name : new String[] {"EN"}) {
@@ -212,6 +162,18 @@ public class Settings {
 					if (localization.get(locale).getKeys("jobs") != null) {
 						for (String name : localization.get(locale).getKeys("jobs")) {
 							JOB_ALIASES.get(locale).put(localization.get(locale).getString("jobs."+name).toLowerCase(),name);
+						}
+					}
+					PASSIVE_ALIASES.put(locale,new HashMap<String,String>());
+					if (localization.get(locale).getKeys("passives") != null) {
+						for (String name : localization.get(locale).getKeys("passives")) {
+							PASSIVE_ALIASES.get(locale).put(localization.get(locale).getString("passives."+name).toLowerCase(),name);
+						}
+					}
+					ACTIVE_ALIASES.put(locale,new HashMap<String,String>());
+					if (localization.get(locale).getKeys("actives") != null) {
+						for (String name : localization.get(locale).getKeys("actives")) {
+							ACTIVE_ALIASES.get(locale).put(localization.get(locale).getString("actives."+name).toLowerCase(),name);
 						}
 					}
 				}
@@ -287,13 +249,17 @@ public class Settings {
 				// tool damage
 				CombatInstance.damageTableTools = new HashMap<String, Integer>();
 				node = difficultyConfig.getNode("stats.tools");
-				for (String tool : Settings.TOOL_MATERIAL_TO_STRING.values()) {
-					if (!node.getBoolean(tool+".override", false)) {
-						CombatInstance.damageTableTools.put(tool, node.getInt(tool+".damage", 1));
+				try {
+					for (String toolgroup : node.getKeys()) {
+						for (String tool : node.getKeys(toolgroup)) {
+							tool = toolgroup+"."+tool;
+							if (!node.getBoolean(tool+".override", false)) {
+								CombatInstance.damageTableTools.put(tool, node.getInt(tool+".damage", 1));
+							}
+						}
 					}
-				}
-				if (!node.getBoolean("bow.override", false)) {
-					CombatInstance.damageTableTools.put("bow",node.getInt("bow.damage", 1));
+				} catch (NullPointerException ex) {
+					SRPG.output("Error in difficulty configuration, check tool damage section");
 				}
 			}
 			
@@ -321,47 +287,53 @@ public class Settings {
 				}
 				// load skill definitions
 				passives = new HashMap<String, StructurePassive>();
-				for (String name : passiveDefinitions.getKeys()) {
-					passives.put(name, new StructurePassive(name,passiveDefinitions.getNode(name)));
+				PASSIVE_ALIASES.put(null,new HashMap<String, String>());
+				for (String signature : passiveDefinitions.getKeys()) {
+					passives.put(signature, new StructurePassive(signature,passiveDefinitions.getNode(signature)));
+					PASSIVE_ALIASES.get(null).put(passives.get(signature).name.toLowerCase(), signature);
 				}
 				SRPG.output("loaded "+(new Integer(passives.size())).toString()+" "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.passive"),passives.size()));
 				
 				// load ability definitions
 				actives = new HashMap<String, StructureActive>();
-				for (String name : activeDefinitions.getKeys()) {
-					actives.put(name, new StructureActive(name,activeDefinitions.getNode(name)));
+				ACTIVE_ALIASES.put(null,new HashMap<String, String>());
+				for (String signature : activeDefinitions.getKeys()) {
+					actives.put(signature, new StructureActive(signature,activeDefinitions.getNode(signature)));
+					ACTIVE_ALIASES.get(null).put(actives.get(signature).name.toLowerCase(), signature);
 				}
 				SRPG.output("loaded "+(new Integer(actives.size())).toString()+" "+MiscBukkit.parseSingularPlural(localization.get(defaultLocale).getString("terminology.active"),actives.size()));
 				
 				// load job definitions
 				jobs = new HashMap<String, StructureJob>();
-				for (String name : jobDefinitions.getKeys()) {
-					if (jobsettings.getKeys("tree").contains(name) && jobDefinitions.getBoolean(name+".enabled", true)) {
-						jobs.put(name, new StructureJob(name,jobDefinitions.getNode(name)));
+				JOB_ALIASES.put(null,new HashMap<String, String>());
+				for (String signature : jobDefinitions.getKeys()) {
+					if (jobsettings.getKeys("tree").contains(signature) && jobDefinitions.getBoolean(signature+".enabled", true)) {
+						jobs.put(signature, new StructureJob(signature,jobDefinitions.getNode(signature)));
+						JOB_ALIASES.get(null).put(jobs.get(signature).name.toLowerCase(), signature);
 						
 						// load job prerequisites from jobtree
-						jobs.get(name).prerequisites = new HashMap<StructureJob, Integer>();
-						if (jobsettings.getKeys("tree."+name+".prerequisites")!= null) {
-							for (String prereq : jobsettings.getKeys("tree."+name+".prerequisites")) {
-								jobs.get(name).prerequisites.put(jobs.get(prereq), jobsettings.getInt("tree."+name+".prerequisites."+prereq, 1));
+						jobs.get(signature).prerequisites = new HashMap<StructureJob, Integer>();
+						if (jobsettings.getKeys("tree."+signature+".prerequisites")!= null) {
+							for (String prereq : jobsettings.getKeys("tree."+signature+".prerequisites")) {
+								jobs.get(signature).prerequisites.put(jobs.get(prereq), jobsettings.getInt("tree."+signature+".prerequisites."+prereq, 1));
 							}
 						} 
 					}
 				}
 				// disable all jobs with missing prerequisites
 				ArrayList<String> deactivate = new ArrayList<String>();
-				for (String name : jobs.keySet()) {
-					for (StructureJob job : jobs.get(name).prerequisites.keySet()) {
+				for (String signature : jobs.keySet()) {
+					for (StructureJob job : jobs.get(signature).prerequisites.keySet()) {
 						if (!jobs.containsKey(job.signature)) {
-							deactivate.add(name);
-							deactivate.addAll(MiscBukkit.getChildren(jobs, name));
+							deactivate.add(signature);
+							deactivate.addAll(MiscBukkit.getChildren(jobs, signature));
 							break;
 						}
 					}
 				}
 				deactivate = new ArrayList<String>(new HashSet<String>(deactivate));
-				for (String name : deactivate) {
-					jobs.remove(name);
+				for (String signature : deactivate) {
+					jobs.remove(signature);
 				}
 				// populate default job list
 				initialJobs = new ArrayList<StructureJob>();
@@ -373,8 +345,8 @@ public class Settings {
 				
 				// load mobs
 				mobs = new HashMap<String, StructureJob>();
-				for (String name : mobDefinitions.getKeys()) {
-					mobs.put(name, new StructureJob(name,mobDefinitions.getNode(name)));
+				for (String creature : mobDefinitions.getKeys()) {
+					mobs.put(creature, new StructureJob(creature,mobDefinitions.getNode(creature)));
 				}
 				
 				// status report

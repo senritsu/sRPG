@@ -16,7 +16,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
-import com.behindthemirrors.minecraft.sRPG.PassiveAbility;
+import com.behindthemirrors.minecraft.sRPG.Messager;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
 import com.behindthemirrors.minecraft.sRPG.MiscBukkit;
@@ -30,6 +30,7 @@ public class DamageEventListener extends EntityListener {
 
 	static ArrayList<String> ANIMALS = new ArrayList<String>(Arrays.asList(new String[] {"pig","sheep","chicken","cow","squid"}));
 	static ArrayList<String> MONSTERS = new ArrayList<String>(Arrays.asList(new String[] {"zombie","spider","skeleton","creeper","slime","pigzombie","ghast","giant","wolf"}));
+	static ArrayList<DamageCause> NATURAL_CAUSES = new ArrayList<DamageCause>(Arrays.asList(new DamageCause[] {DamageCause.FALL,DamageCause.FIRE,DamageCause.FIRE_TICK,DamageCause.LAVA,DamageCause.SUFFOCATION}));
 	
 	@Override
 	public void onEntityDamage(EntityDamageEvent event) {
@@ -52,25 +53,59 @@ public class DamageEventListener extends EntityListener {
 //			SRPG.output(((EntityDamageByEntityEvent)event).getDamager().toString());
 //		}
 		
+		if (!NATURAL_CAUSES.contains(event.getCause())) {
+			SRPG.dout("damage event: "+event.toString()+", cause:"+event.getCause().name(), "combat");
+		}
+		
 		if (event.getCause() == DamageCause.FALL) {
 			if (target instanceof Player) {
-				PassiveAbility.trigger(event); //TODO: change to new system
+				ProfilePlayer profile = (ProfilePlayer)SRPG.profileManager.get(target);
+				if (event.getCause() == DamageCause.FALL) {
+					// check permissions
+					
+					Integer height = (int) Math.ceil(event.getEntity().getFallDistance());
+					Integer damage = height - 2 + profile.getStat("fall-damage-modifier", 0);
+					
+					// auto-roll roll
+					double roll = SRPG.generator.nextDouble();
+					double autorollChance = profile.getStat("roll-chance");
+					// manual roll check
+					boolean manualRoll = (profile.player != null) && profile.player.isSneaking() && (System.currentTimeMillis() - ((ProfilePlayer) profile).sneakTimeStamp) < profile.getStat("manual-roll-window", 0);
+					if (manualRoll || roll < autorollChance) {
+						damage -= profile.getStat("roll-damage-reduction",0);
+						if (manualRoll) {
+							Messager.sendMessage(profile.player, "roll-manual");
+						} else {
+							Messager.sendMessage(profile.player, "roll-auto");
+						}
+					}
+					// no negative damage
+					if (damage < 0) {
+						damage = 0;
+					}
+					
+					event.setDamage(damage);
+				}
 			}
-		} else if (event instanceof EntityDamageByEntityEvent && ((EntityDamageByEntityEvent)event).getDamager() instanceof LivingEntity) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+		} else if (event instanceof EntityDamageByEntityEvent && 
+				((EntityDamageByEntityEvent)event).getDamager() instanceof LivingEntity ||
+				event.getCause() == DamageCause.PROJECTILE) { // || event.getCause() == DamageCause.ENTITY_EXPLOSION) {
+			
 			EntityDamageByEntityEvent attackEvent = (EntityDamageByEntityEvent)event;
 			CombatInstance combat = new CombatInstance(attackEvent);
 			
 			// debug message
-			if (source instanceof Player) {
-				// debug message, displays remaining health of target before damage from this attack is applied
-				SRPG.dout("Target of attack has "+((LivingEntity)event.getEntity()).getHealth() + " health.","combat");
-			}
 			if (attackEvent.getDamager() instanceof LivingEntity) {
 				source = (LivingEntity)attackEvent.getDamager();
 				SRPG.dout("entity attack","combat");
 			} else if (attackEvent.getDamager() instanceof Projectile) {
 				source = ((Projectile)attackEvent.getDamager()).getShooter();
 				SRPG.dout("projectile attack","combat");
+				if (source instanceof Player) {
+					int damage = event.getDamage();
+					combat.bowcharge = (damage-2)/8.0;
+					SRPG.dout("bow charge level: "+combat.bowcharge+" (from "+damage+")","combat");
+				}
 			}
 			
 			// check attack restrictions

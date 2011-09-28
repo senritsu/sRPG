@@ -274,10 +274,10 @@ public class Database {
     
     // value type overloads start
     public boolean createStringColumnsIfNotExist(String table, ArrayList<String> columns) {
-    	return createColumnsIfNotExist(table, columns, " VARCHAR(40) NOT NULL");
+    	return createColumnsIfNotExist(table, columns, " "+text+" NOT NULL");
     }
     public boolean createIntColumnsIfNotExist(String table, ArrayList<String> columns) {
-    	return createColumnsIfNotExist(table, columns, " INT(10) NOT NULL DEFAULT '0'");
+    	return createColumnsIfNotExist(table, columns, " "+uint+" NOT NULL DEFAULT 0");
     }
     // value type overloads end
     public boolean createColumnsIfNotExist(String table, ArrayList<String> columns, String format) {
@@ -287,9 +287,16 @@ public class Database {
     	}
     	ArrayList<String> formatted = new ArrayList<String>();
     	for (String entry : columns) {
-    		formatted.add(entry+" "+format);
+    		formatted.add(entry+format);
     	}
-    	String sql = "ALTER TABLE "+tablePrefix+table+" ADD ("+MiscGeneric.join(formatted,",")+");";
+    	String sql = "";
+    	if (Settings.mySQLenabled) {
+    		sql = "ALTER TABLE "+tablePrefix+table+" ADD ("+MiscGeneric.join(formatted,",")+");";
+    	} else {
+    		for (String column : formatted) {
+    			sql += "ALTER TABLE "+tablePrefix+table+" ADD "+column+";";
+    		}
+    	}
     	return update(sql);
     }
     

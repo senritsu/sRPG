@@ -189,6 +189,76 @@ dummy10:
       offset: [0,0,-8]
       delay: 40
 
+droparmor:
+  name: Drop Armor (dummy)
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  tools: [AIR]
+  effects:
+    manipulate-item:
+      self: true
+      target: false
+      action: drop
+      location: [armor]
+      all: true
+  
+steal:
+  name: Steal (dummy)
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  tools: [AIR]
+  effects:
+    manipulate-item:
+      self: true
+      target: false
+      action: destroy
+      location: [inventory]
+      amount: 4
+      
+supersteal:
+  name: SuperSteal (dummy)
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  tools: [swords]
+  effects:
+    manipulate-item:
+      self: true
+      target: false
+      action: destroy
+      location: [inventory]
+      amount: 4
+      all: true
+    
+disarm:
+  name: Disarm (dummy)
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  tools: [swords]
+  effects:
+    manipulate-item:
+      self: true
+      target: false
+      action: drop
+      protected-for: 5
+      location: [hand]
+
+
 improvised-arrows:
   name: Improvised Arrows
   description: 

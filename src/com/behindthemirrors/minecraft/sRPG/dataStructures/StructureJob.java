@@ -106,7 +106,7 @@ public class StructureJob implements Comparable<StructureJob> {
 	public HashMap<StructurePassive,EffectDescriptor> getPassives(Integer currentLevel) {
 		HashMap<StructurePassive,EffectDescriptor> available = new HashMap<StructurePassive,EffectDescriptor>();
 		ArrayList<String> replaced = new ArrayList<String>();
-		for (int i = 1; i <= 10; i++) {
+		for (int i = 1; i <= currentLevel; i++) {
 			if (passives.containsKey(i)) {
 				HashMap<StructurePassive,EffectDescriptor> map = passives.get(i);
 				available.putAll(map);
@@ -129,7 +129,7 @@ public class StructureJob implements Comparable<StructureJob> {
 	public HashMap<StructureActive,EffectDescriptor> getActives(Integer currentLevel) {
 		HashMap<StructureActive,EffectDescriptor> available = new HashMap<StructureActive,EffectDescriptor>();
 		ArrayList<String> replaced = new ArrayList<String>();
-		for (int i = 1; i <= 10; i++) {
+		for (int i = 1; i <= currentLevel; i++) {
 			if (actives.containsKey(i)) {
 				HashMap<StructureActive,EffectDescriptor> map = actives.get(i);
 				available.putAll(map);

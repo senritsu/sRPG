@@ -131,7 +131,6 @@ public class ProfilePlayer extends ProfileNPC {
 		// set xp bar
 		double toLast = currentJob.xpToNextLevel(currentLevel-1);
 		double toNext = currentJob.xpToNextLevel(currentLevel) - toLast;
-		SRPG.dout(amount-toLast+"/"+toNext);
 		setXPBar(toNext <= 0 || currentLevel >= job.maximumLevel ? 1.0 : (amount-toLast) / toNext);
 		setLevelDisplay(currentLevel);
 		// check for unlocked jobs
@@ -192,7 +191,7 @@ public class ProfilePlayer extends ProfileNPC {
 				if (name.length() >= 26) {
 					name = name.substring(0, 23) + "...";
 				}
-				SpoutManager.getPlayer(player).sendNotification("Now active:", name, player.getItemInHand().getType());
+				SpoutManager.getPlayer(player).sendNotification("Now active:", name, Material.STONE);//player.getItemInHand().getType());
 			} else {
 				Messager.chargeDisplay(player, changed);
 			}
@@ -202,16 +201,6 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public boolean prepare() {
-		if (SRPG.debugmodes.contains("player")) {
-			for (int i = 0;i<50;i++) {
-				try {
-					ItemStack item = player.getInventory().getItem(i);
-					SRPG.dout(i+": "+item.getAmount()+" x "+item.getType().toString(),"player");
-				} catch (ArrayIndexOutOfBoundsException ex) {
-					SRPG.dout(i+": no item","player");
-				}
-			}
-		}
 		if (cycleActive()) {
 			abilityReadiedTimeStamp = System.currentTimeMillis();
 			prepared = true;

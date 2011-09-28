@@ -70,5 +70,7 @@ stats:
       diamond:
         damage: 1
     bow:
-      damage: 3
-      delay: 20 # 20 = 1 second
+      uncharged:
+        damage: 1
+      charged:
+        damage: 6

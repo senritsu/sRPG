@@ -123,174 +123,30 @@ messages:
     description: 
     level-line: 
   
-  ######################
-  # SKILL DESCRIPTIONS #
-  ######################
-  
-  skill-info:
-    common-header: "[blue]<<<<!skillname>>>>"
-    skill-effect-header: "[green]Grants"
-    passive-header: "[green]Passive Abilities"
-    active-header: "[green]Active Abilities"
-    
-    swords:
-      description:
-        - "   <!skillname> allows its practicioners to fully utilize"
-        - "   the advantages a bladed weapon gives in combat."
-        - ""
-      basic:
-        - "   [light-purple]<%skills.effects.swords.durability-recovery-chance>[white] chance per point to not lose durability on hit"
-        - ""
-      passive:
-        - "   [dark-green]<passive-abilities.swords.apprentice> [gray][<milestones.apprentice>] "
-        - "       [light-purple]<%skills.passive-abilities.swords.apprentice.parry-chance>[white] chance to parry an attack"
-        - "   [dark-green]<passive-abilities.swords.expert> [gray][<milestones.expert>] "
-        - "      +[light-purple]<%skills.passive-abilities.swords.expert.parry-chance>[white] chance to parry an attack"
-        - "      +[light-purple]<%skills.passive-abilities.swords.expert.crit-chance>[white] chance to make a critical hit"
-        - "   [dark-green]<passive-abilities.swords.master> [gray][<milestones.master>] "
-        - "      +[light-purple]<%skills.passive-abilities.swords.master.crit-chance>[white] chance to make a critical hit"
-        - "      +[light-purple]<%skills.passive-abilities.swords.master.crit-multiplier>[white] damage on a critical hit"
-      active:
-        - "   [dark-green]<active-abilities.swords.stone> [gray][Stone]"
-        - "   [dark-green]<active-abilities.swords.iron> [gray][Iron]"
-        - "   [dark-green]<active-abilities.swords.diamond> [gray][Diamond]"
-        
-    pickaxes: 
-      description:
-        - "   <!skillname> allows its practicioners to better"
-        - "   utilize their tool of choice when gathering resources."
-        - ""
-      basic:
-        - "   [light-purple]<%skills.effects.pickaxes.durability-recovery-chance>[white] chance per point to not lose durability on use"
-        - ""
-      passive:
-        - "   [dark-green]<passive-abilities.pickaxes.apprentice> [gray][<milestones.apprentice>] "
-        - "       [light-purple]<%skills.passive-abilities.pickaxes.apprentice.double-drop-chance>[white] chance to get double drops"
-        - "   [dark-green]<passive-abilities.pickaxes.expert> [gray][<milestones.expert>] "
-        - "      +[light-purple]<%skills.passive-abilities.pickaxes.expert.double-drop-chance>[white] chance to get double drops"
-        - "   [dark-green]<passive-abilities.pickaxes.master> [gray][<milestones.master>] "
-        - "      +[light-purple]<%skills.passive-abilities.pickaxes.master.double-drop-chance>[white] chance to get double drops"
-        - "       [light-purple]<%skills.passive-abilities.pickaxes.master.triple-drop-chance>[white] chance to get triple drops"
-      active:
-        - "   [dark-green]<active-abilities.pickaxes.stone> [gray][Stone]"
-        - "   [dark-green]<active-abilities.pickaxes.iron> [gray][Iron]"
-        - "   [dark-green]<active-abilities.pickaxes.diamond> [gray][Diamond]"
-        
-    axes: 
-      description:
-        - "   <!skillname> allows its practicioners to better"
-        - "   utilize their tool of choice when gathering resources."
-        - ""
-      basic:
-        - "   [light-purple]<%skills.effects.axes.durability-recovery-chance>[white] chance per point to not lose durability on use"
-        - ""
-      passive:
-        - "   [dark-green]<passive-abilities.axes.apprentice> [gray][<milestones.apprentice>] "
-        - "       [light-purple]<%skills.passive-abilities.axes.apprentice.double-drop-chance>[white] chance to get double drops"
-        - "   [dark-green]<passive-abilities.axes.expert> [gray][<milestones.expert>] "
-        - "      +[light-purple]<%skills.passive-abilities.axes.expert.double-drop-chance>[white] chance to get double drops"
-        - "   [dark-green]<passive-abilities.axes.master> [gray][<milestones.master>] "
-        - "      +[light-purple]<%skills.passive-abilities.axes.master.double-drop-chance>[white] chance to get double drops"
-        - "       [light-purple]<%skills.passive-abilities.axes.master.triple-drop-chance>[white] chance to get triple drops"
-      active:
-        - "   [dark-green]<active-abilities.axes.stone> [gray][Stone]"
-        - "   [dark-green]<active-abilities.axes.iron> [gray][Iron]"
-        - "   [dark-green]<active-abilities.axes.diamond> [gray][Diamond]"
-        
-    shovels: 
-      description:
-        - "   <!skillname> allows its practicioners to develop"
-        - "   a keen eye for finding valuables amongst the rubble."
-        - ""
-      basic:
-        - "   [light-purple]<%skills.effects.shovels.durability-recovery-chance>[white] chance per point to not lose durability on use"
-        - ""
-      passive:
-        - "   [dark-green]<passive-abilities.shovels.apprentice> [gray][<milestones.apprentice>] "
-        - "       [light_purple]<%skills.passive-abilities.shovels.apprentice.common-drop-chance>[white] chance to get a common item"
-        - "   [dark-green]<passive-abilities.shovels.expert> [gray][<milestones.expert>] "
-        - "       [light-purple]<%skills.passive-abilities.shovels.expert.uncommon-drop-chance>[white] chance to get a uncommon item"
-        - "   [dark-green]<passive-abilities.shovels.master> [gray][<milestones.master>] "
-        - "       [light-purple]<%skills.passive-abilities.shovels.master.rare-drop-chance>[white] chance to get a rare item"
-      active:
-        - "   [dark-green]<active-abilities.shovels.stone> [gray][Stone]"
-        - "   [dark-green]<active-abilities.shovels.iron> [gray][Iron]"
-        - "   [dark-green]<active-abilities.shovels.diamond> [gray][Diamond]"
-        
-    hoes: 
-      description: 
-        - "   [dark-gray]<!skillname> is not yet implemented"
-      basic: 
-        - "   [dark-gray]Nothing"
-      passive: 
-        - "   [dark-gray]Nothing"
-      active: 
-        - "   [dark-gray]Nothing"
-        
-    bow: 
-      description:
-        - "   <!skillname> allows its practicioners to wield their"
-        - "   weapon with increased efficiency and to great effect."
-        - ""
-      basic:
-        - "  +[light-purple]<%skills.effects.bow.crit-chance>[white] critical hit chance per point"
-        - ""
-      passive:
-        - "   [dark-green]<passive-abilities.bow.apprentice> [gray][<milestones.apprentice>] "
-        - "      +[light-purple]<#skills.passive-abilities.bow.apprentice.damage-modifier>/2[white] heart damage"
-        - "   [dark-green]<passive-abilities.bow.expert> [gray][<milestones.expert>] "
-        - "      +[light-purple]<%skills.passive-abilities.bow.expert.crit-multiplier>[white] damage on a critical hit"
-        - "   [dark-green]<passive-abilities.bow.master> [gray][<milestones.master>] "
-        - "      +[light-purple]<#skills.passive-abilities.bow.master.damage-modifier>/2[white] heart damage"
-        - "      +[light-purple]<%skills.passive-abilities.bow.master.crit-multiplier>[white] damage on a critical hit"
-      active: 
-        - "   [dark-gray]Nothing"
-        
-    ukemi: 
-      description: 
-        - "   <!skillname> allows its practicioners to shrug off"
-        - "   falls that would otherwise cause them serious injury."
-        - ""
-      basic: 
-        - "  +[light-purple]<%skills.effects.ukemi.autoroll-chance>[white] chance per point to automatically roll when falling"
-        - "   Sneak right before hitting the ground to manually roll"
-        - "   A roll mitigates up to [light_purple]1/2[white] heart of damage per skillpoint"
-      passive: 
-        - "   [dark-green]<passive-abilities.ukemi.apprentice> [gray][<milestones.apprentice>] "
-        - "      +[light_purple]1[white] fall height without taking damage"
-        - "   [dark-green]<passive-abilities.ukemi.expert> [gray][<milestones.expert>] "
-        - "      +[light-purple]1[white] fall height without taking damage"
-        - "   [dark-green]<passive-abilities.ukemi.master> [gray][<milestones.master>] "
-        - "      +[light-purple]1[white] fall height without taking damage"
-      active: 
-        - "   [dark-gray]Nothing"
-        
-    evasion: 
-      description:
-        - "   <!skillname> allows its practicioners to elude the"
-        - "   strikes of their enemies with uncanny grace."
-        - ""
-      basic:
-        - "  +[light-purple]<%skills.effects.evasion.chance>[white] chance per point to evade any attack"
-      passive:
-        - "   [dark-gray] Not implemented yet"
-        - "   [dark-green]<passive-abilities.evasion.apprentice> [gray][<milestones.apprentice>] "
-        - "       [light-purple]<%skills.passive-abilities.evasion.apprentice.explosion-escape-chance>[white] chance to escape from an explosion"
-        - "   [dark-green]<passive-abilities.evasion.expert> [gray][<milestones.expert>] "
-        - "       [light-purple]<%skills.passive-abilities.evasion.expert.arrow-catch-chance>[white] chance to catch an arrow launched at you"
-        - "   [dark-green]<passive-abilities.evasion.master> [gray][<milestones.master>] "
-        - "       [light-purple]<%skills.passive-abilities.evasion.master.counterattack-chance>[white] chance to counterattack instantly with your current weapon"
-      active: 
-        - "   [dark-gray]Nothing"
-        
-    focus: 
-      description: 
-        - "   <!skillname> is the discipline of the masters"
-        - "   by which they further refine their skills."
-        - ""
-      basic: 
-        - "  +[light-purple]<%skills.effects.focus.boost>[white] effect per point to any mastered skill"
-      passive: 
-        - "   [dark-gray]Nothing"
-      active: 
-        - "   [dark-gray]Nothing"
+autodoc:
+  special:
+    passive-header: "[green]<!passive>"
+    tools: "    -> using <!list>"
+    versus: "    -> against <!list>"
+  effects:
+    boost:
+      crit-chance: "<!value:percent+> chance to critically hit"
+      anti-crit-chance: "<!value:percent+> chance for your opponent to critically hit you"
+      crit-multiplier: "<!value:percent+> damage with critical hits"
+      anti-crit-multiplier: "<!value:percent+> critical hit damage for opponents"
+      damage-modifier: "<!value:hearts+> damage dealt with attacks"
+      anti-damage-modifier: "<!value:hearts+> damage received by attacks"
+      evade-chance: "<!value:percent+> chance to evade attacks"
+      anti-evade-chance: "<!value:percent+> chance for your opponent to evade your attacks"
+      evade-efficiency: "<!value:percent+> damage reduction when evading attacks"
+      anti-evade-efficiency: "<!value:percent+> damage reduction when your opponent evades your attack"
+      parry-chance: "<!value:percent+> chance to parry attacks"
+      anti-parry-chance: "<!value:percent+> chance for your opponent to parry your attacks"
+      parry-efficiency: "<!value:percent+> damage reduction when parrying attacks"
+      anti-parry-efficiency: "<!value:percent+> damage reduction when your opponent parries your attack"
+      roll-chance: "<!value:percent+> chance to automatically roll when falling"
+      roll-manual-window: "<!value:ms+> to the timing window for a manual roll"
+      roll-damage-reduction: "<!value:hearts+> damage when successfully rolling after falling"
+      fall-damage-modifier: "<!value:hearts+> damage from falls"
+      durability-recovery-chance: "<!value:percent+> chance to not lose durability on tool use"
+      

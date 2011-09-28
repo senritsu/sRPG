@@ -14,12 +14,12 @@ import org.bukkit.material.MaterialData;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.BlockChangeDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ScheduledEffect;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 public class CascadeQueue implements Runnable {
 
 	ArrayList<BlockChangeDescriptor> queue = new ArrayList<BlockChangeDescriptor>();
 	ArrayList<ScheduledEffect> effectQueue = new ArrayList<ScheduledEffect>();
-	public ArrayList<Block> protectedBlocks = new ArrayList<Block>();
 	
 	public void run() {
 		
@@ -58,14 +58,14 @@ public class CascadeQueue implements Runnable {
 						revertDescriptor.force = true;
 						additions.add(revertDescriptor);
 						if (descriptor.protect) {
-							protectedBlocks.add(block);
+							Watcher.protect(block);
 						}
 					}
 					
 					descriptor.targetState.update(descriptor.force);
 				}
-				if (!descriptor.revert && protectedBlocks.contains(block)) {
-					protectedBlocks.remove(block);
+				if (!descriptor.revert && Watcher.isProtected(block)) {
+					Watcher.release(block);
 				}
 				blockIterator.remove();
 			}

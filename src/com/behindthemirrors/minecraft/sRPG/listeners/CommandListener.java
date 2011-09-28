@@ -11,6 +11,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
 import com.behindthemirrors.minecraft.sRPG.Messager;
@@ -98,6 +99,25 @@ public class CommandListener implements CommandExecutor {
 					words2.add("rage");
 					player.sendMessage(Messager.columnize(words, tabpoints));
 					player.sendMessage(Messager.columnize(words2, tabpoints));
+				} else if (args[0].equalsIgnoreCase("passive")) {
+					if (args.length >= 2) {
+						String name = MiscGeneric.join(Arrays.asList(args).subList(1, args.length), " ");
+						if (Settings.PASSIVE_ALIASES.get(profile.locale).containsKey(name.toLowerCase())) {
+							name = Settings.PASSIVE_ALIASES.get(profile.locale).get(name.toLowerCase());
+						} else if (Settings.PASSIVE_ALIASES.get(null).containsKey(name.toLowerCase())) {
+							name = Settings.PASSIVE_ALIASES.get(null).get(name.toLowerCase());
+						}
+						StructurePassive passive = Settings.passives.get(name);
+						if (passive != null) {
+							for (String line : Messager.documentPassive(profile, passive)) {
+								player.sendMessage(line);
+							}
+						}
+						return true;
+					} else {
+						Messager.sendMessage(player, "needs-more-arguments");
+						return false;
+					}
 				} else if (args[0].equalsIgnoreCase("info")) {
 					String name = null;
 					if (args.length >= 2) {
@@ -127,6 +147,7 @@ public class CommandListener implements CommandExecutor {
 					} else {
 						Messager.sendMessage(player,"job-not-available");
 					}
+					return true;
 					
 				// internal help (TODO: maybe eventually replaced with some help plugin)
 				} else if (args[0].equalsIgnoreCase("help")) {
@@ -171,6 +192,21 @@ public class CommandListener implements CommandExecutor {
 						while (pairs.hasNext()) {
 							Map.Entry<String,Integer>pair = pairs.next();
 							SRPG.dout(pair.getKey()+": "+pair.getValue());
+						}
+						return true;
+					} else if (args[1].equalsIgnoreCase("inventory") && args.length >= 3) {
+						ProfilePlayer profile = SRPG.profileManager.get(args[2]);
+						if (profile != null) {
+							for (int i = 0;i<40;i++) {
+								try {
+									ItemStack item = profile.player.getInventory().getItem(i);
+									SRPG.dout(i+": "+item.getAmount()+" x "+item.getType().toString());
+								} catch (ArrayIndexOutOfBoundsException ex) {
+									SRPG.dout(i+": no valid slot");
+								}
+							}
+						} else {
+							SRPG.dout("No player by that name");
 						}
 						return true;
 					}
