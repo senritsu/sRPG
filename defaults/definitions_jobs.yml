@@ -50,7 +50,7 @@ archer:
   tier: 1
   defaults:
   traits:
-    - sword-incompetence!1
+    - ranged-focus!1
   passives:
     level 1:
       - heightshot
@@ -74,7 +74,7 @@ sniper:
     crit-chance: 0.05
     miss-chance: 0.02
   traits:
-    - sword-incompetence!2
+    - ranged-focus!2
     - snipers-eye
   passives:
   actives:

@@ -20,6 +20,7 @@ import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureActive;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
 
@@ -135,17 +136,23 @@ public class CommandListener implements CommandExecutor {
 						StructureJob job = Settings.jobs.get(name);
 						Integer level = profile.jobLevels.get(job);
 						Messager.sendMessage(player, "job-header",name);
-						Messager.sendMessage(player, "job-progress",name);
-						for (int i=0;i<job.maximumLevel;i++) {
-							if (level < i) {
-								break;
+						if (job.prerequisitesMet(profile)) {
+							Messager.sendMessage(player, "job-progress",name);
+							Messager.sendMessage(player, "traits-header",name);
+							for (StructurePassive passive : job.traits.keySet()) {
+								player.sendMessage(Messager.parseLine(profile, Messager.localize(passive.name,"passives."+passive.signature+".name",profile),passive.signature));
 							}
-							if (job.passives.containsKey(i)) {
-								Messager.sendMessage(player, "level-header",job.signature);
-								for (StructurePassive passive : job.passives.get(i).keySet()) {
-									Messager.sendMessage(player, "passive-short", passive.signature);
-								}
+							Messager.sendMessage(player, "passives-header",name);
+							for (StructurePassive passive : job.getPassives(level).keySet()) {
+								player.sendMessage(Messager.parseLine(profile, Messager.localize(passive.name,"passives."+passive.signature+".name",profile),passive.signature));
 							}
+							Messager.sendMessage(player, "actives-header",name);
+							for (StructureActive active : job.getActives(level).keySet()) {
+								player.sendMessage(Messager.parseLine(profile, Messager.localize(active.name,"actives."+active.signature+".name",profile),active.signature));
+							}
+							// TODO: extend to display locked passives too or something, maybe create a special description per passive/active while it is still locked
+						} else {
+							Messager.sendMessage(player, "job-details-unknown",name);
 						}
 					} else {
 						Messager.sendMessage(player,"job-not-available");
@@ -173,6 +180,29 @@ public class CommandListener implements CommandExecutor {
 							}
 						}
 						SRPG.output("removed all items");
+						return true;
+					} else if (args[1].equalsIgnoreCase("dbpurge")) {
+						ArrayList<String> columns = SRPG.database.getColumns("jobxp");
+						if (args.length >= 3) {
+							if (!args[2].equalsIgnoreCase("user_id") && columns.contains(args[3]) && !Settings.jobs.containsKey(args[2])) {
+								columns.clear();
+								columns.add(args[2]);
+							} else {
+								SRPG.output("invalid column, either not present or protected");
+							}
+						} else {
+							Iterator<String> iterator = columns.iterator();
+							while (iterator.hasNext()) {
+								String column = iterator.next();
+								if (Settings.jobs.containsKey(column) || column.equals("user_id")) {
+									iterator.remove();
+								}
+							}
+						}
+						for (String column : columns) {
+							SRPG.output("purging xp for job "+column);
+							SRPG.database.update("UPDATE "+SRPG.database.tablePrefix+"jobxp SET "+column+" = 0;");
+						}
 						return true;
 					} else if (args[1].equalsIgnoreCase("spawninvincible")) {
 						SpawnEventListener.spawnInvincible = !SpawnEventListener.spawnInvincible;

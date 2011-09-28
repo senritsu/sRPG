@@ -67,7 +67,6 @@ public class PlayerEventListener extends PlayerListener {
 			if (to.getType() == Material.AIR) {
 				to = to.getRelative(BlockFace.DOWN);
 			}
-			SRPG.dout("player moved from "+from.getType()+" to "+to.getType());
 			ResolverPassive.resolve(SRPG.profileManager.get(event.getPlayer()),from,to);
 		}
 	}

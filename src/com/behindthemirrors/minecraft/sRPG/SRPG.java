@@ -41,7 +41,7 @@ public class SRPG extends JavaPlugin {
 	public static ProfileManager profileManager = new ProfileManager();
 	public static TimedEffectManager timedEffectManager = new TimedEffectManager();
 	public static CascadeQueue cascadeQueueScheduler = new CascadeQueue(); 
-	static Database database;
+	public static Database database;
 	
 	public static Random generator = new Random();
 	

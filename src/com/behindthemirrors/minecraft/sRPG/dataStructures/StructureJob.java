@@ -69,7 +69,11 @@ public class StructureJob implements Comparable<StructureJob> {
 		for (String trait : root.getStringList("traits",new ArrayList<String>())) {
 			// TODO: make NPE safe
 			EffectDescriptor descriptor = new EffectDescriptor(trait,0,maximumLevel);
-			traits.put(Settings.passives.get(MiscBukkit.stripPotency(trait)),descriptor);
+			if (Settings.passives.containsKey(MiscBukkit.stripPotency(trait))) {
+				traits.put(Settings.passives.get(MiscBukkit.stripPotency(trait)),descriptor);
+			} else {
+				SRPG.output("Job "+name+" tried to load trait "+trait+" which is not available");
+			}
 		}
 		
 		passives = new HashMap<Integer, HashMap<StructurePassive,EffectDescriptor>>();
@@ -97,7 +101,11 @@ public class StructureJob implements Comparable<StructureJob> {
 				for (String active : root.getStringList("actives."+levelString,new ArrayList<String>())) {
 					// TODO: make NPE safe
 					EffectDescriptor descriptor = new EffectDescriptor(active,0,maximumLevel);
-					actives.get(level).put(Settings.actives.get(MiscBukkit.stripPotency(active)),descriptor);
+					if (Settings.actives.containsKey(MiscBukkit.stripPotency(active))) {
+						actives.get(level).put(Settings.actives.get(MiscBukkit.stripPotency(active)),descriptor);
+					} else {
+						SRPG.output("Job "+name+" tried to load active "+active+" which is not available");
+					}
 				}
 			}
 		}

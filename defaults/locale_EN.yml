@@ -6,6 +6,7 @@ terminology:
   xp: XP(|)
   charge: Charge(|s)
   job: Job(|s)
+  trait: Trait(|s)
   passive: Skill(|s)
   active: Abilit(y|ies)
   level: Level(|s)
@@ -45,7 +46,7 @@ passives:
 # in that case one of the provided messages will be chosen at random
 ##################################################################################################
 messages:
-  randomize: [ability,job-prerequisite-missing]
+  randomize: [active,job-prerequisite-missing]
   
   ###########
   # GENERAL #
@@ -77,10 +78,12 @@ messages:
     - "You? A/An <!job>? Come back when you're not wet behind the ears anymore."
   job-no-permissions: "You are not allowed to take that <#job>"
   job-not-available: "There is no <#job> of that name"
-  job-header: 
-    - "[blue]<!job>"
-    - "    <!description>"
+  job-not-unlocked: "You do not meet the requirements for this <#job> yet"
+  job-header: "[green]<!job>"
   job-progress: "<#level> <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level> to next level)"
+  traits-header: "[dark green]<#trait+>"
+  passives-header: "[dark green]<#passive+>"
+  actives-header: "[dark green]<#active+>"
   
   #############
   # MECHANICS #

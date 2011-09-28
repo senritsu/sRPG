@@ -192,9 +192,9 @@ dummy10:
 droparmor:
   name: Drop Armor (dummy)
   description: 
-  feedback: 
-  broadcast: 
-  broadcast-range: 
+  feedback: "[blue]You have used <!active>"
+  broadcast: "<!playername> has used [blue]<!active>"
+  broadcast-range: 10
   cost: 
   cooldown: 
   tools: [AIR]

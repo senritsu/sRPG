@@ -324,7 +324,7 @@ public class Settings {
 				ArrayList<String> deactivate = new ArrayList<String>();
 				for (String signature : jobs.keySet()) {
 					for (StructureJob job : jobs.get(signature).prerequisites.keySet()) {
-						if (!jobs.containsKey(job.signature)) {
+						if (job == null || !jobs.containsKey(job.signature)) {
 							deactivate.add(signature);
 							deactivate.addAll(MiscBukkit.getChildren(jobs, signature));
 							break;

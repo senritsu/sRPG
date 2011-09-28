@@ -10,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.util.config.ConfigurationNode;
@@ -17,6 +18,7 @@ import org.getspout.spoutapi.SpoutManager;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureActive;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
 
 
@@ -113,6 +115,24 @@ public class Messager {
 		player.sendMessage(text);
 	}
 	
+	public static void announce(StructureActive active, ProfilePlayer profile) {
+		Location location = profile.player.getLocation();
+		String feedback = parseLine(profile, localize(active.feedback,"actives."+active.signature+".feedback",profile),active.signature);
+		if (!feedback.isEmpty()) {
+			profile.player.sendMessage(feedback);
+		}
+		if (active.broadcastRange > 0) {
+			String message = parseLine(profile, localize(active.broadcast,"actives."+active.signature+".broadcast",profile),active.signature);
+			if (!message.isEmpty()) {
+				for (Player player : location.getWorld().getPlayers()) {
+					if (player != profile.player && player.getLocation().distance(location) <= active.broadcastRange) {
+						player.sendMessage(message);
+					}
+				}
+			}
+		}
+	}
+	
 	public static void notify(ProfilePlayer profile, String message) {
 		notify(profile,message,null, Material.AIR);
 	}
@@ -132,6 +152,9 @@ public class Messager {
 		lines.add(parseLine(profile,localize(passive.signature,"autodoc.special.passive-header",profile),passive.signature));
 		for (Entry<String,ConfigurationNode> entry : passive.effects.entrySet()) {
 			ConfigurationNode node = entry.getValue();
+			if (!node.getBoolean("documented", true)) {
+				continue;
+			}
 			lines.addAll(documentEffect(profile, entry.getKey(), node));
 		}
 		return lines;
@@ -245,15 +268,12 @@ public class Messager {
 	    while (matcher.find()) {
 	    	// check for supported variables first
 	    	String match = matcher.group();
-	    	SRPG.dout(match);
 	    	String replacement = "";
 	    	String format = "";
 	    	if (match.contains(":")) {
 	    		format = match.substring(match.indexOf(":")+1,match.length()-1);
 	    		match = match.substring(0,match.indexOf(":"))+match.charAt(match.length()-1);
 	    	}
-	    	SRPG.dout(match);
-	    	SRPG.dout(format);
 	    	if (match.equalsIgnoreCase("<!value>")) {
 	    		replacement = context;
 	    	} else if (match.equalsIgnoreCase("<!list>")) {
@@ -262,6 +282,8 @@ public class Messager {
 	    			names.add("[light purple]"+item+"[]");
 	    		}
 	    		replacement += MiscGeneric.join(names, ", ");
+	    	} else if (match.equalsIgnoreCase("<!playername>")) { 
+	    		replacement += profile.name;
 	    	} else if  (match.equalsIgnoreCase("<!xp>")) {
 	    		Integer currentLevel = profile.jobLevels.get(profile.currentJob);
 	    		replacement = Integer.toString(profile.jobXP.get(profile.currentJob)-profile.currentJob.xpToNextLevel(currentLevel-1));
@@ -379,11 +401,6 @@ public class Messager {
 	
 	public static String localize(String string, String path, ProfilePlayer profile) {
 		String locale = profile != null ? profile.locale : Settings.defaultLocale;
-		if (path.startsWith("jobs")) {
-			if (Settings.JOB_ALIASES.containsKey(string)) {
-				string = Settings.JOB_ALIASES.get(locale).get(string);
-			}
-		}
 		String localized = Settings.localization.get(locale).getString(path);
 		return localized != null?localized:string;
 	}
@@ -393,8 +410,7 @@ public class Messager {
 	}
 	
 	public static String localizedPassive(String signature, ProfilePlayer profile) {
-		String localized = localize(signature,"passives."+signature+".name",profile);
-		return localized != null ? localized : (Settings.passives.containsKey(signature) ? Settings.passives.get(signature).name : signature);
+		return localize(Settings.actives.get(signature).name,"passives."+signature+".name",profile);
 	}
 	
 	public String localizedActive(String signature) {
@@ -402,8 +418,7 @@ public class Messager {
 	}
 	
 	public static String localizedActive(String signature, ProfilePlayer profile) {
-		String localized = localize(signature,"actives."+signature+".name",profile);
-		return localized != null ? localized : (Settings.actives.containsKey(signature) ? Settings.actives.get(signature).name : "");
+		return localize(Settings.actives.get(signature).name,"actives."+signature+".name",profile);
 	}
 	
 	public String localizedJob(String signature) {
@@ -411,7 +426,6 @@ public class Messager {
 	}
 	
 	public static String localizedJob(String signature, ProfilePlayer profile) {
-		String localized = localize(signature,"jobs."+signature+".name",profile);
-		return localized != null ? localized : (Settings.jobs.containsKey(signature) ? Settings.jobs.get(signature).name : "");
+		return localize(Settings.jobs.get(signature).name,"jobs."+signature+".name",profile);
 	}
 }

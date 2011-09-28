@@ -42,7 +42,7 @@ public class EffectDescriptor {
 	}
 	
 	public EffectDescriptor (ProfilePlayer profile, StructureJob job) {
-		
+		this(profile.jobLevels.get(profile.currentJob),profile.currentJob.maximumLevel);
 	}
 	
 	public EffectDescriptor (ProfilePlayer profile, StructureJob job, Integer duration) {
@@ -54,6 +54,10 @@ public class EffectDescriptor {
 		EffectDescriptor descriptor = new EffectDescriptor(level,maxlevel,duration);
 		descriptor.potency = potency;
 		return descriptor;
+	}
+	
+	public double levelfactor() {
+		return ((double)level) / maxlevel;
 	}
 	
 	@Override

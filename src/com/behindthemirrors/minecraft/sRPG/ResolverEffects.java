@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.bukkit.Location;
@@ -45,25 +46,27 @@ public class ResolverEffects {
 		}
 	}
 	
-	static void applyBuff(ProfileNPC profile, ConfigurationNode node) {
-		if (profile == null) {
+	static void applyBuff(ProfileNPC source, ProfileNPC target, ConfigurationNode node,EffectDescriptor descriptor) {
+		if (source == null || target == null) {
 			return;
 		}
+		List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
 		String name = node.getString("name");
-		EffectDescriptor descriptor = new EffectDescriptor(name);
-		descriptor.duration = node.getInt("duration", 0);
+		EffectDescriptor buffDescriptor = new EffectDescriptor(name);
+		buffDescriptor.level = source.jobLevels.get(source.currentJob);
+		buffDescriptor.maxlevel = source.currentJob.maximumLevel;
+		buffDescriptor.duration = (int)(levelbased.contains("duration")?descriptor.levelfactor():1.0)*node.getInt("duration", 0)*descriptor.potency;
 		StructurePassive buff = Settings.passives.get(MiscBukkit.stripPotency(name));
-		profile.addEffect(buff, descriptor);
-		Messager.sendMessage(profile, "acquired-buff",buff.signature);
+		target.addEffect(buff, descriptor);
+		Messager.sendMessage(target, "acquired-buff",buff.signature);
 	}
 	
 	static void directDamage(ProfileNPC profile, ConfigurationNode node, EffectDescriptor descriptor) {
 		if (profile == null) {
 			return;
 		}
-		if (SRPG.generator.nextDouble() <= node.getDouble("chance", 1.0)) {
-			profile.entity.damage(node.getInt("value", 0) * descriptor.potency);
-		}
+		List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+		profile.entity.damage((int) (node.getDouble("value", 0) * descriptor.potency * (levelbased.contains("value")?descriptor.levelfactor():1.0)));
 	}
 	
 	static void manipulateItem(ProfileNPC source, ProfileNPC target, ConfigurationNode node, EffectDescriptor descriptor) {
@@ -431,30 +434,30 @@ public class ResolverEffects {
 		}
 	}
 
-	public static void changeBlockDrops(BlockBreakEvent event, Block block, ConfigurationNode node) {
+	public static void changeBlockDrops(BlockBreakEvent event, Block block, ConfigurationNode node, EffectDescriptor descriptor) {
 		ArrayList<ItemStack> defaults = new ArrayList<ItemStack>();
 		defaults.add(MiscBukkit.getNaturalDrops(block));
-		if (changeDrops(node,defaults,block.getLocation())) {
+		if (changeDrops(node,defaults,block.getLocation(),descriptor)) {
 			event.setCancelled(true);
 			block.setType(Material.AIR);
 		}
 	}
 	
-	public static void changeEntityDrops(EntityDeathEvent event, LivingEntity entity, ConfigurationNode node) {
+	public static void changeEntityDrops(EntityDeathEvent event, LivingEntity entity, ConfigurationNode node, EffectDescriptor descriptor) {
 		ArrayList<ItemStack> defaults = new ArrayList<ItemStack>();
 		defaults.addAll(MiscBukkit.getNaturalDrops(entity));
-		if (changeDrops(node,defaults,entity.getLocation())) {
+		if (changeDrops(node,defaults,entity.getLocation(),descriptor)) {
 			event.getDrops().clear();
 		}
 	}
 	
-	public static boolean changeDrops(ConfigurationNode node, ArrayList<ItemStack> defaults, Location location) {
+	public static boolean changeDrops(ConfigurationNode node, ArrayList<ItemStack> defaults, Location location, EffectDescriptor descriptor) {
 		ArrayList<ItemStack> drops = new ArrayList<ItemStack>();
 		
 		String mode = node.getString("mode");
-		if (mode == null || mode.equalsIgnoreCase("multiply") || mode.equalsIgnoreCase("add")) {
+		if (mode == null || mode.equalsIgnoreCase("multiply")) {
 			for (ItemStack drop : defaults) {
-				drop.setAmount(drop.getAmount() * (1-node.getInt("factor", 1)));
+				drop.setAmount((int)(drop.getAmount() * (descriptor.potency * node.getDouble("factor", 1))));
 				drops.add(drop);
 			}
 		}
@@ -463,7 +466,7 @@ public class ResolverEffects {
 			ArrayList<Integer> amounts = (ArrayList<Integer>) node.getIntList("amounts", new ArrayList<Integer>());
 			if (materials.size() == amounts.size()) {
 				for (int i = 0; i<materials.size();i++) {
-					ItemStack drop = new ItemStack(materials.get(i),amounts.get(i) * node.getInt("factor", 1));
+					ItemStack drop = new ItemStack(materials.get(i),(int)(amounts.get(i) * descriptor.potency * node.getDouble("factor", 1)));
 					drops.add(drop);
 				}
 			} else {

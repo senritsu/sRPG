@@ -1,6 +1,7 @@
 package com.behindthemirrors.minecraft.sRPG;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.Material;
@@ -10,7 +11,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.util.config.ConfigurationNode;
 
 import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
@@ -22,10 +22,21 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
 public class ResolverPassive {
 	
 	// resolve effects that do something per tick
-	public static void resolve(ProfileNPC data, StructurePassive effect, EffectDescriptor descriptor) {
-		for (String name : effect.effects.keySet()) {
+	public static void resolve(ProfileNPC profile, StructurePassive passive, EffectDescriptor descriptor) {
+		for (String name : passive.effects.keySet()) {
+			ConfigurationNode node = passive.effects.get(name);
+			SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
+			if (!checkConditions(profile,node) || !checkTools(profile,node)) {
+				SRPG.dout("conditions failed","passives");
+				continue;
+			}
+			List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+			if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
+				continue;
+			}
+			SRPG.dout("conditions cleared","passives");
 			if (name.startsWith("direct-damage")) {
-				data.entity.damage(effect.effects.get(name).getInt("value", 0) * descriptor.potency);
+				ResolverEffects.directDamage(profile, node, descriptor);
 			}
 		}
 	}
@@ -41,8 +52,12 @@ public class ResolverPassive {
 				}
 				SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
 				ArrayList<Material> validFrom = MiscBukkit.parseMaterialList(node.getStringList("from", new ArrayList<String>()));
-				if ((!validFrom.isEmpty() && !validFrom.contains(from.getType())) || !checkConditions(profile,node) || !checkTools(profile,node,to) || !(SRPG.generator.nextDouble() <= node.getDouble("chance", 1.0))) {
+				if ((!validFrom.isEmpty() && !validFrom.contains(from.getType())) || !checkConditions(profile,node) || !checkTools(profile,node,to)) {
 					SRPG.dout("conditions failed","passives");
+					continue;
+				}
+				List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+				if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
 					continue;
 				}
 				SRPG.dout("conditions cleared","passives");
@@ -66,13 +81,17 @@ public class ResolverPassive {
 			for (String name : passive.effects.keySet()) {
 				ConfigurationNode node = passive.effects.get(name);
 				SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
-				if (!checkConditions(profile,node,event) || !checkTools(profile,node,block) || !(SRPG.generator.nextDouble() <= node.getDouble("chance", 1.0))) {
+				if (!checkConditions(profile,node,event) || !checkTools(profile,node,block)) {
 					SRPG.dout("conditions failed","passives");
+					continue;
+				}
+				List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+				if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
 					continue;
 				}
 				SRPG.dout("conditions cleared","passives");
 				if (event instanceof BlockBreakEvent && name.startsWith("drop-change")) {
-					ResolverEffects.changeBlockDrops((BlockBreakEvent)event,block,node);
+					ResolverEffects.changeBlockDrops((BlockBreakEvent)event,block,node, descriptor);
 				} else if (name.startsWith("trigger-active")) {
 					SRPG.dout("trying to trigger active "+node.getString("action"),"passives");
 					ResolverActive.resolve(node.getString("action"), profile, block, descriptor);
@@ -94,8 +113,12 @@ public class ResolverPassive {
 				for (String name : passive.effects.keySet()) {
 					ConfigurationNode node = passive.effects.get(name);
 					SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
-					if (!checkConditions(profile,node,combat) || !checkTools(profile, node,combat) || !(SRPG.generator.nextDouble() <= node.getDouble("chance", 1.0))) {
+					if (!checkConditions(profile,node,combat) || !checkTools(profile, node,combat)) {
 						SRPG.dout("conditions failed","passives");
+						continue;
+					}
+					List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+					if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
 						continue;
 					}
 					SRPG.dout("conditions cleared","passives");
@@ -112,7 +135,7 @@ public class ResolverPassive {
 		}
 	}
 	
-	public static boolean checkConditions(ProfilePlayer profile, ConfigurationNode node) {
+	public static boolean checkConditions(ProfileNPC profile, ConfigurationNode node) {
 		ArrayList<String> conditions = (ArrayList<String>) node.getStringList("conditions", new ArrayList<String>());
 		return conditions.isEmpty() || checkGenericConditions(profile,conditions);
 	}
@@ -160,6 +183,10 @@ public class ResolverPassive {
 		}
 	}
 	
+	public static boolean checkTools(ProfileNPC profile, ConfigurationNode node) {
+		return checkTools(node,profile instanceof ProfilePlayer?((ProfilePlayer)profile).player.getItemInHand().getType():null,null);
+	}
+	
 	public static boolean checkTools(ProfileNPC profile, ConfigurationNode node, CombatInstance combat) {
 		return checkTools(node,profile == combat.attacker?combat.attackerHandItem:combat.defenderHandItem,profile==combat.defender?combat.defenderHandItem:combat.attackerHandItem);
 	}
@@ -171,7 +198,7 @@ public class ResolverPassive {
 	public static boolean checkTools(ConfigurationNode node, Material material, Material versus) {
 		ArrayList<Material> validMaterials = MiscBukkit.parseMaterialList(node.getStringList("tools", new ArrayList<String>()));
 		ArrayList<Material> versusMaterials = MiscBukkit.parseMaterialList(node.getStringList("versus", new ArrayList<String>()));
-		if ((validMaterials.isEmpty() || validMaterials.contains(material)) && (versusMaterials.isEmpty() || versusMaterials.contains(versus))) {
+		if ((validMaterials.isEmpty() || material == null || validMaterials.contains(material)) && (versusMaterials.isEmpty() || versus == null || versusMaterials.contains(versus))) {
 			return true;
 		} else {
 			SRPG.dout("tool check failed","passives");

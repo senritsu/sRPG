@@ -25,6 +25,10 @@
 # 
 #################################################################################
 
+#############
+# DEBUGGING #
+#############
+
 backstab:
   name: Backstab (dummy)
   effects:
@@ -71,20 +75,23 @@ losearmor:
       tools: [swords]
       action: droparmor
 
-###############
-# JOB BONUSES #
-###############
+#####################
+# TRAITS & PASSIVES #
+#####################
 
-# TODO: think of a way of generalizing passives by adding a number behind them
-sword-incompetence:
-  name: Sword Incompetence
+ranged-focus:
+  name: Ranged Combat Focus
   description: 
   effects:
     boost:
-      name: damage-modifier
-      tools: [swords]
-      value: -3
+      name: crit-chance
+      tools: [bow]
+      value: +0.05
     boost1:
+      name: damage-modifier
+      tools: [swords,axes]
+      value: -2
+    boost2:
       name: crit-chance
       tools: [swords]
       value: -0.05

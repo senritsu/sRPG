@@ -20,7 +20,7 @@ import com.avaje.ebeaninternal.server.lib.sql.DataSourceException;
 public class Database {
 	
     private Connection connection;
-	String tablePrefix;
+	public String tablePrefix;
 	String pass;
 	String user;
 	String name;
@@ -265,7 +265,11 @@ public class Database {
     }
     
     public void dropColumn(String table, String column) {
-    	update("ALTER TABLE "+tablePrefix+table+" DROP COLUMN " + column + ";");
+    	if (Settings.mySQLenabled) {
+    		update("ALTER TABLE "+tablePrefix+table+" DROP COLUMN " + column + ";");
+    	} else {
+    		
+    	}
     }
     
     public boolean createColumn(String table, String column, String format) {

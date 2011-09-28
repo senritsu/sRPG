@@ -221,7 +221,7 @@ public class ProfilePlayer extends ProfileNPC {
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
 			ResolverActive.resolve(currentActive, combat, actives.get(currentActive));
-			Messager.sendMessage(player, "active",currentActive.signature);
+			Messager.announce(currentActive, this); 
 			result = true;
 		}
 		if (currentActive.combat) {
@@ -241,7 +241,7 @@ public class ProfilePlayer extends ProfileNPC {
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
 			ResolverActive.resolve(currentActive, this, target, actives.get(currentActive));
-			Messager.sendMessage(player, "active",currentActive.signature);
+			Messager.announce(currentActive, this); 
 			result = true;
 			// hack
 			charges -= currentActive.cost;

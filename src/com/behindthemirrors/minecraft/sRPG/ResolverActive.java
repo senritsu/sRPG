@@ -60,10 +60,10 @@ public class ResolverActive {
 		// TODO: maybe add a unified method of choosing which entity the effect is relative to, and if the direction is calculated at the moment of the effect cast, or at the moment of execution
 		if (effect.startsWith("apply-buff")) {
 			if (node.getBoolean("self", true) && active.validVs(source)) {
-				ResolverEffects.applyBuff(source, node);
+				ResolverEffects.applyBuff(source, source, node, descriptor);
 			}
 			if (node.getBoolean("target", false) && active.validVs(target)) {
-				ResolverEffects.applyBuff(target, node);
+				ResolverEffects.applyBuff(source, target, node, descriptor);
 			}
 		} else if (effect.startsWith("direct-damage")) {
 			if (node.getBoolean("self", false) && active.validVs(source)) {
