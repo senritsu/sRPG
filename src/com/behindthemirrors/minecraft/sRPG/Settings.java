@@ -1,6 +1,5 @@
 package com.behindthemirrors.minecraft.sRPG;
 
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.LivingEntity;
@@ -69,8 +68,8 @@ public class Settings {
 				TOOL_MATERIAL_TO_TOOL_GROUP.put(TOOL_MATERIALS[i*length+j], TOOLS.get(i));
 			}
 		}
-		TOOL_MATERIAL_TO_TOOL_GROUP.put(Material.BOW,"bow");
-		TOOL_MATERIAL_TO_STRING.put(Material.BOW,"bow");
+		TOOL_MATERIAL_TO_TOOL_GROUP.put(Material.BOW,"ranged");
+		TOOL_MATERIAL_TO_STRING.put(Material.BOW,"ranged.bow");
 	}
 	static ArrayList<Double> ARMOR_FACTORS;
 	
@@ -254,7 +253,9 @@ public class Settings {
 						for (String tool : node.getKeys(toolgroup)) {
 							tool = toolgroup+"."+tool;
 							if (!node.getBoolean(tool+".override", false)) {
-								CombatInstance.damageTableTools.put(tool, node.getInt(tool+".damage", 1));
+								int basedamage = node.getInt(tool+".damage", 1);
+								CombatInstance.damageTableTools.put(tool, basedamage);
+								CombatInstance.damageTableTools.put(tool+"-range", Math.max(node.getInt(tool+".max-damage", basedamage),basedamage)-basedamage);
 							}
 						}
 					}

@@ -36,6 +36,10 @@ public class ResolverActive {
 		resolve(active, null, source, null, block, descriptor);
 	}
 	
+	public static void resolve(String name, ProfileNPC source, ProfileNPC target, Block block, EffectDescriptor descriptor) {
+		resolve(Settings.actives.get(name),null, source, target, block, descriptor);
+	}
+	
 	public static void resolve(StructureActive active, CombatInstance combat, ProfileNPC source, ProfileNPC target, Block block, EffectDescriptor descriptor) {
 		if (active != null) {
 			for (String effect : active.effects.keySet()) {

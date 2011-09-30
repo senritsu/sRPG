@@ -1,5 +1,7 @@
 package com.behindthemirrors.minecraft.sRPG.listeners;
 
+import java.util.ArrayList;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -16,7 +18,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 
-import com.behindthemirrors.minecraft.sRPG.ResolverPassive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
@@ -61,13 +62,12 @@ public class PlayerEventListener extends PlayerListener {
 		Block from = event.getFrom().getBlock();
 		Block to = event.getTo().getBlock();
 		if (from != to) {
-			if (from.getType() == Material.AIR) {
-				from = from.getRelative(BlockFace.DOWN);
-			}
 			if (to.getType() == Material.AIR) {
 				to = to.getRelative(BlockFace.DOWN);
 			}
-			ResolverPassive.resolve(SRPG.profileManager.get(event.getPlayer()),from,to);
+			ArrayList<String> triggers = new ArrayList<String>();
+			triggers.add("move");
+			Watcher.checkTriggers(SRPG.profileManager.get(event.getPlayer()), triggers, to);
 		}
 	}
 	

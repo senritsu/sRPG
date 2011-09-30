@@ -17,6 +17,8 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.TriggerEffect;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 
 public class ResolverPassive {
@@ -41,32 +43,21 @@ public class ResolverPassive {
 		}
 	}
 	
-	public static void resolve(ProfilePlayer profile, Block from, Block to) {
-		for (Map.Entry<StructurePassive,EffectDescriptor> entry : profile.getCurrentPassives().entrySet()) {
-			StructurePassive passive = entry.getKey();
-			EffectDescriptor descriptor = entry.getValue();
-			for (String name : passive.effects.keySet()) {
-				ConfigurationNode node = passive.effects.get(name);
-				if (!node.getBoolean("on-movement", false)) {
-					continue;
-				}
-				SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
-				ArrayList<Material> validFrom = MiscBukkit.parseMaterialList(node.getStringList("from", new ArrayList<String>()));
-				if ((!validFrom.isEmpty() && !validFrom.contains(from.getType())) || !checkConditions(profile,node) || !checkTools(profile,node,to)) {
-					SRPG.dout("conditions failed","passives");
-					continue;
-				}
-				List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
-				if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
-					continue;
-				}
-				SRPG.dout("conditions cleared","passives");
-				if (name.startsWith("trigger-active")) {
-					SRPG.dout("trying to trigger active "+node.getString("action"),"passives");
-					ResolverActive.resolve(node.getString("action"), profile, to, descriptor);
-				}
-			}
+	public static void resolve(ProfileNPC profile, TriggerEffect effect, ProfileNPC target, Block block, CombatInstance combat) {
+		ConfigurationNode node = effect.node;
+		ArrayList<Material> validFrom = MiscBukkit.parseMaterialList(node.getStringList("from", new ArrayList<String>()));
+		Block from = profile.blockStandingOn();
+		Block to = block != null ? block : from;
+		if ((!validFrom.isEmpty() && !validFrom.contains(from.getType())) || !(checkConditions(profile,node) || checkCombatConditions(profile, node, combat)) || !checkTools(profile,node,to)) {
+			SRPG.dout("conditions failed","passives");
+			return;
 		}
+		List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+		if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?effect.descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
+			return;
+		}
+		SRPG.dout("conditions cleared","passives");
+		ResolverActive.resolve(node.getString("action"), profile, target, to, effect.descriptor);
 	}
 	
 	// resolve effects that influence block events
@@ -81,7 +72,7 @@ public class ResolverPassive {
 			for (String name : passive.effects.keySet()) {
 				ConfigurationNode node = passive.effects.get(name);
 				SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
-				if (!checkConditions(profile,node,event) || !checkTools(profile,node,block)) {
+				if (!(checkConditions(profile,node) || checkBlockConditions(profile,node,event)) || !checkTools(profile,node,block)) {
 					SRPG.dout("conditions failed","passives");
 					continue;
 				}
@@ -92,9 +83,6 @@ public class ResolverPassive {
 				SRPG.dout("conditions cleared","passives");
 				if (event instanceof BlockBreakEvent && name.startsWith("drop-change")) {
 					ResolverEffects.changeBlockDrops((BlockBreakEvent)event,block,node, descriptor);
-				} else if (name.startsWith("trigger-active")) {
-					SRPG.dout("trying to trigger active "+node.getString("action"),"passives");
-					ResolverActive.resolve(node.getString("action"), profile, block, descriptor);
 				}
 			}
 		}
@@ -103,6 +91,8 @@ public class ResolverPassive {
 	// resolve static effects that influence combat
 	// TODO: update
 	public static void resolve(CombatInstance combat) {
+		ArrayList<String> triggers = new ArrayList<String>();
+		triggers.add("combat");
 		for (ProfileNPC profile : new ProfileNPC[] {combat.attacker,combat.defender}) {
 			if (profile == null) {
 				continue;
@@ -113,7 +103,7 @@ public class ResolverPassive {
 				for (String name : passive.effects.keySet()) {
 					ConfigurationNode node = passive.effects.get(name);
 					SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
-					if (!checkConditions(profile,node,combat) || !checkTools(profile, node,combat)) {
+					if (!(checkConditions(profile,node) || checkCombatConditions(profile,node,combat)) || !checkTools(profile, node,combat)) {
 						SRPG.dout("conditions failed","passives");
 						continue;
 					}
@@ -126,12 +116,10 @@ public class ResolverPassive {
 						if (!((profile == combat.attacker && !node.getBoolean("self", true)) || (profile == combat.defender && !node.getBoolean("target", false)))) {
 							ResolverEffects.setCombatState(combat,node);;
 						}
-					} else if (name.startsWith("trigger-active")) {
-						SRPG.dout("trying to trigger active "+node.getString("action"),"passives");
-						ResolverActive.resolve(node.getString("action"), combat.attacker, combat.defender, descriptor);
 					}
 				}
 			}
+			Watcher.checkTriggers(profile, triggers, profile == combat.attacker ? combat.defender : combat.attacker, combat);
 		}
 	}
 	
@@ -140,29 +128,25 @@ public class ResolverPassive {
 		return conditions.isEmpty() || checkGenericConditions(profile,conditions);
 	}
 	
-	public static boolean checkConditions(ProfileNPC profile, ConfigurationNode node, BlockEvent event) {
+	public static boolean checkBlockConditions(ProfileNPC profile, ConfigurationNode node, BlockEvent event) {
 		ArrayList<String> conditions = (ArrayList<String>) node.getStringList("conditions", new ArrayList<String>());
-		if (conditions.isEmpty() || 
-				(event instanceof BlockBreakEvent && conditions.contains("block-break")) ||
-				(event instanceof BlockPlaceEvent && conditions.contains("block-place")) ||
-				checkGenericConditions(profile, conditions) ) {
+		if ((event instanceof BlockBreakEvent && conditions.contains("block-break")) ||
+			(event instanceof BlockPlaceEvent && conditions.contains("block-place"))) {
 			return true;
 		}
 		return false;
 	}
 	
-	public static boolean checkConditions(ProfileNPC profile, ConfigurationNode node, CombatInstance combat) {
+	public static boolean checkCombatConditions(ProfileNPC profile, ConfigurationNode node, CombatInstance combat) {
 		ArrayList<String> conditions = (ArrayList<String>) node.getStringList("conditions", new ArrayList<String>());
-		if (conditions.isEmpty() || ( profile == combat.attacker && (
+		if (( profile == combat.attacker && (
 				conditions.contains("attacking") || 
 				(conditions.contains("backstab-offensive") && combat.backstab) || 
 				(conditions.contains("highground-offensive") && combat.highground == combat.attacker) )) ||
 			( profile == combat.defender && (
 				conditions.contains("defending") || 
 				(conditions.contains("backstab-defensive") && combat.backstab) ||
-				(conditions.contains("highground-defensive") && combat.highground == combat.defender) )) ||
-			checkGenericConditions(profile, conditions)
-			) {
+				(conditions.contains("highground-defensive") && combat.highground == combat.defender) )) ) {
 			return true;
 		}
 		return false;

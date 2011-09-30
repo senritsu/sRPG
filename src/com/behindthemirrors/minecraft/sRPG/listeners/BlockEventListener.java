@@ -60,6 +60,9 @@ public class BlockEventListener extends BlockListener {
 			SRPG.profileManager.save(profile,"chargedata");
 		}
 		ResolverPassive.resolve(profile, event);
+		ArrayList<String> triggers = new ArrayList<String>();
+		triggers.add("break");
+		Watcher.checkTriggers(SRPG.profileManager.get(event.getPlayer()), triggers, event.getBlock());
 		ResolverPassive.recoverDurability(profile);
 	}
 	
@@ -72,6 +75,9 @@ public class BlockEventListener extends BlockListener {
 			Watcher.userPlacedBlocks.add(block);
 		}
 		ResolverPassive.resolve(SRPG.profileManager.get(event.getPlayer()), event);
+		ArrayList<String> triggers = new ArrayList<String>();
+		triggers.add("place");
+		Watcher.checkTriggers(SRPG.profileManager.get(event.getPlayer()), triggers, event.getBlock());
 	}
 	
 	public void onBlockCanBuild(BlockCanBuildEvent event) {

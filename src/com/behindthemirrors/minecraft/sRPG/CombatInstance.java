@@ -78,26 +78,32 @@ public class CombatInstance {
 		}
 		attackerHandItem = attacker instanceof ProfilePlayer ? ((ProfilePlayer)attacker).player.getItemInHand().getType() : null;
 		defenderHandItem = defender instanceof ProfilePlayer ? ((ProfilePlayer)defender).player.getItemInHand().getType() : null;
-		if (event.getDamager() instanceof Arrow) {
+		if (event.getDamager() instanceof Arrow && attacker instanceof ProfilePlayer) {
 			attackerHandItem = Material.BOW;
 		}
 		
 		SRPG.dout("attack launched with "+attackerHandItem+" versus "+defenderHandItem,"combat");
 		SRPG.dout("backstab = "+backstab+ " highground = "+(highground == null?"nobody":(highground == attacker? "attacker" : "defender")),"combat");
 		
-		evadeChance += defender.getStat("evade-chance", defenderHandItem, attackerHandItem) - attacker.getStat("anti-evade-chance", attackerHandItem, defenderHandItem);
-		parryChance += defender.getStat("parry-chance", defenderHandItem, attackerHandItem) - attacker.getStat("anti-parry-chance", attackerHandItem, defenderHandItem);
-		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem) - defender.getStat("anti-crit-chance", defenderHandItem, attackerHandItem);
-		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem) - defender.getStat("anti-crit-multiplier", defenderHandItem, attackerHandItem);
+		evadeChance += defender.getStat("evade-chance", defenderHandItem, attackerHandItem) + attacker.getStat("anti-evade-chance", attackerHandItem, defenderHandItem);
+		parryChance += defender.getStat("parry-chance", defenderHandItem, attackerHandItem) + attacker.getStat("anti-parry-chance", attackerHandItem, defenderHandItem);
+		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem) + defender.getStat("anti-crit-chance", defenderHandItem, attackerHandItem);
+		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem) + defender.getStat("anti-crit-multiplier", defenderHandItem, attackerHandItem);
 		
+		double basedamage = 0;
+		double damagerange = 0;
+		double charge = 0;
 		if (attackerHandItem != null) {
 			String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(attackerHandItem);
 			if (toolName != null) {
+				basedamage = damageTableTools.get(toolName);
 				if (attackerHandItem == Material.BOW) {
-					basedamage = (int)(damageTableTools.get("bow.uncharged")+bowcharge*(damageTableTools.get("bow.charged")-damageTableTools.get("bow.uncharged")));
+					charge = bowcharge;
 				} else {
-					basedamage = damageTableTools.get(toolName);
+					// TODO: think of a way to implement damage ranges for other tools
+					charge = SRPG.generator.nextDouble();
 				}
+				damagerange = damageTableTools.get(toolName+"-range");
 			} else {
 				basedamage = attacker.getStat("damage-unknown-item", 1);
 			}
@@ -105,14 +111,25 @@ public class CombatInstance {
 			String entityName = MiscBukkit.getEntityName(attacker.entity);
 			basedamage = attacker.getStat("damage-unarmed", 1);
 			if (entityName.equalsIgnoreCase("creeper")) {
-				basedamage = Math.round(new Double(event.getDamage()*basedamage)/14);
-			}
-			if (entityName.equalsIgnoreCase("ghast")) {
-				basedamage = Math.round(new Double(event.getDamage()*basedamage)/5);
+				damagerange = basedamage;
+				basedamage = 0;
+				charge = (event.getDamage()*damagerange)/14;
+			} else if (entityName.equalsIgnoreCase("ghast")) {
+				damagerange = basedamage;
+				basedamage = 0;
+				charge = (event.getDamage()*damagerange)/5;
+			} else {
+				damagerange = Math.max(attacker.getStat("max-damage-unarmed",basedamage),basedamage) - basedamage;
 			}
 		}
 		
-		double damage = basedamage + attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem) - attacker.getStat("anti-damage-modifier", attackerHandItem, defenderHandItem);
+		basedamage += attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("anti-damage-modifier", attackerHandItem, defenderHandItem);
+		damagerange += attacker.getStat("max-damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("anti-max-damage-modifier", attackerHandItem, defenderHandItem);
+		if (damagerange < 0) {
+			basedamage += damagerange;
+			damagerange = 0;
+		}
+		double damage = basedamage + charge * damagerange;
 		
 		// apply critical hit
 		if (SRPG.generator.nextDouble() <= critChance) {

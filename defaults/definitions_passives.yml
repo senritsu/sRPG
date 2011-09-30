@@ -69,10 +69,18 @@ losearmor:
   name: Lose Armor (dummy)
   effects:
     trigger-active:
-      on-movement: true
+      triggers: [move]
       from: [SNOW]
       versus: [stone,dirt]
       tools: [swords]
+      action: droparmor
+
+losearmor2:
+  name: Lose Armor (dummy)
+  effects:
+    trigger-active:
+      triggers: [daybreak]
+      from: [grass]
       action: droparmor
 
 #####################
@@ -166,9 +174,10 @@ poisoned-arrows:
   description: 
   effects:
     trigger-active:
+      triggers: [combat]
       chance: 0.5
       action: apply-poison
-      conditions: [combat-offensive]
+      conditions: [attacking]
 
 steady-aim:
   name: Steady Aim

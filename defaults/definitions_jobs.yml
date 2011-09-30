@@ -34,6 +34,7 @@ rogue:
     - dropnight
     - dropday
     - losearmor
+    - losearmor2
   passives: 
   actives: 
     level 1:
@@ -52,10 +53,10 @@ archer:
   traits:
     - ranged-focus!1
   passives:
-    level 1:
-      - heightshot
+    level 2: 
+      - placeholder (more bow damage)
     level 3: 
-      - steady-aim
+      - placeholder (better crit chance)
     level 5: 
       - bow-training
     level 10: 

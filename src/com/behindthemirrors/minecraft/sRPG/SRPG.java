@@ -14,6 +14,7 @@ import org.bukkit.event.Event.Priority;
 
 import org.bukkit.plugin.Plugin;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 import com.behindthemirrors.minecraft.sRPG.listeners.BlockEventListener;
 import com.behindthemirrors.minecraft.sRPG.listeners.CommandListener;
 import com.behindthemirrors.minecraft.sRPG.listeners.DamageEventListener;
@@ -102,6 +103,7 @@ public class SRPG extends JavaPlugin {
 			this.getServer().getScheduler().scheduleSyncRepeatingTask(this, timedEffectManager, 20, 20);
 			this.getServer().getScheduler().scheduleSyncRepeatingTask(this, cascadeQueueScheduler, 1, 1);
 			spawnListener.addExistingCreatures();
+			Watcher.addWorlds(plugin.getServer().getWorlds());
 		}
 	}
 	public void onDisable() {

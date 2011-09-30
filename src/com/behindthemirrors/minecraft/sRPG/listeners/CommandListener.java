@@ -171,7 +171,10 @@ public class CommandListener implements CommandExecutor {
 			// server console commands
 			if (command.getName().equals("srpg")) {
 				// toggle debug messages
-				if (args.length >= 2 && args[0].equalsIgnoreCase("debug")) {
+				if (args.length == 1 && args[0].equalsIgnoreCase("debug")) {
+					SRPG.debug = !SRPG.debug;
+					SRPG.output("debug mode set to "+SRPG.debug);
+				} else if (args.length >= 2 && args[0].equalsIgnoreCase("debug")) {
 					// remove item stacks if something was incorrectly dropped
 					if (args[1].equalsIgnoreCase("removeitems")) {
 						for (Entity entity : SRPG.plugin.getServer().getWorlds().get(0).getEntities()) {
@@ -211,7 +214,7 @@ public class CommandListener implements CommandExecutor {
 					} else {
 						if (!SRPG.debugmodes.contains(args[1])) {
 							SRPG.debugmodes.add(args[1]);
-							SRPG.output("added "+args[1]+" to debugmodes");
+							SRPG.output("added '"+args[1]+"' to debugmodes");
 						} else {
 							SRPG.debugmodes.remove(args[1]);
 							SRPG.output("removed '"+args[1]+"' from debugmodes");

@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.util.config.ConfigurationNode;
 
@@ -23,14 +25,12 @@ public class ProfileNPC {
 	public StructureJob currentJob;
 	public HashMap<StructureJob,Integer> jobLevels;
 
-	// TODO: add triggered effects
 	public boolean timedStatsDirty = true;
 	
 	public ProfileNPC () {
 		stats = new ArrayList<HashMap<Material,HashMap<Material,HashMap<String,Double>>>>();
 		stats.add(new HashMap<Material, HashMap<Material,HashMap<String,Double>>>());
-		stats.get(0).put(null, new HashMap<Material,HashMap<String,Double>>());
-		stats.get(0).get(null).put(null, new HashMap<String, Double>());
+		stats.add(new HashMap<Material, HashMap<Material,HashMap<String,Double>>>());
 		jobLevels = new HashMap<StructureJob, Integer>();
 	}
 	
@@ -51,6 +51,18 @@ public class ProfileNPC {
 		map.putAll(effects);
 		map.putAll(passives);
 		return map;
+	}
+	
+	public Material materialStandingOn() {
+		return blockStandingOn().getType();
+	}
+	
+	public Block blockStandingOn() {
+		Block block = entity.getLocation().getBlock();
+		if (block.getType() == Material.AIR) {
+			block = block.getRelative(BlockFace.DOWN);
+		}
+		return block;
 	}
 	
 	public int getStat(String name, Integer def) {
@@ -110,6 +122,7 @@ public class ProfileNPC {
 		stats.get(0).clear();
 		stats.get(0).put(null, new HashMap<Material, HashMap<String,Double>>());
 		stats.get(0).get(null).put(null, new HashMap<String, Double>());
+		Watcher.registeredTriggerEffects.get(0).remove(this);
 		if (currentJob != null) {
 			int level = jobLevels.get(currentJob);
 			passives.clear();
@@ -128,11 +141,12 @@ public class ProfileNPC {
 	}
 	
 	public void recalculateBuffs() {
-		if (!timedStatsDirty) {
+		if (timedStatsDirty) {
 			stats.get(1).clear();
 			stats.get(1).put(null, new HashMap<Material, HashMap<String,Double>>());
 			stats.get(1).get(null).put(null, new HashMap<String, Double>());
-			addCollection(effects,stats.get(1));
+			Watcher.registeredTriggerEffects.get(1).remove(this);
+			addCollection(effects,1);
 			timedStatsDirty = false;
 		}
 	}
@@ -191,6 +205,8 @@ public class ProfileNPC {
 									value);
 						}
 					}
+				} else if (effect.startsWith("trigger-active")) {
+					Watcher.register(this,new TriggerEffect(node,descriptor),stats.indexOf(statTarget));
 				}
 			}
 		}

@@ -72,8 +72,7 @@ stats:
         damage: 2
       diamond:
         damage: 2
-    bow:
-      uncharged:
+    ranged:
+      bow:
         damage: 2
-      charged:
-        damage: 10
+        max-damage: 10
