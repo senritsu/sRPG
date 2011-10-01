@@ -226,7 +226,7 @@ steal:
 supersteal:
   name: SuperSteal (dummy)
   description: 
-  feedback: 
+  feedback: whoop de doo!
   broadcast: 
   broadcast-range: 
   cost: 

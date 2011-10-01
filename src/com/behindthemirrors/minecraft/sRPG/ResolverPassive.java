@@ -13,6 +13,7 @@ import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.util.config.ConfigurationNode;
 
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ArgumentsActive;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
@@ -45,10 +46,13 @@ public class ResolverPassive {
 	
 	public static void resolve(ProfileNPC profile, TriggerEffect effect, ProfileNPC target, Block block, CombatInstance combat) {
 		ConfigurationNode node = effect.node;
+		ArgumentsActive arguments = new ArgumentsActive(node.getString("action"), profile, effect.descriptor);
+		arguments.target = target;
+		arguments.targetBlock = block;
+		arguments.combat = combat;
+		arguments.complete();
 		ArrayList<Material> validFrom = MiscBukkit.parseMaterialList(node.getStringList("from", new ArrayList<String>()));
-		Block from = profile.blockStandingOn();
-		Block to = block != null ? block : from;
-		if ((!validFrom.isEmpty() && !validFrom.contains(from.getType())) || !(checkConditions(profile,node) || checkCombatConditions(profile, node, combat)) || !checkTools(profile,node,to)) {
+		if ((!validFrom.isEmpty() && !validFrom.contains(arguments.sourceBlock.getType())) || !(checkConditions(profile,node) || checkCombatConditions(profile, node, combat)) || !checkTools(profile,node,arguments.targetBlock)) {
 			SRPG.dout("conditions failed","passives");
 			return;
 		}
@@ -57,7 +61,9 @@ public class ResolverPassive {
 			return;
 		}
 		SRPG.dout("conditions cleared","passives");
-		ResolverActive.resolve(node.getString("action"), profile, target, to, effect.descriptor);
+		
+		
+		ResolverActive.resolve(arguments);
 	}
 	
 	// resolve effects that influence block events

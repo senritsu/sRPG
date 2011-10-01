@@ -401,7 +401,7 @@ public class Messager {
 	public static String localize(String string, String path, ProfilePlayer profile) {
 		String locale = profile != null ? profile.locale : Settings.defaultLocale;
 		String localized = Settings.localization.get(locale).getString(path);
-		return localized != null?localized:string;
+		return localized != null?localized:(string!=null?string:"");
 	}
 	
 	public String localizedPassive(String signature) {

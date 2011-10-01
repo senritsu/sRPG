@@ -3,11 +3,14 @@ package com.behindthemirrors.minecraft.sRPG.dataStructures;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.getspout.spoutapi.SpoutManager;
 import org.getspout.spoutapi.gui.Color;
@@ -101,7 +104,8 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public boolean checkLevelUp(StructureJob job) {
-		Integer currentLevel = jobLevels.containsKey(job) ? jobLevels.get(job) : 0;
+		Integer oldLevel = jobLevels.containsKey(job) ? jobLevels.get(job) : 0;
+		Integer currentLevel = oldLevel;
 		Integer amount = jobXP.get(job); 
 		// check for job levelup
 		boolean done = false;
@@ -125,6 +129,9 @@ public class ProfilePlayer extends ProfileNPC {
 		if (levelChanged) {
 			if (!suppressMessages) {
 				Messager.sendMessage(player, "levelup",currentJob.signature);
+				if (oldLevel < currentLevel) {
+					SpoutManager.getSoundManager().playCustomSoundEffect(SRPG.plugin, SpoutManager.getPlayer(player), "http://www.behindthemirrors.com/files/minecraft/srpg/orb.ogg", false);
+				}
 			}
 			recalculate();
 		}
@@ -219,7 +226,10 @@ public class ProfilePlayer extends ProfileNPC {
 				(currentActive.versusMaterials.contains(target) || currentActive.versusMaterials.isEmpty()) &&
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
-			ResolverActive.resolve(currentActive, combat, actives.get(currentActive));
+			ArgumentsActive arguments = new ArgumentsActive(currentActive, this, actives.get(currentActive));
+			arguments.target = this == combat.attacker ? combat.defender : this;
+			arguments.combat = combat;
+			ResolverActive.resolve(arguments);
 			Messager.announce(currentActive, this); 
 			result = true;
 		}
@@ -233,13 +243,30 @@ public class ProfilePlayer extends ProfileNPC {
 		if (currentActive == null) {
 			return false;
 		}
-		Block target = player.getTargetBlock(null, currentActive.range);
+		Block targetBlock = player.getTargetBlock(null, currentActive.range);
+		List<Block> los = player.getLineOfSight(null, currentActive.range);
+		LivingEntity target = null;
+		double distance = 0;
+		for (Entity entity : player.getNearbyEntities(currentActive.range,currentActive.range,currentActive.range)) {
+			if (entity instanceof LivingEntity) {
+				if (los.contains(entity.getLocation().getBlock())) {
+					double d = entity.getLocation().distance(this.entity.getLocation());
+					if (target == null || d < distance) {
+						target = (LivingEntity)entity;
+						distance = d;
+					}
+				}
+			}
+		}
 		boolean result = false;
 		if (prepared && !currentActive.combat && 
-				(currentActive.versusMaterials.contains(target.getType()) || currentActive.versusMaterials.isEmpty()) &&
+				currentActive.validVs(targetBlock.getType()) &&
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
-			ResolverActive.resolve(currentActive, this, target, actives.get(currentActive));
+			ArgumentsActive arguments = new ArgumentsActive(currentActive, this, actives.get(currentActive));
+			arguments.targetBlock = targetBlock;
+			arguments.target = SRPG.profileManager.get(target);
+			ResolverActive.resolve(arguments);
 			Messager.announce(currentActive, this); 
 			result = true;
 			// hack

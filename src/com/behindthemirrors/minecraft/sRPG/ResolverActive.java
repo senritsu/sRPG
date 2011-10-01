@@ -1,104 +1,68 @@
 package com.behindthemirrors.minecraft.sRPG;
 
-import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.util.config.ConfigurationNode;
 
-import com.behindthemirrors.minecraft.sRPG.dataStructures.EffectDescriptor;
-import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfileNPC;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.ArgumentsActive;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.ScheduledEffect;
-import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureActive;
-
 
 public class ResolverActive {
 	
-	public static void resolve(String name, CombatInstance combat, EffectDescriptor descriptor) {
-		resolve(Settings.actives.get(name), combat, combat.attacker, combat.defender, null, descriptor);
-	}
-	
-	public static void resolve(StructureActive active, CombatInstance combat, EffectDescriptor descriptor) {
-		resolve(active, combat, combat.attacker, combat.defender, null, descriptor);
-	}
-	
-	public static void resolve(String name, ProfileNPC source, ProfileNPC target, EffectDescriptor descriptor) {
-		resolve(Settings.actives.get(name),null, source,target, null, descriptor);
-	}
-	
-	public static void resolve(StructureActive active, ProfileNPC source, ProfileNPC target, EffectDescriptor descriptor) {
-		resolve(active, null, source, target, null, descriptor);
-	}
-	
-	public static void resolve(String name, ProfileNPC source, Block block, EffectDescriptor descriptor) {
-		resolve(Settings.actives.get(name), null, source, null, block, descriptor);
-	}
-	
-	public static void resolve(StructureActive active, ProfileNPC source, Block block, EffectDescriptor descriptor) {
-		resolve(active, null, source, null, block, descriptor);
-	}
-	
-	public static void resolve(String name, ProfileNPC source, ProfileNPC target, Block block, EffectDescriptor descriptor) {
-		resolve(Settings.actives.get(name),null, source, target, block, descriptor);
-	}
-	
-	public static void resolve(StructureActive active, CombatInstance combat, ProfileNPC source, ProfileNPC target, Block block, EffectDescriptor descriptor) {
-		if (active != null) {
-			for (String effect : active.effects.keySet()) {
-				ConfigurationNode node = active.effects.get(effect);
+	public static void resolve(ArgumentsActive arguments) {
+		if (arguments.active != null) {
+			for (String effect : arguments.active.effects.keySet()) {
+				ConfigurationNode node = arguments.active.effects.get(effect);
 
 				int delay = node.getInt("delay", 0);
-				Block offsetBlock = MiscGeometric.offset(source.entity.getLocation(), block, node);
 				if (delay > 0) {
-					SRPG.cascadeQueueScheduler.scheduleEffect(new ScheduledEffect(delay, effect, node, active, descriptor, combat, source, target, offsetBlock));
+					SRPG.cascadeQueueScheduler.scheduleEffect(new ScheduledEffect(delay, effect, node, arguments));
 				} else {
-					resolveActiveEffect(effect, node, active, descriptor, combat, source, target, offsetBlock);
+					resolveActiveEffect(effect, node, arguments);
 				}
 			}
 		}
 	}
 	
-	public static void resolveActiveEffect(String effect, ConfigurationNode node, StructureActive active, EffectDescriptor descriptor, CombatInstance combat, ProfileNPC source, ProfileNPC target, Block block) {
-		resolveActiveEffect(effect, node, active, descriptor, combat, source, target, block, source.entity.getLocation());
-	}
-	
-	public static void resolveActiveEffect(String effect, ConfigurationNode node, StructureActive active, EffectDescriptor descriptor, CombatInstance combat, ProfileNPC source, ProfileNPC target, Block block, Location location) {
+	public static void resolveActiveEffect(String effect, ConfigurationNode node, ArgumentsActive arguments) {
 		// TODO: maybe add a unified method of choosing which entity the effect is relative to, and if the direction is calculated at the moment of the effect cast, or at the moment of execution
+		Block targetBlock = MiscGeometric.offset(arguments.source.entity.getLocation(), arguments.targetBlock, node);
 		if (effect.startsWith("apply-buff")) {
-			if (node.getBoolean("self", true) && active.validVs(source)) {
-				ResolverEffects.applyBuff(source, source, node, descriptor);
+			if (node.getBoolean("self", true) && arguments.active.validVs(arguments.source)) {
+				ResolverEffects.applyBuff(arguments.source, arguments.source, node, arguments.descriptor);
 			}
-			if (node.getBoolean("target", false) && active.validVs(target)) {
-				ResolverEffects.applyBuff(source, target, node, descriptor);
+			if (node.getBoolean("target", false) && arguments.active.validVs(arguments.target)) {
+				ResolverEffects.applyBuff(arguments.source, arguments.target, node, arguments.descriptor);
 			}
 		} else if (effect.startsWith("direct-damage")) {
-			if (node.getBoolean("self", false) && active.validVs(source)) {
-				ResolverEffects.directDamage(source,node, descriptor);
+			if (node.getBoolean("self", false) && arguments.active.validVs(arguments.source)) {
+				ResolverEffects.directDamage(arguments.source,node, arguments.descriptor);
 			}
-			if (node.getBoolean("target", true) && active.validVs(target)) {
-				ResolverEffects.directDamage(target,node, descriptor);
+			if (node.getBoolean("target", true) && arguments.active.validVs(arguments.target)) {
+				ResolverEffects.directDamage(arguments.target,node, arguments.descriptor);
 			}
 			
 		} else if (effect.startsWith("change-blocks")) {
-			if (block != null) {
-				ResolverEffects.blockChange(source, location, block, node, descriptor);
+			if (targetBlock != null) {
+				ResolverEffects.blockChange(arguments.source, arguments.location, targetBlock, node, arguments.descriptor);
 			}
 		} else if (effect.startsWith("transmute-item")) {
-			ResolverEffects.transmuteItem(source, node, descriptor);
+			ResolverEffects.transmuteItem(arguments.source, node, arguments.descriptor);
 		} else if (effect.startsWith("manipulate-item")) {
-			if (node.getBoolean("self", false) && active.validVs(source)) {
-				ResolverEffects.manipulateItem(source, source, node, descriptor);
+			if (node.getBoolean("self", false) && arguments.active.validVs(arguments.source)) {
+				ResolverEffects.manipulateItem(arguments.source, arguments.source, node, arguments.descriptor);
 			}
-			if (node.getBoolean("target", true) && active.validVs(target)) {
-				ResolverEffects.manipulateItem(source, target, node, descriptor);
+			if (node.getBoolean("target", true) && arguments.active.validVs(arguments.target)) {
+				ResolverEffects.manipulateItem(arguments.source, arguments.target, node, arguments.descriptor);
 			}
 		}  else if (effect.startsWith("impulse")) {
-			if (node.getBoolean("self", false) && active.validVs(source)) {
-				ResolverEffects.impulse(source, location, node, descriptor);
+			if (node.getBoolean("self", false) && arguments.active.validVs(arguments.source)) {
+				ResolverEffects.impulse(arguments.source, arguments.location, node, arguments.descriptor);
 			}
-			if (node.getBoolean("target", true) && active.validVs(target)) {
-				ResolverEffects.impulse(target, location, node, descriptor);
+			if (node.getBoolean("target", true) && arguments.active.validVs(arguments.target)) {
+				ResolverEffects.impulse(arguments.target, arguments.location, node, arguments.descriptor);
 			}
 		} else if (effect.startsWith("lightning")) {
-			ResolverEffects.lightning(block,node,descriptor);
+			ResolverEffects.lightning(targetBlock,node,arguments.descriptor);
 		}
 	}
 }
