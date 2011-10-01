@@ -3,173 +3,29 @@ combat:
     enabled: false
     group-prefix: groups.
     groups:
-      group1: [group1,group3,animals,monsters]
-      group2: [group1,animals]
-xp:
-  to-levelup: 1000
+      # group1: [group1,group3,animals,monsters]
+      # group2: [group1,animals]
+settings:
   blocks:
-    default: common
-    # everything that is not in one of the other groups defaults to the default group
-    # default group therefore does not need a listing of block ids
     groups:
-      common: 
-        xp: 5
-        chance: 1
-      uncommon:
-        ids: [16,73,74,82,89,49]
+      # you can add/remove/rename as many groups as you like apart from 'default'
+      # everything that is not explicitely assigned a group gets assigned 'default'
+      default: # again: do not remove this group
         xp: 1
-        chance: 0.3
+        chance: 0.33
+        charge-ticks: 1
+      uncommon:
+        materials: []
+        xp: 1-2
+        chance: 0.66 
+        charge-ticks: 2
       rare:
-        ids: [14,15,56,21]
-        xp: 5
-        chance: 1.0
-skills:
-  costs: 
-    generic: [1,1,1,2,2,2,3,3,3,5,7]
-    focus-base: 10
-    focus-increase: 2
-  milestones:
-    novice: 0
-    apprentice: 4
-    expert: 7
-    master: 11
-  effects:
-    swords:
-      durability-recovery-chance: 0.02
-      milestone-bonus: 0.01
-    pickaxes:
-      durability-recovery-chance: 0.02
-      milestone-bonus: 0.01
-    axes:
-      durability-recovery-chance: 0.02
-      milestone-bonus: 0.01
-    shovels:
-      durability-recovery-chance: 0.02
-      milestone-bonus: 0.01
-    hoes:
-      durability-recovery-chance: 0.02
-      milestone-bonus: 0.01
-    bow:
-      crit-chance: 0.02
-      milestone-bonus: 0.01
-    ukemi:
-      autoroll-chance: 0.02
-      milestone-bonus: 0.01
-      roll-window: 100 # [ms]
-    evasion:
-      chance: 0.02
-      milestone-bonus: 0.01
-    focus:
-      boost: 0.05
-  passive-abilities: 
-    swords:
-      apprentice:
-        parry-chance: 0.1
-      expert: 
-        parry-chance: 0.05
-        crit-chance: 0.1
-      master: 
-        crit-chance: 0.1
-        crit-multiplier: 1
-    pickaxes:
-      apprentice: 
-        double-drop-chance: 0.05
-      expert:
-        double-drop-chance: 0.1
-      master:
-        double-drop-chance: 0.05
-        triple-drop-chance: 0.05
-    axes:
-      apprentice: 
-        double-drop-chance: 0.05
-      expert:
-        double-drop-chance: 0.1
-      master:
-        double-drop-chance: 0.05
-        triple-drop-chance: 0.05
-    shovels:
-      apprentice:
-        common-drop-chance: 0.04
-      expert:
-        uncommon-drop-chance: 0.02
-      master: 
-        rare-drop-chance: 0.005
-    bow: 
-      apprentice: 
-        damage-modifier: 1
-      expert: 
-        crit-multiplier: 1
-      master: 
-        damage-modifier: 1
-        crit-multiplier: 1
-    ukemi: # values here not used yet
-      apprentice: 
-        fall-height-increase: 1
-      expert: 
-        fall-height-increase: 1
-      master: 
-        fall-height-increase: 1
-    evasion: # values here not used yet
-      apprentice: 
-        explosion-escape-chance: 0.2
-      expert: 
-        arrow-catch-chance: 0.2
-      master: 
-        counterattack-chance: 0.2
-  
-abilities:
-  max-charges: 11
-  blocks-to-charge: 64
-  costs:
-    swords:
-      stone: 1
-      iron: 1
-      diamond: 1
-    pickaxes:
-      stone: 1
-      iron: 1
-      diamond: 1
-    axes:
-      stone: 1
-      iron: 1
-      diamond: 1
-    shovels:
-      stone: 1
-      iron: 1
-      diamond: 1
-        
-item-requirements:
-  untrained-miss-chance: 0.2
-  untrained-damage-modifier: -1
-  untrained-durability-loss: 4
-  swords:
-    wood: 0
-    stone: 0
-    iron: 3
-    gold: 7
-    diamond: 4
-  pickaxes:
-    wood: 0
-    stone: 0
-    iron: 3
-    gold: 7
-    diamond: 4
-  axes:
-    wood: 0
-    stone: 0
-    iron: 3
-    gold: 7
-    diamond: 4
-  shovels:
-    wood: 0
-    stone: 0
-    iron: 3
-    gold: 7
-    diamond: 4
-  hoes: 
-    wood: 0
-    stone: 0
-    iron: 3
-    gold: 7
-    diamond: 4
-  bow: 0
+        materials: []
+        xp: 2-5
+        charge-ticks: 5
+  charges:
+    ticks-to-charge: 64
+    ticks:
+      combat-hit: 1
+      combat-kill: 5
+      

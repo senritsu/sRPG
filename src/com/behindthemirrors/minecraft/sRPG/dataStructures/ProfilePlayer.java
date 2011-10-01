@@ -35,7 +35,7 @@ public class ProfilePlayer extends ProfileNPC {
 	
 	// TODO: maybe change to read directly from config
 	public static Integer chargeMax;
-	public static Integer chargeTicks;
+	public static Integer ticksPerCharge;
 	
 	public HashMap<StructureJob,Integer> jobXP = new HashMap<StructureJob, Integer>();
 	public HashMap<StructureJob,Boolean> jobAvailability = new HashMap<StructureJob, Boolean>();
@@ -130,7 +130,7 @@ public class ProfilePlayer extends ProfileNPC {
 			if (!suppressMessages) {
 				Messager.sendMessage(player, "levelup",currentJob.signature);
 				if (oldLevel < currentLevel) {
-					SpoutManager.getSoundManager().playCustomSoundEffect(SRPG.plugin, SpoutManager.getPlayer(player), "http://www.behindthemirrors.com/files/minecraft/srpg/orb.ogg", false);
+					SpoutManager.getSoundManager().playCustomSoundEffect(SRPG.plugin, SpoutManager.getPlayer(player), "http://www.behindthemirrors.com/files/minecraft/srpg/level.ogg", false);
 				}
 			}
 			recalculate();
@@ -153,18 +153,22 @@ public class ProfilePlayer extends ProfileNPC {
 		
 	}
 	
-	public void addChargeTick() {
-		chargeProgress++;
-		if (chargeProgress >= chargeTicks) {
+	public void addChargeTicks(int i) {
+		if (i <= 0) {
+			return;
+		}
+		chargeProgress += i;
+		while (chargeProgress >= ticksPerCharge) {
 			if (charges < chargeMax) {
-				chargeProgress -= chargeTicks;
+				chargeProgress -= ticksPerCharge;
 				charges++;
 				updateChargeDisplay();
 				if (!suppressMessages) {
 					Messager.sendMessage(player, "charge-acquired");
+					SpoutManager.getSoundManager().playCustomSoundEffect(SRPG.plugin, SpoutManager.getPlayer(player), "http://www.behindthemirrors.com/files/minecraft/srpg/charge.ogg", false);
 				}
 			} else {
-				chargeProgress--;
+				chargeProgress = ticksPerCharge-1;
 			}
 		}
 	}

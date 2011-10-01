@@ -17,8 +17,9 @@ import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
 
 public class Watcher {
-	public static ArrayList<Material> trackingMaterials = new ArrayList<Material>();
-	public static ArrayList<Block> userPlacedBlocks = new ArrayList<Block>();
+	public static ArrayList<Material> blocksToWatch = new ArrayList<Material>();
+	public static ArrayList<Block> watchedBlocks = new ArrayList<Block>();
+	public static boolean ignoreWatchedBlocks;
 	
 	public static ArrayList<Block> protectedBlocks = new ArrayList<Block>();
 	public static ArrayList<Item> protectedItems = new ArrayList<Item>();
@@ -132,6 +133,7 @@ public class Watcher {
 		}
 		registeredTriggerEffects.get(index).get(profile).add(effect);
 	}
+
 	
 	public void clear(ProfileNPC profile, Integer index) {
 		if (registeredTriggerEffects.get(index).containsKey(profile)) {
@@ -200,6 +202,21 @@ public class Watcher {
 			if (!temp.isEmpty()) {
 				ResolverPassive.resolve(profile,effect, target, block, combat);
 			}
+		}
+	}
+	
+	public static void watch(Block block) {
+		watchedBlocks.add(block);
+		if (watchedBlocks.size() > 1200) {
+			watchedBlocks = (ArrayList<Block>) watchedBlocks.subList(200, watchedBlocks.size()-1);
+		}
+	}
+	
+	public static boolean givesOk(Block block) {
+		if (watchedBlocks.contains(block)) {
+			return false;
+		} else {
+			return true;
 		}
 	}
 	

@@ -205,7 +205,7 @@ public class CombatInstance {
 		SRPG.dout("combat damage after armor mitigation: "+damage,"combat");
 		
 		if (damage > 0 && attacker instanceof ProfilePlayer) {
-			((ProfilePlayer)attacker).addChargeTick();
+			((ProfilePlayer)attacker).addChargeTicks(Settings.advanced.getInt("settings.charges.ticks.combat-hit", 0));
 		}
 		event.setDamage(damage > 0 ? (int)Math.round(damage) : 0);
 		

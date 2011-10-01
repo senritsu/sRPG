@@ -205,9 +205,12 @@ public class DamageEventListener extends EntityListener {
 			ProfileNPC profile = SRPG.profileManager.get(entity);
 			SRPG.dout("giving player"+damageTracking.get(id)+" xp","death");
 			try {
-				SRPG.profileManager.get(damageTracking.get(id)).addXP((int) profile.getStat("xp"));
+				ProfilePlayer killer = SRPG.profileManager.get(damageTracking.get(id));
+				killer.addXP((int) profile.getStat("xp"));
+				killer.addChargeTicks(Settings.advanced.getInt("settings.charges.ticks.combat-kill", 0));
+				
 			} catch (NullPointerException ex) {
-				SRPG.output("NPE at xp awarding");
+				SRPG.output("NPE at xp awarding, contact zaph34r about it");
 				SRPG.output("profile: "+(profile == null ? null : profile.toString()));
 				SRPG.output("tracking entry: "+(damageTracking.get(id) == null ? null : damageTracking.get(id).toString()));
 				SRPG.output("xp stat: "+profile.getStat("xp"));
@@ -215,6 +218,7 @@ public class DamageEventListener extends EntityListener {
 			}
 			//TODO: maybe move saving to the data class
 			SRPG.profileManager.save(damageTracking.get(id),"xp");
+			SRPG.profileManager.save(damageTracking.get(id),"chargedata");
 			damageTracking.remove(id);
 		}
 		if (!(entity instanceof Player)) {

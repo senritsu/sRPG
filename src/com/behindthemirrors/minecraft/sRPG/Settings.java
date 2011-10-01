@@ -11,6 +11,7 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.ProfilePlayer;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureActive;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
 import com.behindthemirrors.minecraft.sRPG.dataStructures.StructurePassive;
+import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 import com.behindthemirrors.minecraft.sRPG.listeners.BlockEventListener;
 import com.behindthemirrors.minecraft.sRPG.listeners.SpawnEventListener;
 
@@ -207,8 +208,8 @@ public class Settings {
 			SRPG.database = db;
 			
 			// read ability settings
-			ProfilePlayer.chargeMax = advanced.getInt("abilities.max-charges", 1);
-			ProfilePlayer.chargeTicks = advanced.getInt("abilities.blocks-to-charge", 1);
+			ProfilePlayer.chargeMax = 10; //TODO: make configurable (needs integration with spout GUI)
+			ProfilePlayer.ticksPerCharge = advanced.getInt("settings.charges.ticks-to-charge", 1);
 			
 			// read difficulty/combat settings
 			difficulty = config.getString("settings.combat.difficulty");
@@ -364,16 +365,38 @@ public class Settings {
 				}
 			}
 			
-			// block xp settings
-			BlockEventListener.groupBlockMapping = new HashMap<String, ArrayList<Integer>>();
-			BlockEventListener.xpValues = new HashMap<String, Integer>();
-			BlockEventListener.xpChances = new HashMap<String, Double>();
-			for (Map.Entry<String, ConfigurationNode> group : Settings.advanced.getNodes("xp.blocks.groups").entrySet()) {
+			// block xp and charge settings
+			BlockEventListener.materialToXpGroup.clear();
+			BlockEventListener.xpValuesMin.clear();
+			BlockEventListener.xpValuesRange.clear();
+			BlockEventListener.xpChances.clear();
+			for (Map.Entry<String, ConfigurationNode> group : Settings.advanced.getNodes("settings.blocks.groups").entrySet()) {
 				String name = group.getKey();
 				node = group.getValue();
-				BlockEventListener.groupBlockMapping.put(name, (ArrayList<Integer>)node.getIntList("ids", null));
-				BlockEventListener.xpValues.put(name, node.getInt("xp",0));
+				if (name.equalsIgnoreCase("default")) {
+					name = null;
+				} 
+				for (Material material : MiscBukkit.parseMaterialList(node.getStringList("materials",new ArrayList<String>()))) {
+					BlockEventListener.materialToXpGroup.put(material,name);
+				}
+				String valueString = node.getString("xp");
+				Integer min = 1;
+				Integer max = 1;
+				String[] tokens = valueString.split("-");
+				try {
+					min = Integer.parseInt(tokens[0]);
+					try {
+						max = Integer.parseInt(tokens[1]);
+					} catch (IndexOutOfBoundsException ex) {
+					}
+				} catch (NumberFormatException ex) {
+				}
+				max = Math.max(min, max);
+				BlockEventListener.xpValuesMin.put(name, min);
+				BlockEventListener.xpValuesRange.put(name, max-min);
 				BlockEventListener.xpChances.put(name, node.getDouble("chance",1.0));
+				
+				BlockEventListener.chargeTicks.put(name, node.getInt("charge-ticks",0));
 			}
 		} 
 		// disable plugin if anything went wrong while loading configuration

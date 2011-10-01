@@ -435,6 +435,9 @@ public class ResolverEffects {
 	}
 
 	public static void changeBlockDrops(BlockBreakEvent event, Block block, ConfigurationNode node, EffectDescriptor descriptor) {
+		if (node.getString("mode").equalsIgnoreCase("multiply") && !Watcher.givesOk(block)) {
+			return;
+		}
 		ArrayList<ItemStack> defaults = new ArrayList<ItemStack>();
 		defaults.add(MiscBukkit.getNaturalDrops(block));
 		if (changeDrops(node,defaults,block.getLocation(),descriptor)) {

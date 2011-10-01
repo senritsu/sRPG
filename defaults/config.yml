@@ -8,8 +8,6 @@ mySQL:
   table_prefix: srpg_
 settings:
   disabled-worlds: [] # plugin won't do anything on worlds listed in here
-  features:
-    remove-skillpoints: false
   combat:
     difficulty: default # creates a new .yml from default if the named difficulty is unavailable
     dangerous-depths: true # increases damage by monsters lower certain depths
