@@ -46,6 +46,32 @@ public class ResolverEffects {
 		}
 	}
 	
+	static void combatBoost(CombatInstance combat, ConfigurationNode node, EffectDescriptor descriptor) {
+		if (combat == null) {
+			return;
+		}
+		List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+		Double value = (levelbased.contains("value")?descriptor.levelfactor():1.0)*descriptor.potency*node.getDouble("value",0.0);
+		String stat = node.getString("name");
+		if (stat.equalsIgnoreCase("crit-chance")) {
+			combat.critChance += value;
+		} else if (stat.equalsIgnoreCase("crit-chance")) {
+			combat.critChance += value;
+		} else if (stat.equalsIgnoreCase("miss-chance")) {
+			combat.missChance += value;
+		} else if (stat.equalsIgnoreCase("parry-chance")) {
+			combat.evadeChance += value;
+		} else if (stat.equalsIgnoreCase("evade-chance")) {
+			combat.parryChance += value;
+		} else if (stat.equalsIgnoreCase("crit-multiplier")) {
+			combat.critMultiplier += value;
+		} else if (stat.equalsIgnoreCase("damage-modifier")) {
+			combat.basedamage += value;
+		} else if (stat.equalsIgnoreCase("max-damage-modifier")) {
+			combat.damagerange += value;
+		}
+	}
+	
 	static void applyBuff(ProfileNPC source, ProfileNPC target, ConfigurationNode node,EffectDescriptor descriptor) {
 		if (source == null || target == null) {
 			return;
@@ -60,7 +86,6 @@ public class ResolverEffects {
 		target.addEffect(buff, descriptor);
 		Messager.sendMessage(target, "acquired-buff",buff.signature);
 	}
-	
 	static void directDamage(ProfileNPC profile, ConfigurationNode node, EffectDescriptor descriptor) {
 		if (profile == null) {
 			return;
@@ -160,7 +185,6 @@ public class ResolverEffects {
 				}
 			}
 		}
-		
 		for (ItemStack stack : stacks) {
 			if (action.equalsIgnoreCase("steal")) {
 				if (source instanceof ProfilePlayer) {

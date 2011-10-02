@@ -25,67 +25,30 @@
 # 
 #################################################################################
 
-#############
-# DEBUGGING #
-#############
-
-backstab:
-  name: Backstab (dummy)
-  effects:
-    set-combat-state:
-      conditions: [backstab-offensive]
-      crit: true
-
-heightshot:
-  name: Higher Ground (dummy)
-  effects:
-    set-combat-state:
-      tools: [bow]
-      conditions: [highground-offensive]
-      crit: true
-      
-dropnight:
-  name: Drop Gold (dummy)
-  effects:
-    drop-change:
-      conditions: [night]
-      versus: [stone]
-      mode: replace
-      items: [gold_ingot]
-      amounts: [5]
-  
-dropday:
-  name: Drop Iron (dummy)
-  effects:
-    drop-change:
-      conditions: [day]
-      versus: [stone]
-      mode: replace
-      items: [iron_ingot,coal]
-      amounts: [3,5]
-      all: false
-
-losearmor:
-  name: Lose Armor (dummy)
-  effects:
-    trigger-active:
-      triggers: [move]
-      from: [SNOW]
-      versus: [stone,dirt]
-      tools: [swords]
-      action: droparmor
-
-losearmor2:
-  name: Lose Armor (dummy)
-  effects:
-    trigger-active:
-      triggers: [daybreak]
-      from: [grass]
-      action: droparmor
-
 #####################
 # TRAITS & PASSIVES #
 #####################
+
+from-behind:
+  name: From Behind
+  description: 
+  effects:
+    boost: 
+      name: crit-chance
+      tools: [swords,axes,pickaxes,hoes]
+      conditions: [backstab-offensive]
+      value: 0.50
+      level-based: [value]
+
+target-vitals:
+  name: Target Vitals
+  description: 
+  effects:
+    boost: 
+      name: crit-multiplier
+      value: 0.5
+      tools: [swords,axes,pickaxes,hoes]
+      conditions: [backstab-offensive]
 
 ranged-focus:
   name: Ranged Combat Focus
@@ -94,7 +57,8 @@ ranged-focus:
     boost:
       name: crit-chance
       tools: [bow]
-      value: +0.05
+      value: 0.1
+      level-based: [value]
     boost1:
       name: damage-modifier
       tools: [swords,axes]
@@ -109,15 +73,292 @@ snipers-eye:
   description:
   effects:
     boost:
-      name: crit-chance
-      value: 0.20
       tools: [bow]
+      name: crit-multiplier
+      value: 0.5
       level-based: [value]
-      inherited: true
+
+enhanced-aim:
+  name: Enhanced Aim
+  description:
+  effects:
+    boost:
+      tools: [bow]
+      name: miss-chance
+      value: -0.05
+
+footwork:
+  name: Footwork
+  description:
+  effects:
+    boost:
+      name: evade-chance
+      value: 0.1
+      level-based: [value]
+
+parry:
+  name: Parry
+  description:
+  effects:
+    boost:
+      name: parry-chance
+      value: 0.05
+      tools: [swords]
+    boost1:
+      name: parry-efficiency
+      value: 0.3
+      tools: [swords]
+
+defensive-sword-training:
+  name: Defensive Sword Training
+  description: 
+  effects: 
+    boost: 
+      name: parry-chance
+      value: 0.2
+      tools: [swords]
+
+improved-parry:
+  name: Improved Parry
+  description:
+  effects:
+    boost:
+      name: parry-efficiency
+      value: 0.2
+      tools: [words]
+
+offensive-sword-training:
+  name: Offensive Sword Training
+  description:
+  effects:
+    boost: 
+      name: damage-modifier
+      value: 1
+      tools: [swords]
+
+improved-accuracy:
+  name: Improved Accuracy
+  description: 
+  effects:
+    boost:
+      tools: [bow]
+      name: target-evade-chance
+      value: -0.1
+    boost1:
+      tools: [bow]
+      name: target-evade-efficiency
+      value: -0.1
+
+riposte:
+  name: Riposte
+  description: 
+  effects:
+    trigger-active:
+      triggers: [combat]
+      conditions: [parry-defensive]
+      chance: 0.5
+      tools: [swords]
+      action: focus
+    direct-damage:
+      conditions: [parry-defensive]
+      chance: 0.5
+      self: false
+      target: true
+      value: 2
+
+read-the-wind:
+  name: Read the Wind
+  description: 
+  effects: 
+    set-combat-state: 
+      tools: [bow]
+      conditions: [highground-offensive]
+      miss: false 
+    boost: 
+      tools: [bow]
+      name: crit-chance
+      value: 0.25
+
+lucky-shots:
+  name: Lucky Shots
+  description: 
+  effects: 
+    boost:
+      tools: [bow]
+      conditions: [crit-offensive]
+      crit-multiplier: 1.0
+      chance: 0.5
+      
+bow-training:
+  name: Bow Training
+  description: 
+  effects: 
+    boost:
+      tools: [bow]
+      name: damage-modifier
+      value: 1
+      
+ballistics:
+  name: Ballistics
+  description: Increased damage when attacking from higher ground
+  effects:
+    boost: 
+      tools: [bow]
+      name: damage-modifier
+      value: 2
+      conditions: [highground-offensive]
+
+deadly-arrows:
+  name: Deadly Arrows
+  description: 
+  effects:
+    boost:
+      name: crit-chance
+      value: 1.0
+  replaces: poisoned-arrows
+
+poisoned-arrows:
+  name: Poisoned Arrows
+  description: 
+  effects:
+    trigger-active:
+      triggers: [combat]
+      chance: 0.5
+      action: apply-poison
+      conditions: [attacking]
+
+tool-proficiency:
+  name: Tool Proficiency
+  effects:
+    boost: 
+      name: durability-recovery-chance
+      value: 0.3
+      level-based: [value]
+      tools: [axes,pickaxes,hoes]
+
+lumberjack:
+  name: Lumberjack
+  effects:
+    drop-change:
+      mode: multiply
+      chance: 0.3
+      level-based: [chance]
+      tools: [axes]
+      versus: [log]
+
+stonecutter:
+  name: Stonecutter
+  effects: 
+    drop-change:
+      mode: multiply
+      chance: 0.3
+      level-based: [chance]
+      tools: [pickaxes]
+      versus: [stone]
+
+coal-mining:
+  name: Coal Mining
+  effects:
+    drop-change:
+      mode: add
+      chance: 0.01
+      tools: [pickaxes]
+      versus: [stone]
+      items: [coal]
+      amounts: [1]
+    drop-change1:
+      mode: multiply
+      chance: 0.15
+      level-based: [chance]
+      tools: [pickaxes]
+      versus: [coal_ore]
 
 #########
 # BUFFS #
 #########
+
+sift-resources:
+  name: Sift Resources
+  adjective: searching for resources
+  effects:
+    drop-change:
+      tools: [nothing]
+      versus: [grass,dirt,gravel]
+      mode: add
+      items: [seeds,string,feather,sulphur,flint,clay_ball,redstone]
+      amounts: [1,1,1,1,1,1]
+      chance: 0.3
+      all: false
+
+sift-valuables:
+  name: Sift Resources
+  adjective: searching for valuables
+  effects:
+    drop-change:
+      tools: [nothing]
+      versus: [grass,dirt,gravel]
+      mode: add
+      items: [coal,arrow,stick,iron_ingot,gold_ingot,diamond,]
+      amounts: [1,1,1,1,1,1]
+      chance: 0.15
+      all: false
+
+bleed:
+  name: Bleed
+  adjective: bleeding
+  effects:
+    direct-damage:
+      value: 1
+      # attribute: physical
+    
+focus:
+  name: Focus
+  adjective: focused
+  effects:
+    boost:
+      name: damage-modifier
+      value: 1
+      
+blind:
+  name: Blind
+  description: 
+  adjective: blinded
+  effects: 
+    boost:
+      name: miss-chance
+      value: 0.1
+
+elusive:
+  name: Elusive
+  description: 
+  adjective: elusive
+  effects:
+    boost: 
+      name: target-miss-chance
+      value: 0.1
+
+concentration:
+  name: Concentration
+  description: 
+  adjective: concentrating
+  effects: 
+    boost: 
+      name: target-evade-chance
+      value: -0.2
+    boost: 
+      name: target-parry-chance
+      value: -0.2
+    boost: 
+      name: target-chance
+      value: -0.2
+
+reinforced-bowstring:
+  name: Reinforced Bowstring
+  effects:
+    boost:
+      name: max-damage-modifier
+      value: 4
+      tools: [bow]
 
 invincibility:
   name: Invincibility
@@ -160,58 +401,60 @@ weak-poison:
 # EVERYTHING ELSE #
 ###################
 
-deadly-arrows:
-  name: Deadly Arrows
-  description: 
-  effects:
-    boost:
-      name: crit-chance
-      value: 1.0
-  replaces: poisoned-arrows
+#############
+# DEBUGGING #
+#############
 
-poisoned-arrows:
-  name: Poisoned Arrows
-  description: 
+backstab1:
+  name: Backstab (dummy)
+  effects:
+    set-combat-state:
+      conditions: [backstab-offensive]
+      crit: true
+
+heightshot1:
+  name: Higher Ground (dummy)
+  effects:
+    set-combat-state:
+      tools: [bow]
+      conditions: [highground-offensive]
+      crit: true
+      
+dropnight1:
+  name: Drop Gold (dummy)
+  effects:
+    drop-change:
+      conditions: [night]
+      versus: [stone]
+      mode: replace
+      items: [gold_ingot]
+      amounts: [5]
+  
+dropday1:
+  name: Drop Iron (dummy)
+  effects:
+    drop-change:
+      conditions: [day]
+      versus: [stone]
+      mode: replace
+      items: [iron_ingot,coal]
+      amounts: [3,5]
+      all: false
+
+losearmor1:
+  name: Lose Armor (dummy)
   effects:
     trigger-active:
-      triggers: [combat]
-      chance: 0.5
-      action: apply-poison
-      conditions: [attacking]
+      triggers: [move]
+      from: [SNOW]
+      versus: [stone,dirt]
+      tools: [swords]
+      action: droparmor
 
-steady-aim:
-  name: Steady Aim
-  description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
-  effects: 
-    boost:
-      name: crit-chance
-      tools: [bow]
-      value: 0.05
-
-steady-aim-2: 
-  name: Steady Aim II
-  description: "[+<crit-chance.value:percent>] chance to critically hit when using a bow"
-  effects: 
-    boost:
-      name: crit-chance
-      tools: [bow]
-      value: 0.1
-  replaces: steady-aim
-  
-bow-training:
-  name: Bow Training
-  description: "[+<damage-modifier:hearts>] of damage when using a bow"
-  effects: 
-    boost:
-      name: damage-modifier
-      tools: [bow]
-      value: 1
-
-deadly-aim:
-  name: Deadly Accuracy
-  description: "[-<anti-evasion.value:percent>] chance of your target evading your arrows"
-  effects: 
-    boost: 
-      name: anti-evasion
-      tools: [bow]
-      value: 0.1
+losearmor2:
+  name: Lose Armor (dummy)
+  effects:
+    trigger-active:
+      triggers: [daybreak]
+      from: [grass]
+      action: droparmor

@@ -96,6 +96,36 @@ public class ResolverPassive {
 	
 	// resolve static effects that influence combat
 	// TODO: update
+	public static void resolveCombatBoosts(CombatInstance combat) {
+		for (ProfileNPC profile : new ProfileNPC[] {combat.attacker,combat.defender}) {
+			if (profile == null) {
+				continue;
+			}
+			for (Map.Entry<StructurePassive,EffectDescriptor> entry : profile.getCurrentPassives().entrySet()) {
+				StructurePassive passive = entry.getKey();
+				EffectDescriptor descriptor = entry.getValue();
+				for (String name : passive.effects.keySet()) {
+					ConfigurationNode node = passive.effects.get(name);
+					SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
+					if (!(checkConditions(profile,node) || checkCombatConditions(profile,node,combat)) || !checkTools(profile, node,combat)) {
+						SRPG.dout("conditions failed","passives");
+						continue;
+					}
+					List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
+					if (!(SRPG.generator.nextDouble() <= (levelbased.contains("chance")?descriptor.levelfactor():1.0)*node.getDouble("chance", 1.0))) {
+						continue;
+					}
+					SRPG.dout("conditions cleared","passives");
+					if (name.startsWith("boost")) {
+						if (!((profile == combat.attacker && !node.getBoolean("self", true)) || (profile == combat.defender && !node.getBoolean("target", false)))) {
+							ResolverEffects.combatBoost(combat,node,descriptor);;
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	public static void resolve(CombatInstance combat) {
 		ArrayList<String> triggers = new ArrayList<String>();
 		triggers.add("combat");
@@ -148,11 +178,19 @@ public class ResolverPassive {
 		if (( profile == combat.attacker && (
 				conditions.contains("attacking") || 
 				(conditions.contains("backstab-offensive") && combat.backstab) || 
-				(conditions.contains("highground-offensive") && combat.highground == combat.attacker) )) ||
+				(conditions.contains("highground-offensive") && combat.highground == combat.attacker) ||
+				(conditions.contains("crit-offensive") && combat.crit) ||
+				(conditions.contains("miss-offensive") && combat.miss) ||
+				(conditions.contains("evade-offensive") && combat.evade) ||
+				(conditions.contains("parry-offensive") && combat.parry) )) ||
 			( profile == combat.defender && (
 				conditions.contains("defending") || 
 				(conditions.contains("backstab-defensive") && combat.backstab) ||
-				(conditions.contains("highground-defensive") && combat.highground == combat.defender) )) ) {
+				(conditions.contains("highground-defensive") && combat.highground == combat.defender) ||
+				(conditions.contains("crit-defensive") && combat.crit) ||
+				(conditions.contains("miss-defensive") && combat.miss) ||
+				(conditions.contains("evade-defensive") && combat.evade) ||
+				(conditions.contains("parry-defensive") && combat.parry) )) ) {
 			return true;
 		}
 		return false;

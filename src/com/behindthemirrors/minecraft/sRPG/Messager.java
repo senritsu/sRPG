@@ -149,12 +149,16 @@ public class Messager {
 	public static ArrayList<String> documentPassive(ProfilePlayer profile, StructurePassive passive) {
 		ArrayList<String> lines = new ArrayList<String>();
 		lines.add(parseLine(profile,localize(passive.signature,"autodoc.special.passive-header",profile),passive.signature));
-		for (Entry<String,ConfigurationNode> entry : passive.effects.entrySet()) {
-			ConfigurationNode node = entry.getValue();
-			if (!node.getBoolean("documented", true)) {
-				continue;
+		if (passive.description != null && !passive.description.isEmpty()) {
+			lines.add(parseLine(profile,passive.description,passive.signature));
+		} else {
+			for (Entry<String,ConfigurationNode> entry : passive.effects.entrySet()) {
+				ConfigurationNode node = entry.getValue();
+				if (!node.getBoolean("documented", true)) {
+					continue;
+				}
+				lines.addAll(documentEffect(profile, entry.getKey(), node));
 			}
-			lines.addAll(documentEffect(profile, entry.getKey(), node));
 		}
 		return lines;
 	}
@@ -221,6 +225,13 @@ public class Messager {
 	}
 	
 	public static void sendMessage(Player player, String message, String context, boolean columns) {
+		for (String line : parseMessage(player,message,context,columns)) {
+			// parse variables and localization references
+		    player.sendMessage(line);
+		}
+	}
+	
+	public static ArrayList<String> parseMessage(Player player, String message, String context, boolean columns) {
 		
 		ProfilePlayer profile = SRPG.profileManager.get(player);
 		ArrayList<String> messageList = (ArrayList<String>)Settings.localization.get(SRPG.profileManager.get(player).locale).getStringList("messages."+message,new ArrayList<String>());
@@ -233,6 +244,7 @@ public class Messager {
 			messageList.clear();
 			messageList.add(choice);
 		}
+		ArrayList<String> output = new ArrayList<String>();
 		if (columns) {
 			ArrayList<Integer> spacing = (ArrayList<Integer>)Arrays.asList(new Integer[]{160,160});
 			ArrayList<ArrayList<String>> buffer = new ArrayList<ArrayList<String>>();
@@ -249,15 +261,16 @@ public class Messager {
 				buffer.get(index).add("");
 			}
 			for (ArrayList<String> row : buffer) {
-				player.sendMessage(columnize(row, spacing));
+				output.add(columnize(row, spacing));
 			}
 			
 		} else {
 			for (String line : messageList) {
-				// parse variables and localization references
-			    player.sendMessage(parseLine(profile,line,context));
+				output.add(parseLine(profile,line,context));
 			}
+			
 		}
+		return output;
 	}
 	
 	public static String parseLine(ProfilePlayer profile, String line, String context) {
@@ -295,7 +308,11 @@ public class Messager {
 	    		replacement = localizedJob(context, profile);
 	    		
 	    	} else if (match.equalsIgnoreCase("<!joblevel>")) {
-	    		replacement = Integer.toString(profile.jobLevels.get(Settings.jobs.get(context)));
+	    		Integer level = profile.jobLevels.get(Settings.jobs.get(context));
+	    		if (level == null) {
+	    			level = 0;
+	    		}
+	    		replacement = Integer.toString(level);
 	    		
 	    	} else if (match.equalsIgnoreCase("<!jobmaxlevel>")) {
 	    		replacement = Integer.toString(Settings.jobs.get(context).maximumLevel);
@@ -332,7 +349,7 @@ public class Messager {
 	    		
 	    	} else {
 	    		// TODO: update for descriptions for passives and the sort, maybe move parsing to separate function
-	    		replacement = Settings.localization.get(profile.locale).getString(match.substring(1,match.length()-1),"");
+	    		replacement = localize(match.substring(1,match.length()-1),match.substring(1,match.length()-1),profile);
 	    	}
 	    	if (!format.isEmpty()) {
 	    		// TODO: use proper java string formatting
@@ -352,7 +369,7 @@ public class Messager {
 		    			Integer hearts = new Integer((int)(value/2));
 		    			//replacement += (hearts == 0 && value%2 != 0 ? "" : hearts.toString()) + (value%2 != 0 ? (hearts != 0 ? " " : (value < 0 && hearts == 0?"-":""))+"1/2" : "");
 		    			replacement += hearts.toString()+(value%2 != 0?".5":"");
-		    			replacement += " heart"+(value >= 2 || value <= -2 ? "s":""); //TODO: maybe localize or remove it
+		    			replacement += " "+parseLine(profile,"<#heart"+(value != 2 && value != -2 ? "+":"")+">",""); //TODO: maybe localize or remove it
 		    		} else {
 		    			replacement += value+format;
 		    		}

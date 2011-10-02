@@ -2,9 +2,12 @@ package com.behindthemirrors.minecraft.sRPG.listeners;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -44,11 +47,14 @@ public class CommandListener implements CommandExecutor {
 						return true;
 					}
 				// display xp,skillpoints,milestones (if enabled)
-				} else if (args[0].equalsIgnoreCase("status")) {
-					Messager.sendMessage(player, "status-header");
-					// display xp
-					if (player.hasPermission("srpg.xp")) {
-						Messager.sendMessage(player, "xp");
+				} else if (args[0].equalsIgnoreCase("jobs")) {
+					Messager.sendMessage(profile,"job-list-header");
+					for (StructureJob job : Settings.jobs.values()) {
+						if (job.prerequisitesMet(profile)) {
+							Messager.sendMessage(profile, "job-list-entry",job.signature);
+						} else {
+							Messager.sendMessage(profile,"job-list-hidden",job.signature);
+						}
 					}
 					return true;
 				// display available charges with the current tool
@@ -89,20 +95,34 @@ public class CommandListener implements CommandExecutor {
 					profile.locked = !profile.locked;
 					Messager.sendMessage(player, "actives-"+(profile.locked?"":"un")+"locked");
 				} else if (args[0].equalsIgnoreCase("stats")) {
-					ArrayList<String> words = new ArrayList<String>();
-					words.add("bla");
-					words.add("very long word");
-					words.add("foobar = 42");
-					ArrayList<Integer> tabpoints = new ArrayList<Integer>();
-					tabpoints.add(90);
-					tabpoints.add(90);
-					tabpoints.add(90);
-					ArrayList<String> words2 = new ArrayList<String>();
-					words2.add("laaawl");
-					words2.add("some other word");
-					words2.add("rage");
-					player.sendMessage(Messager.columnize(words, tabpoints));
-					player.sendMessage(Messager.columnize(words2, tabpoints));
+					Messager.sendMessage(player,"not-implemented");
+					for (Entry<Material, HashMap<Material, HashMap<String, Double>>> entry : profile.stats.get(0).entrySet()) {
+						String tab = "";
+						if (entry.getKey() != null) {
+							player.sendMessage("using "+entry.getKey().toString());
+							tab = "    ";
+						}
+						for (Entry<Material, HashMap<String, Double>> subentry : entry.getValue().entrySet()) {
+							String subtab = "";
+							if (subentry.getKey() != null) {
+								player.sendMessage(tab+"vs "+subentry.getKey().toString());
+								subtab = "    ";
+							}
+							for (Entry<String, Double> stat : subentry.getValue().entrySet()) {
+								String docstring = Messager.localize("","autodoc.effects.boost."+stat.getKey(),profile);
+								if (!docstring.isEmpty()) {
+									String line = Messager.parseLine(profile,docstring,stat.getValue().toString());
+									if (entry.getKey() == null && subentry.getKey() == null) {
+										line = line.replace("+", "");
+										line = line.replace("-", "");
+									}
+									player.sendMessage(tab+subtab+line);
+								}
+							}
+						}
+					}
+					Messager.sendMessage(player,"not-implemented");
+					return true;
 				} else if (args[0].equalsIgnoreCase("passive")) {
 					if (args.length >= 2) {
 						String name = MiscGeneric.join(Arrays.asList(args).subList(1, args.length), " ");
@@ -116,6 +136,29 @@ public class CommandListener implements CommandExecutor {
 							for (String line : Messager.documentPassive(profile, passive)) {
 								player.sendMessage(line);
 							}
+						} else {
+							Messager.sendMessage(player,"passive-not-available");
+						}
+						return true;
+					} else {
+						Messager.sendMessage(player, "needs-more-arguments");
+						return false;
+					}
+				}else if (args[0].equalsIgnoreCase("passive")) {
+					if (args.length >= 2) {
+						String name = MiscGeneric.join(Arrays.asList(args).subList(1, args.length), " ");
+						if (Settings.ACTIVE_ALIASES.get(profile.locale).containsKey(name.toLowerCase())) {
+							name = Settings.ACTIVE_ALIASES.get(profile.locale).get(name.toLowerCase());
+						} else if (Settings.ACTIVE_ALIASES.get(null).containsKey(name.toLowerCase())) {
+							name = Settings.ACTIVE_ALIASES.get(null).get(name.toLowerCase());
+						}
+						StructureActive active = Settings.actives.get(name);
+						if (active != null) {
+							if (active.description != null && !active.description.isEmpty()) {
+								player.sendMessage(Messager.parseLine(profile, active.description, active.signature));
+							}
+						} else {
+							Messager.sendMessage(player,"active-not-available");
 						}
 						return true;
 					} else {
@@ -139,20 +182,20 @@ public class CommandListener implements CommandExecutor {
 						if (job.prerequisitesMet(profile)) {
 							Messager.sendMessage(player, "job-progress",name);
 							Messager.sendMessage(player, "traits-header",name);
-							for (StructurePassive passive : job.traits.keySet()) {
-								player.sendMessage(Messager.parseLine(profile, Messager.localize(passive.name,"passives."+passive.signature+".name",profile),passive.signature));
+							for (Entry<StructurePassive,EffectDescriptor> entry : job.traits.entrySet()) {
+								player.sendMessage(Messager.localizedPassive(entry.getKey().signature, profile)+MiscGeneric.potencyToRoman(entry.getValue().potency));
 							}
 							Messager.sendMessage(player, "passives-header",name);
-							for (StructurePassive passive : job.getPassives(level).keySet()) {
-								player.sendMessage(Messager.parseLine(profile, Messager.localize(passive.name,"passives."+passive.signature+".name",profile),passive.signature));
+							for (Entry<StructurePassive,EffectDescriptor> entry : job.getPassives(level).entrySet()) {
+								player.sendMessage(Messager.localizedPassive(entry.getKey().signature, profile)+MiscGeneric.potencyToRoman(entry.getValue().potency));
 							}
 							Messager.sendMessage(player, "actives-header",name);
-							for (StructureActive active : job.getActives(level).keySet()) {
-								player.sendMessage(Messager.parseLine(profile, Messager.localize(active.name,"actives."+active.signature+".name",profile),active.signature));
+							for (Entry<StructureActive,EffectDescriptor> entry : job.getActives(level).entrySet()) {
+								player.sendMessage(Messager.localizedActive(entry.getKey().signature, profile)+MiscGeneric.potencyToRoman(entry.getValue().potency));
 							}
 							// TODO: extend to display locked passives too or something, maybe create a special description per passive/active while it is still locked
 						} else {
-							Messager.sendMessage(player, "job-details-unknown",name);
+							Messager.sendMessage(player, "job-not-unlocked",name);
 						}
 					} else {
 						Messager.sendMessage(player,"job-not-available");

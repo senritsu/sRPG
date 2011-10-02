@@ -21,7 +21,7 @@ public class CombatInstance {
 	public Material defenderHandItem;
 	
 	public double basedamage;
-	public double modifier;
+	public double damagerange;
 	public double critChance;
 	public double critMultiplier;
 	public double missChance;
@@ -45,7 +45,6 @@ public class CombatInstance {
 	
 	public CombatInstance(EntityDamageByEntityEvent event) {
 		this.event = event;
-		modifier = 0;
 		critChance = 0.0;
 		missChance = 0.0;
 		evadeChance = 0.0;
@@ -85,13 +84,13 @@ public class CombatInstance {
 		SRPG.dout("attack launched with "+attackerHandItem+" versus "+defenderHandItem,"combat");
 		SRPG.dout("backstab = "+backstab+ " highground = "+(highground == null?"nobody":(highground == attacker? "attacker" : "defender")),"combat");
 		
-		evadeChance += defender.getStat("evade-chance", defenderHandItem, attackerHandItem) + attacker.getStat("anti-evade-chance", attackerHandItem, defenderHandItem);
-		parryChance += defender.getStat("parry-chance", defenderHandItem, attackerHandItem) + attacker.getStat("anti-parry-chance", attackerHandItem, defenderHandItem);
-		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem) + defender.getStat("anti-crit-chance", defenderHandItem, attackerHandItem);
-		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem) + defender.getStat("anti-crit-multiplier", defenderHandItem, attackerHandItem);
+		evadeChance += defender.getStat("evade-chance", defenderHandItem, attackerHandItem) + attacker.getStat("target-evade-chance", attackerHandItem, defenderHandItem);
+		parryChance += defender.getStat("parry-chance", defenderHandItem, attackerHandItem) + attacker.getStat("target-parry-chance", attackerHandItem, defenderHandItem);
+		critChance += attacker.getStat("crit-chance", attackerHandItem, defenderHandItem) + defender.getStat("target-crit-chance", defenderHandItem, attackerHandItem);
+		critMultiplier += attacker.getStat("crit-multiplier", attackerHandItem, defenderHandItem) + defender.getStat("target-crit-multiplier", defenderHandItem, attackerHandItem);
 		
-		double basedamage = 0;
-		double damagerange = 0;
+		basedamage = 0;
+		damagerange = 0;
 		double charge = 0;
 		if (attackerHandItem != null) {
 			String toolName = Settings.TOOL_MATERIAL_TO_STRING.get(attackerHandItem);
@@ -123,8 +122,14 @@ public class CombatInstance {
 			}
 		}
 		
-		basedamage += attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("anti-damage-modifier", attackerHandItem, defenderHandItem);
-		damagerange += attacker.getStat("max-damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("anti-max-damage-modifier", attackerHandItem, defenderHandItem);
+		basedamage += attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("target-damage-modifier", attackerHandItem, defenderHandItem);
+		damagerange += attacker.getStat("max-damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("target-max-damage-modifier", attackerHandItem, defenderHandItem);
+		
+		ResolverPassive.resolveCombatBoosts(this);
+		if (attacker instanceof ProfilePlayer) {
+			((ProfilePlayer)attacker).activate(this, defenderHandItem);
+		}
+		
 		if (damagerange < 0) {
 			basedamage += damagerange;
 			damagerange = 0;
@@ -150,9 +155,6 @@ public class CombatInstance {
 		SRPG.dout(attacker.passives.toString(),"combat");
 		
 		ResolverPassive.resolve(this);
-		if (attacker instanceof ProfilePlayer) {
-			((ProfilePlayer)attacker).activate(this, defenderHandItem);
-		}
 		
 		if (canceled){
 			if (attacker instanceof Player && cancelMessageAttacker != null) {
@@ -171,21 +173,21 @@ public class CombatInstance {
 				Messager.sendMessage(attacker, "miss-attacker");
 				Messager.sendMessage(defender, "miss-defender");
 			}
-			factor -= attacker.getStat("miss-damage-factor", attackerHandItem, defenderHandItem) -  defender.getStat("anti-miss-damage-factor", defenderHandItem, attackerHandItem);
+			factor -= attacker.getStat("miss-damage-factor", attackerHandItem, defenderHandItem) +  defender.getStat("target-miss-damage-factor", defenderHandItem, attackerHandItem);
 		}
 		if (parry) {
 			if (factor > 0) {
 				Messager.sendMessage(attacker, "parry-attacker");
 				Messager.sendMessage(defender, "parry-defender");
 			}
-			factor -= defender.getStat("parry-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("anti-parry-efficiency", attackerHandItem, defenderHandItem);
+			factor -= defender.getStat("parry-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("target-parry-efficiency", attackerHandItem, defenderHandItem);
 		}
 		if (factor > 0 && evade) {
 			if (factor > 0) {
 				Messager.sendMessage(attacker, "evade-attacker");
 				Messager.sendMessage(defender, "evade-defender");
 			}
-			factor -= defender.getStat("evade-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("anti-evade-efficiency", attackerHandItem, defenderHandItem);
+			factor -= defender.getStat("evade-efficiency", defenderHandItem, attackerHandItem) +  attacker.getStat("target-evade-efficiency", attackerHandItem, defenderHandItem);
 		}
 		
 		damage *= factor <= 1.0 ? factor : 1.0;

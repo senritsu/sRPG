@@ -22,6 +22,7 @@ import org.getspout.spoutapi.gui.WidgetAnchor;
 
 import com.behindthemirrors.minecraft.sRPG.CombatInstance;
 import com.behindthemirrors.minecraft.sRPG.Messager;
+import com.behindthemirrors.minecraft.sRPG.MiscGeneric;
 import com.behindthemirrors.minecraft.sRPG.ResolverActive;
 import com.behindthemirrors.minecraft.sRPG.SRPG;
 import com.behindthemirrors.minecraft.sRPG.Settings;
@@ -164,8 +165,12 @@ public class ProfilePlayer extends ProfileNPC {
 				charges++;
 				updateChargeDisplay();
 				if (!suppressMessages) {
-					Messager.sendMessage(player, "charge-acquired");
-					SpoutManager.getSoundManager().playCustomSoundEffect(SRPG.plugin, SpoutManager.getPlayer(player), "http://www.behindthemirrors.com/files/minecraft/srpg/charge.ogg", false);
+					if (SpoutManager.getPlayer(player).isSpoutCraftEnabled()) {
+						SpoutManager.getSoundManager().playCustomSoundEffect(SRPG.plugin, SpoutManager.getPlayer(player), "http://www.behindthemirrors.com/files/minecraft/srpg/charge.ogg", false);
+					} else {
+						Messager.sendMessage(player, "charge-acquired");
+					}
+					
 				}
 			} else {
 				chargeProgress = ticksPerCharge-1;
@@ -174,15 +179,15 @@ public class ProfilePlayer extends ProfileNPC {
 	}
 	
 	public void updateChargeDisplay() {
-		GenericTexture tex;
+		GenericTexture texture;
 		for (int i = 0;i<10;i++) {
-			tex = chargeDisplay.get(i);
+			texture = chargeDisplay.get(i);
 			if (i < charges) {
-				tex.setVisible(true);
+				texture.setVisible(true);
 			} else {
-				tex.setVisible(false);
+				texture.setVisible(false);
 			}
-			tex.setDirty(true);
+			texture.setDirty(true);
 		}
 	}
 	
@@ -198,11 +203,20 @@ public class ProfilePlayer extends ProfileNPC {
 			}
 			currentActive = validActives.get(index);
 			if (SpoutManager.getPlayer(player).isSpoutCraftEnabled()) {
-				String name = Messager.localizedActive(currentActive.signature, this);
+				String name = Messager.localizedActive(currentActive.signature, this)+MiscGeneric.potencyToRoman(actives.get(currentActive).potency);
 				if (name.length() >= 26) {
 					name = name.substring(0, 23) + "...";
 				}
-				SpoutManager.getPlayer(player).sendNotification("Now active:", name, Material.STONE);//player.getItemInHand().getType());
+				String header = " ";
+				try {
+					header = Messager.parseMessage(player, "active-changed-header", "", false).get(0);
+				} catch (IndexOutOfBoundsException ex) {
+				}
+				Material displayMaterial = player.getItemInHand().getType();
+				if (displayMaterial == Material.AIR) {
+					displayMaterial = Material.STONE; // TODO: remove hackish fix
+				}
+				SpoutManager.getPlayer(player).sendNotification(header, name, displayMaterial);
 			} else {
 				Messager.chargeDisplay(player, changed);
 			}

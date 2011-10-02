@@ -12,6 +12,7 @@ public class StructureActive implements Comparable<StructureActive> {
 
 	public String name;
 	public String signature;
+	public String description;
 	public String feedback;
 	public String broadcast;
 	public Double broadcastRange;
@@ -28,6 +29,7 @@ public class StructureActive implements Comparable<StructureActive> {
 	public StructureActive(String uniqueName, ConfigurationNode node) {
 		signature = uniqueName;
 		name = node.getString("name");
+		description = node.getString("description");
 		feedback = node.getString("feedback");
 		broadcast = node.getString("broadcast");
 		broadcastRange = node.getDouble("broadcast-range", 0.0);

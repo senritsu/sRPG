@@ -63,6 +63,8 @@ public class ResolverActive {
 			}
 		} else if (effect.startsWith("lightning")) {
 			ResolverEffects.lightning(targetBlock,node,arguments.descriptor);
+		} else if (effect.startsWith("boost")) {
+			ResolverEffects.combatBoost(arguments.combat, node, arguments.descriptor);
 		}
 	}
 }

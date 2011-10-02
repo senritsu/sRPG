@@ -1,5 +1,205 @@
 # broadcast-ranges can be any positive float to specify a distance in blocks, empty or 0 to not broadcast anything, -1 for worldwide broadcast, and -2 for serverwide broadcast
 
+steal:
+  name: Steal
+  description: 
+  feedback: "You tried to steal from your opponent"
+  broadcast: 
+  broadcast-range: 
+  cost: 1
+  cooldown: 
+  tools: [AIR]
+  effects:
+    manipulate-item:
+      action: steal
+      location: [inventory]
+      amount: 4
+      
+disarm:
+  name: Disarm
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  tools: [swords]
+  effects:
+    manipulate-item:
+      action: drop
+      protected-for: 5
+      location: [hand]
+
+improvised-arrows:
+  name: Improvised Arrows
+  description: "Carve improvised arrows out of wood, logs or sticks"
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 2
+  tools: [log,wood,stick,arrow]
+  effects: 
+    transmute-item:
+      from: [log,wood,stick]
+      from-amounts: [4,16,32]
+      to: [arrow]
+      to-amounts: [8]
+
+reinforced-string:
+  name: Reinforced String
+  description: "Temporarily reinforce your bow string to increase damage"
+  cost: 3
+  tools: [string]
+  effects:
+    apply-buff:
+      name: reinforced-bowstring
+      duration: 30
+
+concentrate:
+  name: Concentration
+  description: "Concentrate to prevent your opponent from evading"
+  feedback: "You focus your attention"
+  broadcast: "<!playername> starts concentrating"
+  broadcast-range: 5
+  cost: 3
+  tools: [arrow]
+  effects:
+    apply-buff:
+      name: concentration
+      duration: 10
+
+backstab:
+  name: Backstab
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 3
+  cooldown: 
+  combat: true
+  tools: [swords,pickaxes,axes,hoes]
+  effects:
+    boost: 
+      name: crit-chance
+      value: 1.0
+      conditions: [backstab-offensive]
+    boost1:
+      name: crit-multiplier
+      value: 1.5
+      conditions: [backstab-offensive]
+      level-based: [value]
+
+kick-up-dirt:
+  name: Kick up Dirt
+  description: 
+  feedback: "You kicked up dirt to daze your opponent"
+  broadcast: "<!playername> kicked up dirt to daze his opponent"
+  broadcast-range: 
+  cost: 2
+  combat: true
+  effects:
+    apply-buff:
+      name: blind!5
+      duration: 10
+      self: false
+      target: true
+
+feint:
+  name: Feint
+  feedback: "You feinted an attack"
+  broadcast: 
+  broadcast-range: 
+  cost: 1
+  combat: true
+  effects:
+    boost:
+      name: miss-chance
+      value: 1.0
+    apply-buff:
+      name: elusive!5
+      duration: 5
+
+apply-poison:
+  name: Apply Poison
+  description: 
+  feedback: 
+  broadcast: 
+  broadcast-range: 
+  cost: 
+  cooldown: 
+  combat: true
+  effects: 
+    apply-buff:
+      name: poison
+      duration: 3
+      self: false
+      target: true
+
+focus:
+  name: Focus
+  feedback: 
+  cost: 1
+  effects:
+    apply-buff:
+      name: focus
+      duration: 5
+
+aimed-strike:
+  name: Aimed Strike
+  feedback: 
+  cost: 1
+  combat: true
+  effects:
+    boost:
+      name: damage-modifier
+      value: 2
+    apply-buff:
+      name: focus
+      duration: 5
+
+piercing-strike:
+  name: Aimed Strike
+  feedback: 
+  cost: 2
+  combat: true
+  effects:
+    boost:
+      name: damage-modifier
+      value: 2
+    boost1:
+      name: crit-chance
+      value: 0.2
+    apply-buff:
+      name: bleed
+      self: false
+      target: true
+      duration: 5
+
+search-for-resources:
+  name: Search for Resources
+  feedback: 
+  cost: 2
+  tools: [barehanded]
+  effects:
+    apply-buff:
+      
+      name: sift-resources
+      duration: 20
+
+search-for-valuables:
+  name: Search for Valuables
+  feedback: 
+  cost: 3
+  tools: [barehanded]
+  effects:
+    apply-buff:
+      name: sift-valuables
+      duration: 20
+
+###############
+# DEBUG STUFF #
+###############
+
 dummy1:
   name: Dummy Ability 1 (buff)
   effects:
@@ -206,23 +406,6 @@ droparmor:
       location: [armor]
       all: true
   
-steal:
-  name: Steal (dummy)
-  description: 
-  feedback: 
-  broadcast: 
-  broadcast-range: 
-  cost: 
-  cooldown: 
-  tools: [AIR]
-  effects:
-    manipulate-item:
-      self: true
-      target: false
-      action: destroy
-      location: [inventory]
-      amount: 4
-      
 supersteal:
   name: SuperSteal (dummy)
   description: 
@@ -241,51 +424,3 @@ supersteal:
       amount: 4
       all: true
     
-disarm:
-  name: Disarm (dummy)
-  description: 
-  feedback: 
-  broadcast: 
-  broadcast-range: 
-  cost: 
-  cooldown: 
-  tools: [swords]
-  effects:
-    manipulate-item:
-      self: true
-      target: false
-      action: drop
-      protected-for: 5
-      location: [hand]
-
-
-improvised-arrows:
-  name: Improvised Arrows
-  description: 
-  feedback: 
-  broadcast: 
-  broadcast-range: 
-  cost: 2
-  cooldown: 0
-  tools: [17,5,280,262]
-  effects: 
-    transmute-item:
-      from: [17,5,280]
-      from-amounts: [4,16,32]
-      to: [262]
-      to-amounts: [8]
-
-apply-poison:
-  name: Apply Poison
-  description: 
-  feedback: 
-  broadcast: 
-  broadcast-range: 
-  cost: 
-  cooldown: 
-  effects: 
-    apply-buff:
-      name: poison!2
-      duration: 3
-      self: false
-      opponent: true

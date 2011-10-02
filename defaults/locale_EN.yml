@@ -10,6 +10,7 @@ terminology:
   passive: Skill(|s)
   active: Abilit(y|ies)
   level: Level(|s)
+  heart: Heart(|s)
 jobs:
 actives:
 passives:
@@ -55,13 +56,8 @@ messages:
   welcome: 
     - "[blue]sRPG Users Guide"
     - "sRPG adds a many rpg-style features to vanilla minecraft"
-    - "* Players are able to gain xp, increase their level, and use that to gain points in a variety of skills"
-    - "* Skills have various benefits, including a passive bonus, several passive abilities, and for some skills a number of active abilities"
-    - "* Active abilities consume charges that are accumulated by destroying blocks or hitting enemies with the associated tool"
-    - "* ..." 
     - "[aqua]More information to come"
   levelup: "You are now a [gold]<#level> <!joblevel> [white]<!job>"
-  status-header: "[blue]This is an overview of your character progression"
   locale-changed: "<basic.chat-prefix> Locale changed to <basic.locale-name>"
   
   ########
@@ -73,23 +69,32 @@ messages:
   job-unlocked: "Unlocked new <#job>: <!job>"
   job-already-selected: "You already are a/an <!job>"
   job-prerequisite-missing:
+    - "You cannot become a/an <!job> at this point"
     - "You are not cut out for being a/an <!job>"
     - "Only those with more experience can walk the path of a/an <!job>"
     - "You? A/An <!job>? Come back when you're not wet behind the ears anymore."
   job-no-permissions: "You are not allowed to take that <#job>"
   job-not-available: "There is no <#job> of that name"
+  active-not-available: "There is no <#active> of that name"
+  passive-not-available: "There is no <#passive> of that name"
   job-not-unlocked: "You do not meet the requirements for this <#job> yet"
+  job-list-header: "[dark green]Available <#job+>:"
+  job-list-entry: "<!job> [gray](You are <#level> <!joblevel>/<!jobmaxlevel>)"
+  job-list-hidden: "[gray]Unknown"
   job-header: "[green]<!job>"
   job-progress: "<#level> <!joblevel>/<!jobmaxlevel> (<!xp>/<!xp2level> to next level)"
   traits-header: "[dark green]<#trait+>"
   passives-header: "[dark green]<#passive+>"
   actives-header: "[dark green]<#active+>"
+  needs-more-arguments: "Not enough input provided to give you any meaningful information"
+  not-implemented: "[red]This feature is not completely implemented yet"
   
   #############
   # MECHANICS #
   #############
   
   charge-acquired: "Acquired a <#charge>"
+  active-changed-header: "Selected:"
   active-locked: "Active abilities are now deactivated"
   active-unlocked: "Active abilities reactivated"
   active: 
@@ -127,7 +132,11 @@ messages:
     header: 
     description: 
     level-line: 
-  
+
+###################################
+# AUTOMATIC DOCUMENTATION SECTION #
+###################################
+
 autodoc:
   special:
     passive-header: "[green]<!passive>"

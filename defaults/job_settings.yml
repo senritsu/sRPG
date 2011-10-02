@@ -42,3 +42,10 @@ tree:
       archer: 3
   rogue:
     prerequisites: 
+      adventurer: 1
+  knight:
+    prerequisites: 
+      adventurer: 1
+  worker:
+    prerequisites: 
+      adventurer: 1

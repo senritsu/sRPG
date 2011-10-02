@@ -43,7 +43,7 @@ public class BlockEventListener extends BlockListener {
 			if (profile.player.hasPermission("srpg.xp")) {
 				// award xp
 				if (SRPG.generator.nextDouble() <= xpChances.get(group)) {
-					profile.addXP(xpValuesMin.get(group) + SRPG.generator.nextInt(xpValuesRange.get(group)));
+					profile.addXP(xpValuesMin.get(group) + (xpValuesRange.get(group) > 0 ? SRPG.generator.nextInt(xpValuesRange.get(group)) : 0));
 				}
 			}
 			// award charge

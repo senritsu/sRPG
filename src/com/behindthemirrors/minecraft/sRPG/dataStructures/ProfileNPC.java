@@ -130,6 +130,9 @@ public class ProfileNPC {
 				passives.put(entry.getKey(), entry.getValue().copy(level));
 			}
 			for (Map.Entry<StructurePassive,EffectDescriptor> entry : currentJob.getPassives(level).entrySet()) {
+				if (passives.containsKey(entry.getKey()) && passives.get(entry.getKey()).potency > entry.getValue().potency) {
+					continue;
+				}
 				passives.put(entry.getKey(), entry.getValue().copy(level));
 			}
 			
@@ -174,7 +177,7 @@ public class ProfileNPC {
 				if (inheritance > 0 && !node.getBoolean("inherited", false)) {
 					continue;
 				}
-				if (effect.startsWith("boost")) {
+				if (effect.startsWith("boost") && node.getStringList("conditions", new ArrayList<String>()).isEmpty() && !(node.getDouble("chance", 1.0) < 1.0)) {
 					ArrayList<String> levelbased = (ArrayList<String>) node.getStringList("level-based", new ArrayList<String>());
 					String name = node.getString("name");
 					Double value = node.getDouble("value", 0.0) * inheritancefactor * descriptor.potency;
