@@ -44,12 +44,15 @@ public class SpawnEventListener extends EntityListener {
 			return;
 		}
 		String creature = MiscBukkit.getEntityName(event.getEntity());
-		SRPG.dout("creature spawned: "+creature,"spawn");
 		LivingEntity entity = (LivingEntity)event.getEntity();
 		// for testing
 		if (Settings.mobs.containsKey(creature)) {
 			ProfileNPC profile = SRPG.profileManager.get(entity);
 			profile.currentJob = Settings.mobs.get(creature);
+			if (profile.currentJob == null) {
+				profile.currentJob = Settings.mobs.get("default");
+				SRPG.dout("Warning: could not find fitting job for "+creature);
+			}
 			profile.jobLevels.put(profile.currentJob, 1);
 			// depth modifier
 			if (dangerousDepths) {

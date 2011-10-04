@@ -281,6 +281,7 @@ public class ProfilePlayer extends ProfileNPC {
 				currentActive.validVs(targetBlock.getType()) &&
 				(System.currentTimeMillis() - abilityReadiedTimeStamp) < 1500 && 
 				charges >= currentActive.cost) {
+			SRPG.dout(actives.toString());
 			ArgumentsActive arguments = new ArgumentsActive(currentActive, this, actives.get(currentActive));
 			arguments.targetBlock = targetBlock;
 			arguments.target = SRPG.profileManager.get(target);

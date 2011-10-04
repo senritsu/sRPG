@@ -6,9 +6,10 @@ commands:
   srpg:
     description: Get status and help for the sRPG plugin
     usage: |
-           /<command> status
-           /<command> help [topic]
-           /<command> [skillname]
+           /<command> jobs
+           /<command> change to [jobname]
+           /<command> info
+           /<command> stats
            /<command> locale [locale]
 permissions:
   srpg.basics:

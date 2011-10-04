@@ -78,12 +78,10 @@ public class ResolverEffects {
 		}
 		List<String> levelbased = node.getStringList("level-based",new ArrayList<String>());
 		String name = node.getString("name");
-		EffectDescriptor buffDescriptor = new EffectDescriptor(name);
-		buffDescriptor.level = source.jobLevels.get(source.currentJob);
-		buffDescriptor.maxlevel = source.currentJob.maximumLevel;
+		EffectDescriptor buffDescriptor = descriptor.copy(source.jobLevels.get(source.currentJob));
 		buffDescriptor.duration = (int)(levelbased.contains("duration")?descriptor.levelfactor():1.0)*node.getInt("duration", 0)*descriptor.potency;
 		StructurePassive buff = Settings.passives.get(MiscBukkit.stripPotency(name));
-		target.addEffect(buff, descriptor);
+		target.addEffect(buff, buffDescriptor);
 		Messager.sendMessage(target, "acquired-buff",buff.signature);
 	}
 	static void directDamage(ProfileNPC profile, ConfigurationNode node, EffectDescriptor descriptor) {

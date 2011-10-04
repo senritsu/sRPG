@@ -65,7 +65,7 @@ ranged-focus:
       value: -2
     boost2:
       name: crit-chance
-      tools: [swords]
+      tools: [swords,axes]
       value: -0.05
       
 snipers-eye:
@@ -125,7 +125,7 @@ improved-parry:
     boost:
       name: parry-efficiency
       value: 0.2
-      tools: [words]
+      tools: [swords]
 
 offensive-sword-training:
   name: Offensive Sword Training
@@ -298,7 +298,7 @@ sift-valuables:
       tools: [nothing]
       versus: [grass,dirt,gravel]
       mode: add
-      items: [coal,arrow,stick,iron_ingot,gold_ingot,diamond,]
+      items: [coal,arrow,stick,iron_ingot,gold_ingot,diamond]
       amounts: [1,1,1,1,1,1]
       chance: 0.15
       all: false

@@ -10,10 +10,13 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.StructureJob;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map.Entry;
 
 public class ProfileManager {
 	
 	public HashMap<LivingEntity,ProfileNPC> profiles = new HashMap<LivingEntity,ProfileNPC>();
+	public HashMap<LivingEntity,Integer> entitiesScheduledForRemoval = new HashMap<LivingEntity,Integer>();
 	
 	public void clear() {
 		profiles.clear();
@@ -57,9 +60,26 @@ public class ProfileManager {
 		profiles.remove(entity);
 	}
 	
+	public void scheduleRemoval(LivingEntity entity, int delay) {
+		entitiesScheduledForRemoval.put(entity, delay);
+	}
+	
+	public void checkEntityRemoval() {
+		Iterator<Entry<LivingEntity,Integer>> iterator = entitiesScheduledForRemoval.entrySet().iterator();
+		while (iterator.hasNext()) {
+			Entry<LivingEntity,Integer> entry = iterator.next();
+			entry.setValue(entry.getValue()-1);
+			if (entry.getValue()<=0) {
+				iterator.remove();
+				remove(entry.getKey());
+			}
+		}
+	}
+	
 	public ProfileNPC get(LivingEntity entity) {
 		if (!profiles.containsKey(entity)) {
 			add(entity);
+			SRPG.dout("added new entity "+entity.toString()+" as it was requested and not already assigned a profile");
 		}
 		return profiles.get(entity);
 	}

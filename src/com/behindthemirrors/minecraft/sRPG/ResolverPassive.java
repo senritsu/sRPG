@@ -107,6 +107,9 @@ public class ResolverPassive {
 				for (String name : passive.effects.keySet()) {
 					ConfigurationNode node = passive.effects.get(name);
 					SRPG.dout("checking conditions for "+name+", used by "+passive.name,"passives");
+					if (node.getStringList("conditions", new ArrayList<String>()).isEmpty() && !(node.getDouble("chance", 1.0) < 1.0)) {
+						continue;
+					}
 					if (!(checkConditions(profile,node) || checkCombatConditions(profile,node,combat)) || !checkTools(profile, node,combat)) {
 						SRPG.dout("conditions failed","passives");
 						continue;

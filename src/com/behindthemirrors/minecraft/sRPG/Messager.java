@@ -322,11 +322,8 @@ public class Messager {
 	    		
 	    	} else if (match.equalsIgnoreCase("<!buffed>")) {
 	    		StructurePassive buff = Settings.passives.get(context);
-	    		String localized = localize(context,"passives."+context+".adjective",profile);
-	    		replacement = localized != null ? localized : 
-	    			(buff.adjective != null ? buff.adjective : 
-	    				Settings.localization.get(profile.locale).getString("messages.buffed-default") + " " + localizedPassive(context, profile));
-	    		
+	    		String localized = localize(buff.adjective,"passives."+context+".adjective",profile);
+	    		replacement = !localized.isEmpty() ? localized : localize("","messages.buffed-default") + " " + localizedPassive(context, profile);
 	    	} else if (match.equalsIgnoreCase("<!buff>") || match.equalsIgnoreCase("<!passive>")) {
 	    		replacement = localizedPassive(context, profile);
 	    		
@@ -426,7 +423,7 @@ public class Messager {
 	}
 	
 	public static String localizedPassive(String signature, ProfilePlayer profile) {
-		return localize(Settings.actives.get(signature).name,"passives."+signature+".name",profile);
+		return localize(Settings.passives.get(signature).name,"passives."+signature+".name",profile);
 	}
 	
 	public String localizedActive(String signature) {

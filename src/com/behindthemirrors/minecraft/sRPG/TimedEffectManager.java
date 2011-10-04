@@ -13,13 +13,14 @@ import com.behindthemirrors.minecraft.sRPG.dataStructures.Watcher;
 
 public class TimedEffectManager implements Runnable {
 	
-	ArrayList<ProfileNPC> relevantPlayers = new ArrayList<ProfileNPC>();
+	ArrayList<ProfileNPC> relevantProfiles = new ArrayList<ProfileNPC>();
 	
 	public void run() {
 		Watcher.tick();
+		SRPG.profileManager.checkEntityRemoval();
 		// check all currently active effects
 		//SRPG.output("tick");
-		Iterator<ProfileNPC> playerIterator = relevantPlayers.iterator();
+		Iterator<ProfileNPC> playerIterator = relevantProfiles.iterator();
 		while (playerIterator.hasNext()) {
 			ProfileNPC profile = playerIterator.next();
 			if (Settings.worldBlacklist.contains(profile.entity.getWorld())) {
@@ -49,10 +50,14 @@ public class TimedEffectManager implements Runnable {
 		}
 	}
 	
-	public void add(ProfileNPC npcData) {
-		if (!relevantPlayers.contains(npcData)) {
-			relevantPlayers.add(npcData);
+	public void add(ProfileNPC profile) {
+		if (!relevantProfiles.contains(profile)) {
+			relevantProfiles.add(profile);
 		}
+	}
+	
+	public void remove(ProfileNPC profile) {
+		relevantProfiles.remove(profile);
 	}
 	
 }

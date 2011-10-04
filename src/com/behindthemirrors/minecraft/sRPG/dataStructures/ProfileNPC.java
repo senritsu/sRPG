@@ -93,6 +93,10 @@ public class ProfileNPC {
 		double value = 0.0;
 		boolean found = false;
 		for (HashMap<Material, HashMap<Material,HashMap<String,Double>>> map : stats) {
+			if (map.isEmpty()) {
+				SRPG.dout("empty stat map while getting stats of "+this.toString()+" with job "+currentJob);
+				continue;
+			}
 			if (handMaterial != null && map.containsKey(handMaterial)) {
 				if (map.get(handMaterial).get(null).containsKey(name)) {
 					value += map.get(handMaterial).get(null).get(name);

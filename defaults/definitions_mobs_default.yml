@@ -2,6 +2,18 @@
 # rest of the settings is exactly the same as for player jobs, with the exception that currently mobs don't use active skills, and their tier is irrelevant.
 # monsters not in this config will use regular stats and nothing else. the default damage is set as the default "damage-unarmed"
 
+default: # do not remove, fallback if no proper job is available
+  enabled: true
+  name: Default Living Entity
+  description: 
+  details: 
+  tier: 0
+  defaults:
+    health: 20
+    xp: 0
+  traits: 
+  passives:
+
 pig:
   enabled: true
   name: Pig

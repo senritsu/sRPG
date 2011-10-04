@@ -135,17 +135,19 @@ public class DamageEventListener extends EntityListener {
 			}
 			
 			// resolve combat
-			combat.resolve();
-			SRPG.dout("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString(),"combat");
+			if (!combat.defender.entity.isDead()) {
+				combat.resolve();
+				SRPG.dout("combat resolved, damage changed to "+(new Integer(event.getDamage())).toString(),"combat");
 			
-			// track entity if damage source was player, for xp gain on kill
-			if (!(target instanceof Player) && !event.isCancelled() && event.getDamage() > 0) {
-				int id = target.getEntityId();
-				if (source instanceof Player) {
-					SRPG.dout("id of damaged entity: "+event.getEntity().getEntityId(),"combat");
-					damageTracking.put(id, (Player)source);
-				} else if (damageTracking.containsKey(id)) {
-					damageTracking.remove(id);
+				// track entity if damage source was player, for xp gain on kill
+				if (!(target instanceof Player) && !event.isCancelled() && event.getDamage() > 0) {
+					int id = target.getEntityId();
+					if (source instanceof Player) {
+						SRPG.dout("id of damaged entity: "+event.getEntity().getEntityId(),"combat");
+						damageTracking.put(id, (Player)source);
+					} else if (damageTracking.containsKey(id)) {
+						damageTracking.remove(id);
+					}
 				}
 			}
 		}
@@ -222,7 +224,8 @@ public class DamageEventListener extends EntityListener {
 			damageTracking.remove(id);
 		}
 		if (!(entity instanceof Player)) {
-			SRPG.profileManager.remove(entity);
+			SRPG.dout("removing entity "+entity.toString()+" because of its death");
+			SRPG.profileManager.scheduleRemoval(entity,5);
 		}
 	}
 }

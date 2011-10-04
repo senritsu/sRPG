@@ -122,9 +122,12 @@ public class CombatInstance {
 			}
 		}
 		
+		SRPG.dout("basedamage: "+basedamage,"combat");
+		SRPG.dout("damagerange: "+damagerange,"combat");
 		basedamage += attacker.getStat("damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("target-damage-modifier", attackerHandItem, defenderHandItem);
 		damagerange += attacker.getStat("max-damage-modifier", attackerHandItem, defenderHandItem) + attacker.getStat("target-max-damage-modifier", attackerHandItem, defenderHandItem);
-		
+		SRPG.dout("basedamage2: "+basedamage,"combat");
+		SRPG.dout("damagerange2: "+damagerange,"combat");
 		ResolverPassive.resolveCombatBoosts(this);
 		if (attacker instanceof ProfilePlayer) {
 			((ProfilePlayer)attacker).activate(this, defenderHandItem);
@@ -134,8 +137,11 @@ public class CombatInstance {
 			basedamage += damagerange;
 			damagerange = 0;
 		}
+		SRPG.dout("basedamage3: "+basedamage,"combat");
+		SRPG.dout("damagerange3: "+damagerange,"combat");
+		SRPG.dout("charge: "+charge,"combat");
 		double damage = basedamage + charge * damagerange;
-		
+		SRPG.dout("damage: "+damage,"combat");
 		// apply critical hit
 		if (SRPG.generator.nextDouble() <= critChance) {
 			crit = true;
